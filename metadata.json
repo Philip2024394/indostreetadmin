@@ -1,0 +1,5 @@
+{
+  "name": "IndoStreet Partner Portal",
+  "description": "A central hub for IndoStreet drivers, vendors, and administrators to manage their activities. It provides role-based dashboards for application management, availability status, and item management.",
+  "requestFramePermissions": []
+}
