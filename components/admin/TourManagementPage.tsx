@@ -1,0 +1,108 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../services/supabase';
+import { TourDestination } from '../../types';
+import TourEditorModal from './TourEditorModal';
+import { PlusCircleIcon, PencilIcon, TrashIcon, LandmarkIcon } from '../shared/Icons';
+
+const TourManagementPage: React.FC = () => {
+    const [destinations, setDestinations] = useState<TourDestination[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingDestination, setEditingDestination] = useState<TourDestination | null>(null);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        const { data } = await supabase.from('tour_destinations').select('*');
+        if (data) {
+            setDestinations(data);
+        }
+        setLoading(false);
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleOpenModal = (destination: TourDestination | null = null) => {
+        setEditingDestination(destination);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setEditingDestination(null);
+        setIsModalOpen(false);
+    };
+
+    const handleSave = async (data: Omit<TourDestination, 'id'>) => {
+        if (editingDestination) { // Update
+            await supabase.from('tour_destinations').update(data).eq('id', editingDestination.id);
+        } else { // Create
+            await supabase.from('tour_destinations').insert(data);
+        }
+        handleCloseModal();
+        fetchData();
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Are you sure you want to delete this destination? This action cannot be undone.')) {
+            await supabase.from('tour_destinations').delete().eq('id', id);
+            fetchData();
+        }
+    };
+
+    if (loading) {
+        return <div className="text-center p-10">Loading tour destinations...</div>;
+    }
+
+    return (
+        <>
+            <div className="bg-white rounded-lg shadow-md">
+                <div className="p-6 border-b flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-semibold text-gray-800">Manage Tour Destinations</h3>
+                        <p className="text-sm text-gray-500">Add, edit, or remove tour locations available to drivers.</p>
+                    </div>
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                        <PlusCircleIcon className="w-5 h-5 mr-2" />
+                        Add Destination
+                    </button>
+                </div>
+
+                <div className="divide-y divide-gray-200">
+                    {destinations.length > 0 ? destinations.map(dest => (
+                        <div key={dest.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                            <div className="flex items-center space-x-4">
+                                <LandmarkIcon className="w-8 h-8 text-gray-400" />
+                                <div>
+                                    <p className="font-semibold text-gray-800">{dest.name}</p>
+                                    <p className="text-sm text-gray-600">{dest.category}</p>
+                                    <p className="text-xs text-gray-500 mt-1 max-w-xl">{dest.description}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 flex-shrink-0">
+                                <button onClick={() => handleOpenModal(dest)} className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5" /></button>
+                                <button onClick={() => handleDelete(dest.id)} className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100"><TrashIcon className="w-5 h-5" /></button>
+                            </div>
+                        </div>
+                    )) : (
+                         <div className="text-center py-10 px-6 text-gray-500">
+                            <p>No tour destinations have been added yet.</p>
+                         </div>
+                    )}
+                </div>
+            </div>
+            {isModalOpen && (
+                <TourEditorModal
+                    destination={editingDestination}
+                    onClose={handleCloseModal}
+                    onSave={handleSave}
+                />
+            )}
+        </>
+    );
+};
+
+export default TourManagementPage;

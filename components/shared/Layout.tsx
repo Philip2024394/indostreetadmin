@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { User, Role, AdminMessage } from '../../types';
 import { supabase } from '../../services/supabase';
 import MessagesModal from './MessagesModal';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours';
 
 interface LayoutProps {
   user: User;
@@ -72,6 +72,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
         <button onClick={() => onAdminViewChange?.('analytics')} className={`${navLinkClasses} ${adminView === 'analytics' ? activeNavLinkClasses : ''}`}>
           <ChartBarIcon className="w-5 h-5 mr-3" />
           Analytics
+        </button>
+        <button onClick={() => onAdminViewChange?.('tours')} className={`${navLinkClasses} ${adminView === 'tours' ? activeNavLinkClasses : ''}`}>
+          <LandmarkIcon className="w-5 h-5 mr-3" />
+          Tours
         </button>
     </>
   );

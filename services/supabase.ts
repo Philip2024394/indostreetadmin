@@ -75,7 +75,7 @@ const MOCK_RIDE_REQUESTS: RideRequest[] = [
     { id: 'ride5', pickupLocation: 'Bandara Soekarno-Hatta', destination: 'Menteng', fare: 85000, customerName: 'David', customerRating: 4.8 },
 ];
 
-const MOCK_TOUR_DESTINATIONS: TourDestination[] = [
+let MOCK_TOUR_DESTINATIONS: TourDestination[] = [
     // Temples & Historical Sites
     { id: 'borobudur', name: 'Borobudur Temple', category: 'Temples & Historical Sites', description: "World's largest Buddhist temple." },
     { id: 'prambanan', name: 'Prambanan Temple', category: 'Temples & Historical Sites', description: "Magnificent 9th-century Hindu temple." },
@@ -245,6 +245,14 @@ const mockSupabaseClient = {
                     } else {
                         resolve({ data: null, error: new Error('Transaction not found') });
                     }
+                } else if (tableName === 'tour_destinations' && column === 'id') {
+                    const destIndex = MOCK_TOUR_DESTINATIONS.findIndex(d => d.id === value);
+                    if (destIndex !== -1) {
+                        MOCK_TOUR_DESTINATIONS[destIndex] = { ...MOCK_TOUR_DESTINATIONS[destIndex], ...updates };
+                        resolve({ data: [MOCK_TOUR_DESTINATIONS[destIndex]], error: null });
+                    } else {
+                        resolve({ data: null, error: new Error('Destination not found') });
+                    }
                 }
                 else {
                   resolve({ data: null, error: new Error('Update failed') });
@@ -276,7 +284,16 @@ const mockSupabaseClient = {
                    }));
                    MOCK_ITEMS.push(...inserted);
                    resolve({ data: inserted, error: null });
-               } else {
+               } else if (tableName === 'tour_destinations') {
+                    const dataArray = Array.isArray(newData) ? newData : [newData];
+                    const inserted = dataArray.map(d => ({
+                        ...d,
+                        id: `dest-${Date.now()}-${Math.random()}`,
+                    }));
+                    MOCK_TOUR_DESTINATIONS.push(...inserted);
+                    resolve({ data: inserted, error: null });
+               }
+               else {
                    resolve({ data: null, error: new Error('Insert failed') });
                }
            }, 300);
@@ -295,7 +312,16 @@ const mockSupabaseClient = {
                   } else {
                     resolve({ data: null, error: new Error('Item not found for deletion') });
                   }
-                } else {
+                } else if (tableName === 'tour_destinations' && column === 'id') {
+                    const initialLength = MOCK_TOUR_DESTINATIONS.length;
+                    MOCK_TOUR_DESTINATIONS = MOCK_TOUR_DESTINATIONS.filter(d => d.id !== value);
+                    if (MOCK_TOUR_DESTINATIONS.length < initialLength) {
+                        resolve({ data: [{id: value}], error: null });
+                    } else {
+                        resolve({ data: null, error: new Error('Destination not found for deletion') });
+                    }
+                }
+                else {
                   resolve({ data: null, error: new Error(`Delete failed for table ${tableName}`) });
                 }
               }, 300);
