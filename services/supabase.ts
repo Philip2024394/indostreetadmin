@@ -10,9 +10,9 @@ const MOCK_USERS: User[] = [
 ];
 
 let MOCK_PARTNERS: Partner[] = [
-    { id: 'driver-1', email: 'budi.s@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } }, partnerType: PartnerType.BikeDriver, status: 'active', rating: 4.8, totalEarnings: 1250000, memberSince: '2023-01-15T09:00:00Z', phone: '081234567890', activationExpiry: '2025-01-15T09:00:00Z', rideRatePerKm: 2600, minFare: 8000, parcelRatePerKm: 2000, hourlyHireRate: 25000, dailyHireRate: 200000, tourRates: { 'borobudur': 150000, 'prambanan': 100000, 'merapi': 120000 } },
-    { id: 'vendor-1', email: 'siti.a@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti', profilePicture: 'https://picsum.photos/seed/vendor1/200' }, partnerType: PartnerType.FoodVendor, status: 'active', rating: 4.9, totalEarnings: 3500000, memberSince: '2022-11-20T14:00:00Z', phone: '081234567891', activationExpiry: '2024-12-20T14:00:00Z' },
-    { id: 'driver-2', email: 'eko.p@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } }, partnerType: PartnerType.CarDriver, status: 'suspended', rating: 4.7, totalEarnings: 2100000, memberSince: '2023-03-10T11:00:00Z', phone: '081234567892', activationExpiry: '2024-09-10T11:00:00Z', rideRatePerKm: 3500, minFare: 15200, parcelRatePerKm: 3000, hourlyHireRate: 75000, dailyHireRate: 600000, tourRates: { 'borobudur': 300000, 'prambanan': 250000, 'merapi': 280000, 'malioboro': 150000 } },
+    { id: 'driver-1', email: 'budi.s@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } }, partnerType: PartnerType.BikeDriver, status: 'active', rating: 4.8, totalEarnings: 1250000, memberSince: '2023-01-15T09:00:00Z', phone: '081234567890', activationExpiry: '2025-01-15T09:00:00Z', rideRatePerKm: 2600, minFare: 8000, parcelRatePerKm: 2000, hourlyHireRate: 25000, dailyHireRate: 200000, tourRates: { 'borobudur': 150000, 'prambanan': 100000, 'merapi': 120000 }, bankDetails: { bankName: 'BCA', accountHolderName: 'Budi Santoso', accountNumber: '1234567890' } },
+    { id: 'vendor-1', email: 'siti.a@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti', profilePicture: 'https://picsum.photos/seed/vendor1/200' }, partnerType: PartnerType.FoodVendor, status: 'active', rating: 4.9, totalEarnings: 3500000, memberSince: '2022-11-20T14:00:00Z', phone: '081234567891', activationExpiry: '2024-12-20T14:00:00Z', bankDetails: { bankName: 'Mandiri', accountHolderName: 'Siti Aminah', accountNumber: '0987654321' } },
+    { id: 'driver-2', email: 'eko.p@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } }, partnerType: PartnerType.CarDriver, status: 'suspended', rating: 4.7, totalEarnings: 2100000, memberSince: '2023-03-10T11:00:00Z', phone: '081234567892', activationExpiry: '2024-09-10T11:00:00Z', rideRatePerKm: 3500, minFare: 15200, parcelRatePerKm: 3000, hourlyHireRate: 75000, dailyHireRate: 600000, tourRates: { 'borobudur': 300000, 'prambanan': 250000, 'merapi': 280000, 'malioboro': 150000 }, bankDetails: { bankName: 'BNI', accountHolderName: 'Eko Prasetyo', accountNumber: '1122334455' } },
     { id: 'rental-1', email: 'sewa@cepat.com', role: Role.Vendor, profile: { name: 'Rental Cepat', shopName: 'Sewa Mobil Cepat', profilePicture: 'https://picsum.photos/seed/rental1/200' }, partnerType: PartnerType.CarRental, status: 'active', rating: 4.6, totalEarnings: 5200000, memberSince: '2023-05-01T08:00:00Z', phone: '081234567893' },
     { id: 'driver-3', email: 'agus.s@email.com', role: Role.Driver, profile: { name: 'Agus Setiawan' }, partnerType: PartnerType.BikeDriver, status: 'pending', rating: 0, totalEarnings: 0, memberSince: '2024-07-28T10:00:00Z', phone: '081234567894' },
     { id: 'driver-4', email: 'joko.w@indostreet.com', role: Role.Driver, profile: { name: 'Joko Widodo', profilePicture: 'https://picsum.photos/seed/driver4/200', vehicle: { type: 'Lorry', brand: 'Mitsubishi', model: 'Fuso', year: 2020, licensePlate: 'L 9876 KLM' } }, partnerType: PartnerType.LorryDriver, status: 'active', rating: 4.6, totalEarnings: 4500000, memberSince: '2023-08-20T11:00:00Z', phone: '081234567895', activationExpiry: '2025-08-20T11:00:00Z' },
@@ -57,12 +57,14 @@ let MOCK_TRANSACTIONS: Transaction[] = [
     { id: 'txn3', partnerId: 'vendor-1', date: '2024-07-28T12:30:00Z', type: 'Order', amount: 52000, status: 'completed', details: 'Nasi Goreng x2, Es Teh x1' },
     { id: 'txn4', partnerId: 'driver-2', date: '2024-07-28T13:00:00Z', type: 'Ride', amount: 75000, status: 'completed', details: 'Airport Transfer' },
     { id: 'txn5', partnerId: 'rental-1', date: '2024-07-27T10:00:00Z', type: 'Rental', amount: 350000, status: 'completed', details: 'Toyota Avanza - 1 day' },
-    { id: 'txn6', partnerId: 'vendor-1', date: '2024-07-28T13:15:00Z', type: 'Order', amount: 22000, status: 'in_progress', details: 'Mie Goreng x1' },
+    { id: 'txn6', partnerId: 'vendor-1', date: '2024-07-28T13:15:00Z', type: 'Order', amount: 22000, status: 'completed', details: 'Mie Goreng x1' },
     { id: 'txn7', partnerId: 'driver-1', date: '2024-07-28T14:00:00Z', type: 'Ride', amount: 18000, status: 'cancelled', details: 'Blok M to Senayan' },
     { id: 'txn8', partnerId: 'driver-2', date: '2024-07-27T18:00:00Z', type: 'Ride', amount: 55000, status: 'completed', details: 'City Tour' },
     { id: 'txn9', partnerId: 'driver-1', date: '2024-07-26T08:00:00Z', type: 'Ride', amount: 12000, status: 'completed', details: 'Kuningan to Tebet' },
     { id: 'txn10', partnerId: 'driver-4', date: '2024-07-28T09:00:00Z', type: 'Delivery', amount: 250000, status: 'completed', details: 'Furniture transport' },
     { id: 'txn11', partnerId: 'driver-4', date: '2024-07-27T14:30:00Z', type: 'Delivery', amount: 180000, status: 'in_progress', details: 'Moving boxes' },
+    { id: 'txn12', partnerId: 'vendor-1', date: new Date(Date.now() - 60000).toISOString(), type: 'Order', amount: 72000, status: 'in_progress', details: 'Nasi Goreng Spesial x2, Kwetiau Siram x1' },
+    { id: 'txn13', partnerId: 'vendor-1', date: new Date(Date.now() - 120000).toISOString(), type: 'Order', amount: 27000, status: 'in_progress', details: 'Mie Goreng Ayam x1, Es Teh Manis x1' },
 ];
 
 const MOCK_RIDE_REQUESTS: RideRequest[] = [
@@ -235,6 +237,14 @@ const mockSupabaseClient = {
                     } else {
                         resolve({ data: null, error: new Error('Message not found') });
                     }
+                } else if (tableName === 'transactions' && column === 'id') {
+                    const txIndex = MOCK_TRANSACTIONS.findIndex(tx => tx.id === value);
+                    if (txIndex !== -1) {
+                        MOCK_TRANSACTIONS[txIndex] = { ...MOCK_TRANSACTIONS[txIndex], ...updates };
+                        resolve({ data: [MOCK_TRANSACTIONS[txIndex]], error: null });
+                    } else {
+                        resolve({ data: null, error: new Error('Transaction not found') });
+                    }
                 }
                 else {
                   resolve({ data: null, error: new Error('Update failed') });
@@ -244,24 +254,54 @@ const mockSupabaseClient = {
           }
         };
       },
-      insert: (newData: any) => {
+      insert: (newData: any | any[]) => {
         return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
            setTimeout(() => {
                if (tableName === 'admin_messages') {
-                   const message = {
-                       ...newData,
+                   const dataArray = Array.isArray(newData) ? newData : [newData];
+                   const inserted = dataArray.map(d => ({
+                       ...d,
                        id: `msg-${Date.now()}`,
                        sentAt: new Date().toISOString(),
                        readBy: [],
                        senderId: 'admin-1',
-                   };
-                   MOCK_MESSAGES.push(message);
-                   resolve({ data: [message], error: null });
+                   }));
+                   MOCK_MESSAGES.push(...inserted);
+                   resolve({ data: inserted, error: null });
+               } else if (tableName === 'vendor_items') {
+                   const dataArray = Array.isArray(newData) ? newData : [newData];
+                   const inserted = dataArray.map(d => ({
+                       ...d,
+                       id: `item-${Date.now()}-${Math.random()}`,
+                   }));
+                   MOCK_ITEMS.push(...inserted);
+                   resolve({ data: inserted, error: null });
                } else {
                    resolve({ data: null, error: new Error('Insert failed') });
                }
            }, 300);
         });
+      },
+      delete: () => {
+        return {
+          eq: (column: string, value: any) => {
+            return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
+              setTimeout(() => {
+                if (tableName === 'vendor_items' && column === 'id') {
+                  const initialLength = MOCK_ITEMS.length;
+                  MOCK_ITEMS = MOCK_ITEMS.filter(item => item.id !== value);
+                  if (MOCK_ITEMS.length < initialLength) {
+                    resolve({ data: [{ id: value }], error: null }); // Mimic Supabase returning the deleted row
+                  } else {
+                    resolve({ data: null, error: new Error('Item not found for deletion') });
+                  }
+                } else {
+                  resolve({ data: null, error: new Error(`Delete failed for table ${tableName}`) });
+                }
+              }, 300);
+            });
+          }
+        }
       },
     };
   }

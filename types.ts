@@ -51,6 +51,11 @@ export interface Partner extends User {
   hourlyHireRate?: number;
   dailyHireRate?: number;
   tourRates?: { [destinationId: string]: number };
+  bankDetails?: {
+    bankName: string;
+    accountHolderName: string;
+    accountNumber: string;
+  };
 }
 
 export interface PartnerApplication {

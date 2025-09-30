@@ -8,6 +8,7 @@ import PolicySection from './PolicySection';
 import RateAdjuster from './RateAdjuster';
 import EarningsAndHistory from './EarningsAndHistory';
 import TourPricing from './TourPricing';
+import ProfileManagement from '../shared/ProfileManagement';
 
 interface DriverDashboardProps {
   user: User;
@@ -108,16 +109,8 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Profile & Availability */}
         <div className="lg:col-span-1 space-y-8">
-          {/* Profile Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <img 
-              src={user.profile.profilePicture} 
-              alt={user.profile.name} 
-              className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-200"
-            />
-            <h3 className="text-2xl font-bold text-gray-800">{user.profile.name}</h3>
-            <p className="text-gray-500">{user.email}</p>
-          </div>
+          
+          <ProfileManagement partner={partner} onUpdate={handleUpdatePartner} />
 
           {/* Availability Card */}
           <div className="bg-white p-6 rounded-lg shadow-md">
