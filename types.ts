@@ -36,6 +36,12 @@ export interface User {
   partnerType?: PartnerType;
 }
 
+export interface RentalDetails {
+  isAvailableForRental: boolean;
+  dailyRate?: number;
+  weeklyRate?: number;
+}
+
 export interface Partner extends User {
   partnerType: PartnerType;
   status: 'active' | 'pending' | 'suspended';
@@ -56,6 +62,7 @@ export interface Partner extends User {
     accountHolderName: string;
     accountNumber: string;
   };
+  rentalDetails?: RentalDetails;
 }
 
 export interface PartnerApplication {

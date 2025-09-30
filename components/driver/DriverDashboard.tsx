@@ -9,6 +9,7 @@ import RateAdjuster from './RateAdjuster';
 import EarningsAndHistory from './EarningsAndHistory';
 import TourPricing from './TourPricing';
 import ProfileManagement from '../shared/ProfileManagement';
+import VehicleRentalManagement from './VehicleRentalManagement';
 
 interface DriverDashboardProps {
   user: User;
@@ -130,6 +131,9 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
           
            {/* Rate Adjuster */}
           {(driverType === 'car' || driverType === 'bike') && <RateAdjuster partner={partner} onUpdate={handleUpdatePartner} />}
+
+          {/* Vehicle Rental Management */}
+          {(driverType === 'car' || driverType === 'bike') && <VehicleRentalManagement partner={partner} onUpdate={handleUpdatePartner} />}
 
           {/* Tour Pricing */}
           {(driverType === 'car' || driverType === 'bike') && <TourPricing partner={partner} onUpdate={handleUpdatePartner} />}
