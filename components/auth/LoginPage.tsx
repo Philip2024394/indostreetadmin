@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '../../services/supabase';
 import { User } from '../../types';
@@ -83,7 +82,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         </form>
          <div className="text-xs text-gray-500 text-center space-y-1">
           <p>Admin: admin@indostreet.com</p>
-          <p>Driver: driver@indostreet.com</p>
+          <p>Driver (Bike): driver@indostreet.com</p>
+          <p>Driver (Car): cardriver@indostreet.com</p>
+          <p>Driver (Lorry): lorrydriver@indostreet.com</p>
           <p>Vendor: vendor@indostreet.com</p>
           <p>Password: password</p>
         </div>

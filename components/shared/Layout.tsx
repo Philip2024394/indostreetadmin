@@ -1,7 +1,8 @@
-
-import React, { useState } from 'react';
-import { User, Role } from '../../types';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon } from './Icons';
+import React, { useState, useEffect } from 'react';
+import { User, Role, AdminMessage } from '../../types';
+import { supabase } from '../../services/supabase';
+import MessagesModal from './MessagesModal';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon } from './Icons';
 
 type AdminView = 'applications' | 'partners' | 'financials' | 'analytics';
 
@@ -17,13 +18,43 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwitchRole, adminView, onAdminViewChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState<AdminMessage[]>([]);
+  const [isMessagesModalOpen, setIsMessagesModalOpen] = useState(false);
   
   const navLinkClasses = "flex items-center px-4 py-2 text-gray-300 rounded-md transition-colors duration-200 hover:bg-gray-700 w-full text-left";
   const activeNavLinkClasses = "bg-gray-700 text-white font-semibold";
 
-  const devLinkClasses = "w-full flex items-center px-4 py-2 text-sm rounded-md transition-colors text-gray-300 hover:bg-gray-600 hover:text-white";
-  const activeDevLinkClasses = "bg-gray-600 text-white";
+  useEffect(() => {
+    if (user.role === Role.Admin) return; // No notifications for admin
+
+    const fetchMessages = async () => {
+        const { data } = await supabase.from('admin_messages').select();
+        if (data) {
+            const myMessages = data.filter(m => m.recipientId === user.id || m.recipientId === 'all');
+            const myUnread = myMessages.filter(m => !m.readBy.includes(user.id));
+            setUnreadMessages(myUnread);
+        }
+    };
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, [user.id, user.role]);
+
+  const handleOpenMessages = () => {
+      setIsMessagesModalOpen(true);
+  };
   
+  const handleCloseMessages = () => {
+    // Mark messages as read by updating the backend
+    unreadMessages.forEach(msg => {
+        const newReadBy = [...msg.readBy, user.id];
+        supabase.from('admin_messages').update({ readBy: newReadBy }).eq('id', msg.id);
+    });
+    setUnreadMessages([]); // Optimistically clear
+    setIsMessagesModalOpen(false);
+  };
+
   const AdminNav = () => (
     <>
         <button onClick={() => onAdminViewChange?.('applications')} className={`${navLinkClasses} ${adminView === 'applications' ? activeNavLinkClasses : ''}`}>
@@ -46,9 +77,9 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
   );
 
   const DefaultNav = () => (
-     <a href="#" className={`${navLinkClasses} ${activeNavLinkClasses}`}>
+     <button type="button" className={`${navLinkClasses} ${activeNavLinkClasses}`}>
         Dashboard
-      </a>
+      </button>
   );
 
   return (
@@ -60,36 +91,8 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           {user.role === Role.Admin ? <AdminNav /> : <DefaultNav />}
-
-           {/* DEV QUICK SWITCH */}
-          <div className="pt-6 mt-6 border-t border-gray-700">
-            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Dev Quick Switch</p>
-            <div className="mt-2 space-y-1">
-                <button
-                    onClick={() => onSwitchRole(Role.Admin)}
-                    className={`${devLinkClasses} ${user.role === Role.Admin ? activeDevLinkClasses : ''}`}
-                >
-                    <ShieldCheckIcon className="w-5 h-5 mr-3" />
-                    Admin View
-                </button>
-                <button
-                    onClick={() => onSwitchRole(Role.Driver)}
-                    className={`${devLinkClasses} ${user.role === Role.Driver ? activeDevLinkClasses : ''}`}
-                >
-                    <CarIcon className="w-5 h-5 mr-3" />
-                    Driver View
-                </button>
-                <button
-                    onClick={() => onSwitchRole(Role.Vendor)}
-                    className={`${devLinkClasses} ${user.role === Role.Vendor ? activeDevLinkClasses : ''}`}
-                >
-                    <StoreIcon className="w-5 h-5 mr-3" />
-                    Vendor View
-                </button>
-            </div>
-          </div>
         </nav>
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 mt-auto">
           <p className="text-sm text-gray-400">Signed in as</p>
           <p className="font-semibold">{user.profile.name || user.email}</p>
         </div>
@@ -105,6 +108,17 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
             </svg>
           </button>
           <div className="flex items-center space-x-4">
+            {user.role !== Role.Admin && (
+                <button onClick={handleOpenMessages} className="relative text-gray-500 hover:text-gray-700">
+                    <BellIcon className="w-6 h-6" />
+                    {unreadMessages.length > 0 && (
+                        <span className="absolute top-0 right-0 flex h-5 w-5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-xs items-center justify-center">{unreadMessages.length}</span>
+                        </span>
+                    )}
+                </button>
+            )}
             <span className="text-gray-700 hidden sm:block">{user.profile.name || user.email}</span>
             <button onClick={onLogout} className="flex items-center text-sm text-gray-600 hover:text-red-500 transition-colors duration-200">
               <LogoutIcon className="w-5 h-5 mr-1" />
@@ -121,6 +135,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
           </div>
         </main>
       </div>
+      {isMessagesModalOpen && <MessagesModal user={user} onClose={handleCloseMessages} />}
     </div>
   );
 };

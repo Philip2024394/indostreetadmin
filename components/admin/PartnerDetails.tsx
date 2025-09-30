@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { Partner, Transaction } from '../../types';
+import { Partner, Transaction, AdminMessage } from '../../types';
 import { supabase } from '../../services/supabase';
-import { ChevronLeftIcon, UserCircleIcon, StarIcon, BriefcaseIcon } from '../shared/Icons';
+import { ChevronLeftIcon, UserCircleIcon, StarIcon, BriefcaseIcon, CheckIcon, PaperAirplaneIcon } from '../shared/Icons';
+import ToggleSwitch from '../shared/ToggleSwitch';
 
 interface PartnerDetailsProps {
     partner: Partner;
@@ -19,10 +19,125 @@ const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }
     </div>
 );
 
+const AccountManagement: React.FC<{ partner: Partner; onUpdate: (data: Partial<Partner>) => void }> = ({ partner, onUpdate }) => {
+    
+    const handleStatusToggle = (enabled: boolean) => {
+        onUpdate({ status: enabled ? 'active' : 'suspended' });
+    };
+
+    const handleSetExpiry = (months: number) => {
+        const newExpiryDate = new Date();
+        newExpiryDate.setMonth(newExpiryDate.getMonth() + months);
+        onUpdate({ activationExpiry: newExpiryDate.toISOString() });
+    };
+    
+    const expiryDate = partner.activationExpiry ? new Date(partner.activationExpiry) : null;
+    const isExpired = expiryDate && expiryDate < new Date();
+
+    return (
+        <div className="bg-white p-6 rounded-lg shadow-md h-full">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Account Management</h3>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-700">Account Status</span>
+                    <ToggleSwitch enabled={partner.status === 'active'} onChange={handleStatusToggle} enabledText="Active" disabledText="Suspended" />
+                </div>
+                <div className="text-sm">
+                    <span className="font-medium text-gray-700">Activation Expires:</span>
+                    {expiryDate ? (
+                        <span className={`ml-2 font-semibold ${isExpired ? 'text-red-500' : 'text-gray-600'}`}>
+                            {expiryDate.toLocaleDateString()}
+                            {isExpired && " (Expired)"}
+                        </span>
+                    ) : (
+                        <span className="ml-2 text-gray-500">Not set</span>
+                    )}
+                </div>
+                <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Set Activation Period:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                        <button onClick={() => handleSetExpiry(3)} className="px-2 py-2 text-xs text-white bg-blue-500 rounded hover:bg-blue-600">3 Months</button>
+                        <button onClick={() => handleSetExpiry(6)} className="px-2 py-2 text-xs text-white bg-blue-500 rounded hover:bg-blue-600">6 Months</button>
+                        <button onClick={() => handleSetExpiry(12)} className="px-2 py-2 text-xs text-white bg-blue-500 rounded hover:bg-blue-600">12 Months</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const PartnerChat: React.FC<{ partner: Partner }> = ({ partner }) => {
+    const [messages, setMessages] = useState<AdminMessage[]>([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    const fetchMessages = useCallback(async () => {
+        setLoading(true);
+        const { data } = await supabase.from('admin_messages').select('*');
+        if (data) {
+            const partnerMessages = data
+                .filter(m => m.recipientId === partner.id || m.recipientId === 'all')
+                .sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+            setMessages(partnerMessages);
+        }
+        setLoading(false);
+    }, [partner.id]);
+
+    useEffect(() => {
+        fetchMessages();
+    }, [fetchMessages]);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newMessage.trim() === '') return;
+        
+        await supabase.from('admin_messages').insert({
+            recipientId: partner.id,
+            content: newMessage,
+        });
+
+        setNewMessage('');
+        fetchMessages(); // Refresh messages
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow-md flex flex-col h-full">
+            <h3 className="text-lg font-semibold text-gray-800 p-6 border-b">Chat with Partner</h3>
+            <div className="flex-1 p-6 space-y-4 overflow-y-auto h-64 bg-gray-50">
+                {loading ? <p>Loading messages...</p> : messages.map(msg => (
+                    <div key={msg.id} className="flex flex-col items-end">
+                        <div className="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+                            <p className="text-sm">{msg.content}</p>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 flex items-center">
+                            <span>{new Date(msg.sentAt).toLocaleTimeString()}</span>
+                            {msg.readBy.includes(partner.id) && <CheckIcon className="w-4 h-4 ml-1 text-green-500" title="Read by partner" />}
+                        </div>
+                    </div>
+                ))}
+                {messages.length === 0 && !loading && <p className="text-center text-gray-500">No messages yet.</p>}
+            </div>
+            <form onSubmit={handleSendMessage} className="p-4 border-t bg-white flex items-center">
+                <input
+                    type="text"
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-grow border rounded-l-md p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                />
+                <button type="submit" className="bg-blue-600 text-white p-2 rounded-r-md hover:bg-blue-700">
+                    <PaperAirplaneIcon className="w-5 h-5" />
+                </button>
+            </form>
+        </div>
+    );
+};
+
 
 const PartnerDetails: React.FC<PartnerDetailsProps> = ({ partner, onBack }) => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
+    const [currentPartner, setCurrentPartner] = useState(partner);
 
     const fetchTransactions = useCallback(async () => {
         setLoading(true);
@@ -36,6 +151,13 @@ const PartnerDetails: React.FC<PartnerDetailsProps> = ({ partner, onBack }) => {
     useEffect(() => {
         fetchTransactions();
     }, [fetchTransactions]);
+
+    const handlePartnerUpdate = async (updatedData: Partial<Partner>) => {
+        const { data } = await supabase.from('partners').update(updatedData).eq('id', partner.id);
+        if (data) {
+            setCurrentPartner(data[0]);
+        }
+    };
     
      const statusBadge = (status: 'completed' | 'cancelled' | 'in_progress') => {
         const classes = {
@@ -56,25 +178,31 @@ const PartnerDetails: React.FC<PartnerDetailsProps> = ({ partner, onBack }) => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
                 <div className="p-6 md:flex md:items-center md:justify-between">
                     <div className="flex items-center">
-                         <img className="h-20 w-20 rounded-full" src={partner.profile.profilePicture || `https://ui-avatars.com/api/?name=${partner.profile.name}&background=random`} alt="" />
+                         <img className="h-20 w-20 rounded-full" src={currentPartner.profile.profilePicture || `https://ui-avatars.com/api/?name=${currentPartner.profile.name}&background=random`} alt="" />
                         <div className="ml-4">
-                            <h2 className="text-2xl font-bold text-gray-800">{partner.profile.name || partner.profile.shopName}</h2>
-                            <p className="text-sm text-gray-500">{partner.partnerType}</p>
-                            <p className="text-sm text-gray-500">{partner.email} | {partner.phone}</p>
+                            <h2 className="text-2xl font-bold text-gray-800">{currentPartner.profile.name || currentPartner.profile.shopName}</h2>
+                            <p className="text-sm text-gray-500">{currentPartner.partnerType}</p>
+                            <p className="text-sm text-gray-500">{currentPartner.email} | {currentPartner.phone}</p>
                         </div>
-                    </div>
-                    <div className="mt-4 md:mt-0 flex space-x-2">
-                        <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Suspend Partner</button>
-                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Send Message</button>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <StatCard title="Overall Rating" value={`${partner.rating.toFixed(1)} ★`} icon={<StarIcon className="w-6 h-6" />} />
-                <StatCard title="Total Earnings" value={`Rp ${partner.totalEarnings.toLocaleString('id-ID')}`} icon={<BriefcaseIcon className="w-6 h-6" />} />
-                <StatCard title="Member Since" value={new Date(partner.memberSince).toLocaleDateString()} icon={<UserCircleIcon className="w-6 h-6" />} />
+                <StatCard title="Overall Rating" value={`${currentPartner.rating.toFixed(1)} ★`} icon={<StarIcon className="w-6 h-6" />} />
+                <StatCard title="Total Earnings" value={`Rp ${currentPartner.totalEarnings.toLocaleString('id-ID')}`} icon={<BriefcaseIcon className="w-6 h-6" />} />
+                <StatCard title="Member Since" value={new Date(currentPartner.memberSince).toLocaleDateString()} icon={<UserCircleIcon className="w-6 h-6" />} />
             </div>
+
+             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                <div className="xl:col-span-1">
+                    <AccountManagement partner={currentPartner} onUpdate={handlePartnerUpdate} />
+                </div>
+                <div className="xl:col-span-2">
+                     <PartnerChat partner={currentPartner} />
+                </div>
+            </div>
+
 
             <div className="bg-white rounded-lg shadow-md">
                 <div className="p-6 border-b">

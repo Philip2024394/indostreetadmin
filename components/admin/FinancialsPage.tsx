@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, MOCK_PARTNERS } from '../../services/supabase';
 import { Transaction, Partner, PartnerType } from '../../types';
 import StatCard from './StatCard';
+import MonthlyReport from './MonthlyReport';
 import { DollarSignIcon, TrendingUpIcon, TrendingDownIcon, SearchIcon } from '../shared/Icons';
 
 const INDOSTREET_CUT_PERCENTAGE = 0.20; // 20%
@@ -12,6 +12,7 @@ const FinancialsPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [showReport, setShowReport] = useState(false);
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -66,6 +67,10 @@ const FinancialsPage: React.FC = () => {
     if (loading) {
         return <div className="text-center p-10">Loading financial data...</div>;
     }
+    
+    if (showReport) {
+        return <MonthlyReport transactions={transactions} partnersMap={partnersMap} onClose={() => setShowReport(false)} />;
+    }
 
     return (
         <div className="space-y-8">
@@ -82,30 +87,38 @@ const FinancialsPage: React.FC = () => {
                         <p className="text-sm text-gray-500">View all transactions across the platform.</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <SearchIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md sm:text-sm"
-                            />
-                        </div>
-                        <select
-                            value={statusFilter}
-                            onChange={e => setStatusFilter(e.target.value)}
-                            className="border border-gray-300 rounded-md sm:text-sm py-2"
+                         <button 
+                            onClick={() => setShowReport(true)}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                         >
-                            <option value="all">All Statuses</option>
-                            <option value="completed">Completed</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                            Generate Comprehensive Report
+                        </button>
                     </div>
                  </div>
+                 <div className="p-4 border-b flex items-center space-x-2">
+                    <div className="relative flex-grow">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <SearchIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search by partner or details..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md sm:text-sm"
+                        />
+                    </div>
+                    <select
+                        value={statusFilter}
+                        onChange={e => setStatusFilter(e.target.value)}
+                        className="border border-gray-300 rounded-md sm:text-sm py-2"
+                    >
+                        <option value="all">All Statuses</option>
+                        <option value="completed">Completed</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
                  <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                          <thead className="bg-gray-50">

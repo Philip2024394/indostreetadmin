@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../services/supabase';
 import { User, PartnerApplication, AdminStats, Role, PartnerType, Partner } from '../../types';
@@ -8,6 +7,7 @@ import ApplicationDetailsModal from './ApplicationDetailsModal';
 import PartnerDetails from './PartnerDetails';
 import FinancialsPage from './FinancialsPage';
 import AnalyticsPage from './AnalyticsPage';
+import BroadcastMessageModal from './BroadcastMessageModal';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon
@@ -24,6 +24,7 @@ type AdminView = 'applications' | 'partners' | 'financials' | 'analytics';
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.CarDriver]: { icon: <CarIcon className="w-5 h-5 mr-2" /> },
+  [PartnerType.LorryDriver]: { icon: <CarIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.FoodVendor]: { icon: <FoodIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.StreetShop]: { icon: <ShoppingBagIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.CarRental]: { icon: <KeyIcon className="w-5 h-5 mr-2" /> },
@@ -43,6 +44,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
   const [activeAppTab, setActiveAppTab] = useState<PartnerType>(PartnerType.BikeDriver);
   const [view, setView] = useState<AdminView>('applications');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -205,8 +207,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
 
             {view === 'partners' && (
               <div>
-                <div className="p-4 border-b">
-                  <div className="relative">
+                <div className="p-4 border-b flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="relative w-full sm:w-auto flex-grow">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <SearchIcon className="h-5 w-5 text-gray-400" />
                     </div>
@@ -218,6 +220,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
+                  <button 
+                    onClick={() => setIsBroadcastModalOpen(true)}
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    Broadcast Message
+                  </button>
                 </div>
                  <div className="overflow-x-auto">
                   {loading ? <p className="p-6 text-center text-gray-500">Loading partners...</p> : (
@@ -267,6 +275,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
         onReject={(id) => handleUpdateStatus(id, 'rejected')}
         loading={actionLoading}
       />
+      {isBroadcastModalOpen && <BroadcastMessageModal onClose={() => setIsBroadcastModalOpen(false)} />}
     </Layout>
   );
 };

@@ -1,4 +1,3 @@
-
 export enum Role {
   Admin = 'admin',
   Driver = 'driver',
@@ -8,6 +7,7 @@ export enum Role {
 export enum PartnerType {
   BikeDriver = 'Bike Driver',
   CarDriver = 'Car Driver',
+  LorryDriver = 'Lorry Driver',
   FoodVendor = 'Food Vendor',
   StreetShop = 'Street Shop',
   CarRental = 'Car Rental',
@@ -33,6 +33,7 @@ export interface User {
   email: string;
   role: Role;
   profile: UserProfile;
+  partnerType?: PartnerType;
 }
 
 export interface Partner extends User {
@@ -42,6 +43,14 @@ export interface Partner extends User {
   totalEarnings: number;
   memberSince: string;
   phone: string;
+  activationExpiry?: string; // ISO Date string
+  // Rate settings
+  rideRatePerKm?: number;
+  minFare?: number;
+  parcelRatePerKm?: number;
+  hourlyHireRate?: number;
+  dailyHireRate?: number;
+  tourRates?: { [destinationId: string]: number };
 }
 
 export interface PartnerApplication {
@@ -81,7 +90,7 @@ export interface Transaction {
   id: string;
   partnerId: string;
   date: string;
-  type: 'Ride' | 'Delivery' | 'Order' | 'Rental';
+  type: 'Ride' | 'Delivery' | 'Order' | 'Rental' | 'Hire';
   amount: number;
   status: 'completed' | 'cancelled' | 'in_progress';
   details: string; // e.g., "Trip from A to B" or "Nasi Goreng x2"
@@ -105,4 +114,29 @@ export interface AnalyticsSummary {
   };
   popularServices: { name: PartnerType; count: number }[];
   peakHours: { hour: string; count: number }[];
+}
+
+export interface RideRequest {
+  id: string;
+  pickupLocation: string;
+  destination: string;
+  fare: number;
+  customerName: string;
+  customerRating: number;
+}
+
+export interface AdminMessage {
+  id: string;
+  senderId: string; // e.g. 'admin-1'
+  recipientId: string | 'all'; // partner id or 'all' for broadcast
+  content: string;
+  sentAt: string; // ISO Date string
+  readBy: string[]; // Array of partner IDs who have read it
+}
+
+export interface TourDestination {
+  id: string;
+  name: string;
+  category: 'Temples & Historical Sites' | 'Nature & Outdoors' | 'Culture & Art';
+  description: string;
 }

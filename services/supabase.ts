@@ -1,21 +1,28 @@
-
-import { Role, User, PartnerApplication, VendorItem, AdminStats, PartnerType, Partner, Transaction, AnalyticsSummary } from '../types';
+import { Role, User, PartnerApplication, VendorItem, AdminStats, PartnerType, Partner, Transaction, AnalyticsSummary, RideRequest, AdminMessage, TourDestination } from '../types';
 
 // MOCK DATA
 const MOCK_USERS: User[] = [
   { id: 'admin-1', email: 'admin@indostreet.com', role: Role.Admin, profile: { name: 'Admin IndoStreet' } },
   { id: 'driver-1', email: 'driver@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } } },
+  { id: 'driver-2', email: 'cardriver@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } } },
   { id: 'vendor-1', email: 'vendor@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti' } },
+  { id: 'driver-4', email: 'lorrydriver@indostreet.com', role: Role.Driver, profile: { name: 'Joko Widodo', profilePicture: 'https://picsum.photos/seed/driver4/200', vehicle: { type: 'Lorry', brand: 'Mitsubishi', model: 'Fuso', year: 2020, licensePlate: 'L 9876 KLM' } } },
 ];
 
 let MOCK_PARTNERS: Partner[] = [
-    { id: 'driver-1', email: 'budi.s@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } }, partnerType: PartnerType.BikeDriver, status: 'active', rating: 4.8, totalEarnings: 1250000, memberSince: '2023-01-15T09:00:00Z', phone: '081234567890' },
-    { id: 'vendor-1', email: 'siti.a@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti', profilePicture: 'https://picsum.photos/seed/vendor1/200' }, partnerType: PartnerType.FoodVendor, status: 'active', rating: 4.9, totalEarnings: 3500000, memberSince: '2022-11-20T14:00:00Z', phone: '081234567891' },
-    { id: 'driver-2', email: 'eko.p@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } }, partnerType: PartnerType.CarDriver, status: 'active', rating: 4.7, totalEarnings: 2100000, memberSince: '2023-03-10T11:00:00Z', phone: '081234567892' },
+    { id: 'driver-1', email: 'budi.s@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } }, partnerType: PartnerType.BikeDriver, status: 'active', rating: 4.8, totalEarnings: 1250000, memberSince: '2023-01-15T09:00:00Z', phone: '081234567890', activationExpiry: '2025-01-15T09:00:00Z', rideRatePerKm: 2600, minFare: 8000, parcelRatePerKm: 2000, hourlyHireRate: 25000, dailyHireRate: 200000, tourRates: { 'borobudur': 150000, 'prambanan': 100000, 'merapi': 120000 } },
+    { id: 'vendor-1', email: 'siti.a@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti', profilePicture: 'https://picsum.photos/seed/vendor1/200' }, partnerType: PartnerType.FoodVendor, status: 'active', rating: 4.9, totalEarnings: 3500000, memberSince: '2022-11-20T14:00:00Z', phone: '081234567891', activationExpiry: '2024-12-20T14:00:00Z' },
+    { id: 'driver-2', email: 'eko.p@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } }, partnerType: PartnerType.CarDriver, status: 'suspended', rating: 4.7, totalEarnings: 2100000, memberSince: '2023-03-10T11:00:00Z', phone: '081234567892', activationExpiry: '2024-09-10T11:00:00Z', rideRatePerKm: 3500, minFare: 15200, parcelRatePerKm: 3000, hourlyHireRate: 75000, dailyHireRate: 600000, tourRates: { 'borobudur': 300000, 'prambanan': 250000, 'merapi': 280000, 'malioboro': 150000 } },
     { id: 'rental-1', email: 'sewa@cepat.com', role: Role.Vendor, profile: { name: 'Rental Cepat', shopName: 'Sewa Mobil Cepat', profilePicture: 'https://picsum.photos/seed/rental1/200' }, partnerType: PartnerType.CarRental, status: 'active', rating: 4.6, totalEarnings: 5200000, memberSince: '2023-05-01T08:00:00Z', phone: '081234567893' },
     { id: 'driver-3', email: 'agus.s@email.com', role: Role.Driver, profile: { name: 'Agus Setiawan' }, partnerType: PartnerType.BikeDriver, status: 'pending', rating: 0, totalEarnings: 0, memberSince: '2024-07-28T10:00:00Z', phone: '081234567894' },
+    { id: 'driver-4', email: 'joko.w@indostreet.com', role: Role.Driver, profile: { name: 'Joko Widodo', profilePicture: 'https://picsum.photos/seed/driver4/200', vehicle: { type: 'Lorry', brand: 'Mitsubishi', model: 'Fuso', year: 2020, licensePlate: 'L 9876 KLM' } }, partnerType: PartnerType.LorryDriver, status: 'active', rating: 4.6, totalEarnings: 4500000, memberSince: '2023-08-20T11:00:00Z', phone: '081234567895', activationExpiry: '2025-08-20T11:00:00Z' },
 ]
 
+let MOCK_MESSAGES: AdminMessage[] = [
+    { id: 'msg-1', senderId: 'admin-1', recipientId: 'driver-1', content: 'Please update your vehicle registration photo. The current one is blurry.', sentAt: '2024-07-28T10:00:00Z', readBy: [] },
+    { id: 'msg-2', senderId: 'admin-1', recipientId: 'all', content: 'Happy holidays to all our partners! Drive safe and thank you for your hard work.', sentAt: '2024-07-27T15:00:00Z', readBy: ['driver-2'] },
+    { id: 'msg-3', senderId: 'admin-1', recipientId: 'vendor-1', content: 'There is a system-wide promotion for Nasi Goreng next week. Please ensure you have enough stock.', sentAt: '2024-07-29T11:00:00Z', readBy: ['vendor-1'] },
+];
 
 let MOCK_PARTNER_APPLICATIONS: PartnerApplication[] = [
   // Bike Drivers
@@ -52,7 +59,42 @@ let MOCK_TRANSACTIONS: Transaction[] = [
     { id: 'txn5', partnerId: 'rental-1', date: '2024-07-27T10:00:00Z', type: 'Rental', amount: 350000, status: 'completed', details: 'Toyota Avanza - 1 day' },
     { id: 'txn6', partnerId: 'vendor-1', date: '2024-07-28T13:15:00Z', type: 'Order', amount: 22000, status: 'in_progress', details: 'Mie Goreng x1' },
     { id: 'txn7', partnerId: 'driver-1', date: '2024-07-28T14:00:00Z', type: 'Ride', amount: 18000, status: 'cancelled', details: 'Blok M to Senayan' },
+    { id: 'txn8', partnerId: 'driver-2', date: '2024-07-27T18:00:00Z', type: 'Ride', amount: 55000, status: 'completed', details: 'City Tour' },
+    { id: 'txn9', partnerId: 'driver-1', date: '2024-07-26T08:00:00Z', type: 'Ride', amount: 12000, status: 'completed', details: 'Kuningan to Tebet' },
+    { id: 'txn10', partnerId: 'driver-4', date: '2024-07-28T09:00:00Z', type: 'Delivery', amount: 250000, status: 'completed', details: 'Furniture transport' },
+    { id: 'txn11', partnerId: 'driver-4', date: '2024-07-27T14:30:00Z', type: 'Delivery', amount: 180000, status: 'in_progress', details: 'Moving boxes' },
 ];
+
+const MOCK_RIDE_REQUESTS: RideRequest[] = [
+    { id: 'ride1', pickupLocation: 'Grand Indonesia', destination: 'Stasiun Sudirman', fare: 12000, customerName: 'Rina', customerRating: 4.8 },
+    { id: 'ride2', pickupLocation: 'Blok M Plaza', destination: 'Senayan City', fare: 15000, customerName: 'Joko', customerRating: 4.9 },
+    { id: 'ride3', pickupLocation: 'Kota Kasablanka', destination: 'Kuningan City', fare: 10000, customerName: 'Sari', customerRating: 4.7 },
+    { id: 'ride4', pickupLocation: 'Pacific Place', destination: 'Gelora Bung Karno', fare: 18000, customerName: 'Putra', customerRating: 5.0 },
+    { id: 'ride5', pickupLocation: 'Bandara Soekarno-Hatta', destination: 'Menteng', fare: 85000, customerName: 'David', customerRating: 4.8 },
+];
+
+const MOCK_TOUR_DESTINATIONS: TourDestination[] = [
+    // Temples & Historical Sites
+    { id: 'borobudur', name: 'Borobudur Temple', category: 'Temples & Historical Sites', description: "World's largest Buddhist temple." },
+    { id: 'prambanan', name: 'Prambanan Temple', category: 'Temples & Historical Sites', description: "Magnificent 9th-century Hindu temple." },
+    { id: 'ratu_boko', name: 'Ratu Boko Palace', category: 'Temples & Historical Sites', description: "Archaeological site with stunning sunset views." },
+    { id: 'sewu', name: 'Sewu Temple', category: 'Temples & Historical Sites', description: "Significant Buddhist temple near Prambanan." },
+    { id: 'plaosan', name: 'Plaosan Temple', category: 'Temples & Historical Sites', description: "Unique blend of Hindu and Buddhist architecture." },
+    { id: 'taman_sari', name: 'Taman Sari (Water Castle)', category: 'Temples & Historical Sites', description: "Former royal garden and bathing complex." },
+    { id: 'keraton', name: 'Keraton Yogyakarta', category: 'Temples & Historical Sites', description: "Official residence of the Sultan." },
+    // Nature & Outdoors
+    { id: 'merapi', name: 'Mount Merapi', category: 'Nature & Outdoors', description: "Legendary active volcano for jeep tours." },
+    { id: 'jomblang', name: 'Jomblang Cave', category: 'Nature & Outdoors', description: 'Famous for its "heavenly light" view.' },
+    { id: 'gunung_kidul', name: 'Gunung Kidul Beaches', category: 'Nature & Outdoors', description: "Region known for beautiful beaches." },
+    { id: 'timang', name: 'Timang Beach', category: 'Nature & Outdoors', description: "Famous for its adventurous cliff swing." },
+    { id: 'tebing_breksi', name: 'Tebing Breksi', category: 'Nature & Outdoors', description: "Unique cliff formation with stunning views." },
+    { id: 'mangunan', name: 'Mangunan Pines Forest', category: 'Nature & Outdoors', description: "Popular spot for nature and scenic views." },
+    // Culture & Art
+    { id: 'malioboro', name: 'Jalan Malioboro', category: 'Culture & Art', description: "Famous street for shopping and street food." },
+    { id: 'ramayana', name: 'Ramayana Ballet', category: 'Culture & Art', description: "Spectacular performance at Prambanan." },
+    { id: 'sonobudoyo', name: 'Sonobudoyo Museum', category: 'Culture & Art', description: "Houses historical artifacts and Javanese artworks." },
+];
+
 
 const MOCK_ANALYTICS_SUMMARY: AnalyticsSummary = {
     partnerGrowth: { total: MOCK_PARTNERS.length, change: 15.5 },
@@ -78,6 +120,10 @@ const mockSupabaseClient = {
         setTimeout(() => {
           const user = MOCK_USERS.find(u => u.email === email);
           if (user && password === 'password') { // Generic password for mock
+            const partner = MOCK_PARTNERS.find(p => p.id === user.id);
+            if (partner) {
+                user.partnerType = partner.partnerType;
+            }
             resolve({ data: { user }, error: null });
           } else {
             resolve({ data: { user: null }, error: new Error('Invalid login credentials') });
@@ -134,6 +180,17 @@ const mockSupabaseClient = {
                else if (tableName === 'analytics_summary') {
                 resolve({ data: [MOCK_ANALYTICS_SUMMARY], error: null });
               }
+               else if (tableName === 'ride_requests') {
+                // Return a random request to simulate a stream
+                const randomIndex = Math.floor(Math.random() * MOCK_RIDE_REQUESTS.length);
+                resolve({ data: [MOCK_RIDE_REQUESTS[randomIndex]], error: null });
+              }
+               else if (tableName === 'admin_messages') {
+                resolve({ data: MOCK_MESSAGES, error: null });
+              }
+              else if (tableName === 'tour_destinations') {
+                resolve({ data: MOCK_TOUR_DESTINATIONS, error: null });
+              }
               else {
                 resolve({ data: null, error: new Error(`Table ${tableName} not found`) });
               }
@@ -162,6 +219,22 @@ const mockSupabaseClient = {
                   } else {
                     resolve({ data: null, error: new Error('Item not found') });
                   }
+                } else if (tableName === 'partners' && column === 'id') {
+                    const partnerIndex = MOCK_PARTNERS.findIndex(p => p.id === value);
+                    if (partnerIndex !== -1) {
+                        MOCK_PARTNERS[partnerIndex] = { ...MOCK_PARTNERS[partnerIndex], ...updates };
+                        resolve({ data: [MOCK_PARTNERS[partnerIndex]], error: null });
+                    } else {
+                        resolve({ data: null, error: new Error('Partner not found') });
+                    }
+                } else if (tableName === 'admin_messages' && column === 'id') {
+                    const msgIndex = MOCK_MESSAGES.findIndex(m => m.id === value);
+                    if (msgIndex !== -1) {
+                        MOCK_MESSAGES[msgIndex] = { ...MOCK_MESSAGES[msgIndex], ...updates };
+                        resolve({ data: [MOCK_MESSAGES[msgIndex]], error: null });
+                    } else {
+                        resolve({ data: null, error: new Error('Message not found') });
+                    }
                 }
                 else {
                   resolve({ data: null, error: new Error('Update failed') });
@@ -170,7 +243,26 @@ const mockSupabaseClient = {
             });
           }
         };
-      }
+      },
+      insert: (newData: any) => {
+        return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
+           setTimeout(() => {
+               if (tableName === 'admin_messages') {
+                   const message = {
+                       ...newData,
+                       id: `msg-${Date.now()}`,
+                       sentAt: new Date().toISOString(),
+                       readBy: [],
+                       senderId: 'admin-1',
+                   };
+                   MOCK_MESSAGES.push(message);
+                   resolve({ data: [message], error: null });
+               } else {
+                   resolve({ data: null, error: new Error('Insert failed') });
+               }
+           }, 300);
+        });
+      },
     };
   }
 };
