@@ -2,6 +2,7 @@ export enum Role {
   Admin = 'admin',
   Driver = 'driver',
   Vendor = 'vendor',
+  LodgingPartner = 'lodging',
 }
 
 export enum PartnerType {
@@ -13,11 +14,16 @@ export enum PartnerType {
   CarRental = 'Car Rental',
   BikeRental = 'Bike Rental',
   LocalBusiness = 'Local Business',
+  MassageTherapist = 'Massage Therapist',
+  MassagePlace = 'Massage Place',
+  Hotel = 'Hotel',
+  Villa = 'Villa',
 }
 
 export interface UserProfile {
   name?: string;
-  profilePicture?: string;
+  profilePicture?: string; // Corresponds to Logo for lodging
+  headerPicture?: string; // Corresponds to Header Image for lodging
   shopName?: string;
   vehicle?: {
     type: string;
@@ -42,13 +48,66 @@ export interface RentalDetails {
   weeklyRate?: number;
 }
 
+// --- New types for Lodging Management ---
+export interface RoomPhoto {
+  url: string; // base64 or URL
+  name: string; // caption
+}
+
+export interface RoomAmenities {
+  privatePool?: boolean;
+  balcony?: boolean;
+  seaView?: boolean;
+  kitchenette?: boolean;
+  jacuzziTub?: boolean;
+}
+
+export interface HotelVillaAmenities {
+  // Guest Room
+  wifi?: boolean;
+  tv?: boolean;
+  airConditioning?: boolean;
+  kitchen?: boolean;
+  // Services
+  pool?: boolean;
+  restaurantBar?: boolean;
+  fitnessCenter?: boolean;
+  parking?: boolean;
+  // Wellness
+  spa?: boolean;
+  saunaSteamRoom?: boolean;
+  yogaClasses?: boolean;
+  // Family
+  kidsClub?: boolean;
+  babysitting?: boolean;
+  // Other
+  petFriendly?: boolean;
+  shuttleService?: boolean;
+}
+
+export interface Room {
+  id: string;
+  vendorId: string;
+  name: string;
+  pricePerNight: number;
+  mainImage: string; // base64 or URL
+  thumbnails: string[]; // array of 3 base64/URLs
+  isAvailable: boolean;
+  amenities: RoomAmenities;
+  specialOffer: {
+    enabled: boolean;
+    discountPercentage: number;
+  };
+}
+
+
 export interface Partner extends User {
   partnerType: PartnerType;
   status: 'active' | 'pending' | 'suspended';
   rating: number;
   totalEarnings: number;
   memberSince: string;
-  phone: string;
+  phone: string; // Also used for WhatsApp
   activationExpiry?: string; // ISO Date string
   // Rate settings
   rideRatePerKm?: number;
@@ -63,6 +122,35 @@ export interface Partner extends User {
     accountNumber: string;
   };
   rentalDetails?: RentalDetails;
+  // Massage specific fields
+  bio?: string; // Also used for Lodging Tagline
+  massageStatus?: 'online' | 'busy' | 'offline';
+  massageServices?: string[];
+  massagePricing?: {
+    '60min'?: number;
+    '90min'?: number;
+    '120min'?: number;
+  };
+  galleryImages?: string[]; // array of base64 strings or URLs, for massage places
+  amenities?: {
+    sauna?: boolean;
+    jacuzzi?: boolean;
+    salon?: boolean;
+    nailArt?: boolean;
+    steamRoom?: boolean;
+  };
+  otherAmenities?: string;
+  businessHours?: string;
+
+  // --- New Lodging Partner Fields ---
+  description?: string; // Detailed property description
+  address?: string; // e.g., "Ubud"
+  street?: string;
+  photos?: RoomPhoto[];
+  checkInTime?: string; // e.g., "14:00"
+  airportPickup?: boolean;
+  loyaltyRewardEnabled?: boolean;
+  hotelVillaAmenities?: HotelVillaAmenities;
 }
 
 export interface PartnerApplication {
@@ -102,7 +190,7 @@ export interface Transaction {
   id: string;
   partnerId: string;
   date: string;
-  type: 'Ride' | 'Delivery' | 'Order' | 'Rental' | 'Hire';
+  type: 'Ride' | 'Delivery' | 'Order' | 'Rental' | 'Hire' | 'Wellness' | 'Booking';
   amount: number;
   status: 'completed' | 'cancelled' | 'in_progress';
   details: string; // e.g., "Trip from A to B" or "Nasi Goreng x2"

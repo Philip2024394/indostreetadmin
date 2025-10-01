@@ -65,12 +65,12 @@ const MembershipPricingEditor: React.FC = () => {
 const SiteContentPage: React.FC = () => {
     const { content, updateText, updateNumber } = useContent();
 
-    // Fix: Replaced Object.fromEntries with a type-safe reduce to construct the object,
-    // resolving the type error where the inferred value was 'unknown' instead of 'number'.
-    const otherNumbers: Record<string, number> = Object.entries(content.numbers)
-      .filter(([key]) => !key.startsWith('membership-price-'))
-      .reduce<Record<string, number>>((acc, [key, value]) => {
-        acc[key] = value;
+    // Fix: Use Object.keys with reduce for type-safe filtering of the numbers object.
+    // This avoids issues with Object.entries where values can be inferred as 'unknown'.
+    const otherNumbers: Record<string, number> = Object.keys(content.numbers)
+      .filter((key) => !key.startsWith('membership-price-'))
+      .reduce<Record<string, number>>((acc, key) => {
+        acc[key] = content.numbers[key];
         return acc;
       }, {});
 

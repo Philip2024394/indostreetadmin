@@ -36,7 +36,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">
             <Editable editId="login-title" type="text" defaultValue="IndoStreet Partner Portal" />
@@ -45,7 +45,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <Editable editId="login-subtitle" type="text" defaultValue="Sign in to your account" />
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-700">
+          <p className="font-semibold text-center text-blue-800 mb-2">Demo Accounts (password: "password")</p>
+          <ul className="space-y-1">
+            <li><strong>Admin:</strong> admin@indostreet.com</li>
+            <li><strong>Bike Driver:</strong> driver@indostreet.com</li>
+            <li><strong>Car Driver:</strong> cardriver@indostreet.com</li>
+            <li><strong>Food Vendor:</strong> vendor@indostreet.com</li>
+            <li><strong>Therapist:</strong> therapist@indostreet.com</li>
+            <li><strong>Spa/Salon:</strong> spa@indostreet.com</li>
+            <li><strong>Hotel Partner:</strong> hotel@indostreet.com</li>
+            <li><strong>Villa Partner:</strong> villa@indostreet.com</li>
+          </ul>
+        </div>
+        
+        <form className="space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email-address" className="sr-only">Email address</label>
@@ -89,13 +104,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </button>
           </div>
         </form>
-         <div className="text-xs text-gray-500 text-center space-y-1">
-          <p className="font-semibold">For Demo (use 'password' for all):</p>
-          <p>admin@indostreet.com</p>
-          <p>driver@indostreet.com (Bike)</p>
-          <p>cardriver@indostreet.com (Car)</p>
-          <p>vendor@indostreet.com (Food)</p>
-        </div>
       </div>
     </div>
   );

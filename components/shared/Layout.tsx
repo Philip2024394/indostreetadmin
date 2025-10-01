@@ -5,9 +5,9 @@ import MessagesModal from './MessagesModal';
 import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet' | 'massage';
 
 interface LayoutProps {
   user: User;
@@ -79,6 +79,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
         <button onClick={() => onAdminViewChange?.('bikeFleet')} className={`${navLinkClasses} ${adminView === 'bikeFleet' ? activeNavLinkClasses : ''}`}>
           <MotorcycleIcon className="w-5 h-5 mr-3" />
           <Editable editId="layout-nav-bike-fleet" type="text" defaultValue="Bike Fleet" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('massage')} className={`${navLinkClasses} ${adminView === 'massage' ? activeNavLinkClasses : ''}`}>
+            <SparklesIcon className="w-5 h-5 mr-3" />
+            <Editable editId="layout-nav-massage" type="text" defaultValue="Massage & Wellness" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('renewals')} className={`${navLinkClasses} ${adminView === 'renewals' ? activeNavLinkClasses : ''}`}>
           <BanknotesIcon className="w-5 h-5 mr-3" />

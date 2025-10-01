@@ -1,4 +1,5 @@
 
+
 import {
   User,
   Role,
@@ -17,6 +18,7 @@ import {
   PaymentMethod,
   Vehicle,
   Zone,
+  Room,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -30,7 +32,7 @@ const tinyBase64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
 const slugifyPartnerType = (type: PartnerType): string => type.toLowerCase().replace(/\s+/g, '-');
 
 
-const mockUsers: (User | Partner)[] = [
+let mockUsers: (User | Partner)[] = [
   {
     id: 'admin-1',
     email: 'admin@indostreet.com',
@@ -93,6 +95,124 @@ const mockUsers: (User | Partner)[] = [
     bankDetails: { bankName: 'BRI', accountHolderName: 'Siti Aminah', accountNumber: '555666777' },
     profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Ibu Siti', profilePicture: 'https://i.pravatar.cc/150?u=vendor-1' },
   },
+  {
+    id: 'massage-therapist-1',
+    email: 'therapist@indostreet.com',
+    role: Role.Vendor,
+    partnerType: PartnerType.MassageTherapist,
+    status: 'active',
+    rating: 4.9,
+    totalEarnings: 15300000,
+    memberSince: '2023-02-20T09:00:00Z',
+    phone: '6281211112222',
+    activationExpiry: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString(),
+    bankDetails: { bankName: 'BCA', accountHolderName: 'Indah Sari', accountNumber: '111222333' },
+    profile: { name: 'Indah Sari', profilePicture: 'https://i.pravatar.cc/150?u=therapist-1', headerPicture: 'https://via.placeholder.com/600x200/A7F3D0/14532D?Text=Relax+and+Rejuvenate' },
+    bio: 'Certified massage therapist with 5 years of experience specializing in traditional Balinese and deep tissue massage. I bring a professional and relaxing experience to your home.',
+    massageStatus: 'online',
+    massageServices: ['Balinese Massage', 'Deep Tissue', 'Reflexology'],
+    massagePricing: { '60min': 150000, '90min': 220000, '120min': 280000 },
+  },
+  {
+    id: 'massage-place-1',
+    email: 'spa@indostreet.com',
+    role: Role.Vendor,
+    partnerType: PartnerType.MassagePlace,
+    status: 'active',
+    rating: 4.8,
+    totalEarnings: 98500000,
+    memberSince: '2022-08-10T09:00:00Z',
+    phone: '6287733334444',
+    activationExpiry: new Date(Date.now() + 200 * 24 * 60 * 60 * 1000).toISOString(),
+    bankDetails: { bankName: 'Mandiri', accountHolderName: 'PT Sejahtera Spa', accountNumber: '444555666' },
+    profile: { name: 'Serenity Spa', shopName: 'Serenity Spa Jakarta', profilePicture: 'https://i.pravatar.cc/150?u=spa-1', headerPicture: 'https://via.placeholder.com/600x200/BAE6FD/0C4A6E?Text=Your+Oasis+of+Calm' },
+    bio: 'A luxurious day spa in the heart of Jakarta. We offer a wide range of wellness treatments, from traditional massages to modern spa packages. Visit us to escape the hustle and bustle.',
+    massageStatus: 'online',
+    massageServices: ['Swedish Massage', 'Aromatherapy', 'Hot Stone', 'Body Scrub'],
+    massagePricing: { '60min': 250000, '90min': 350000, '120min': 450000 },
+    galleryImages: ['https://via.placeholder.com/400x300/E0F2FE/083344?Text=Treatment+Room', 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Lobby', 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Sauna'],
+    amenities: { sauna: true, jacuzzi: true, salon: false, nailArt: false, steamRoom: true },
+    businessHours: '10:00 AM - 9:00 PM Daily',
+  },
+  {
+    id: 'hotel-1',
+    email: 'hotel@indostreet.com',
+    role: Role.LodgingPartner,
+    partnerType: PartnerType.Hotel,
+    status: 'active',
+    rating: 4.8,
+    totalEarnings: 1250000000,
+    memberSince: '2022-06-01T09:00:00Z',
+    phone: '6281122223333',
+    activationExpiry: new Date(Date.now() + 300 * 24 * 60 * 60 * 1000).toISOString(),
+    bankDetails: { bankName: 'BCA', accountHolderName: 'PT Hotel Jaya Abadi', accountNumber: '999888777' },
+    profile: { 
+      name: 'Ubud Paradise Hotel',
+      profilePicture: 'https://i.pravatar.cc/150?u=hotel-1', // Logo
+      headerPicture: 'https://via.placeholder.com/800x200/6EE7B7/064E3B?Text=Ubud+Paradise+Hotel', // Header Image
+    },
+    bio: 'Your tranquil escape in the heart of Ubud.', // Tagline
+    description: 'Nestled amidst lush rice paddies and tropical gardens, Ubud Paradise Hotel offers a serene retreat with luxurious amenities, world-class dining, and authentic Balinese hospitality. Experience the perfect blend of nature and comfort.',
+    address: 'Ubud',
+    street: 'Jl. Monkey Forest No.123',
+    photos: [
+      { url: 'https://via.placeholder.com/600x400/A7F3D0/14532D?Text=Lobby', name: 'Lobby & Reception' },
+      { url: 'https://via.placeholder.com/600x400/A7F3D0/14532D?Text=Pool', name: 'Infinity Pool' },
+      { url: 'https://via.placeholder.com/600x400/A7F3D0/14532D?Text=Restaurant', name: 'Garden Restaurant' },
+    ],
+    checkInTime: '14:00',
+    airportPickup: true,
+    loyaltyRewardEnabled: true,
+    hotelVillaAmenities: {
+      wifi: true,
+      tv: true,
+      airConditioning: true,
+      pool: true,
+      restaurantBar: true,
+      fitnessCenter: true,
+      parking: true,
+      spa: true,
+    },
+  },
+  {
+    id: 'villa-1',
+    email: 'villa@indostreet.com',
+    role: Role.LodgingPartner,
+    partnerType: PartnerType.Villa,
+    status: 'active',
+    rating: 4.9,
+    totalEarnings: 850000000,
+    memberSince: '2023-01-10T09:00:00Z',
+    phone: '6289988887777',
+    activationExpiry: new Date(Date.now() + 250 * 24 * 60 * 60 * 1000).toISOString(),
+    bankDetails: { bankName: 'Mandiri', accountHolderName: 'PT Villa Damai Sejahtera', accountNumber: '1212121212' },
+    profile: { 
+      name: 'Canggu Beachfront Villa',
+      profilePicture: 'https://i.pravatar.cc/150?u=villa-1', // Logo
+      headerPicture: 'https://via.placeholder.com/800x200/93C5FD/1E40AF?Text=Canggu+Beachfront+Villa', // Header Image
+    },
+    bio: 'Private luxury with stunning ocean views.', // Tagline
+    description: 'Experience unparalleled luxury and privacy at our exclusive beachfront villa in Canggu. Featuring a private infinity pool, modern architecture, and direct beach access, it\'s the perfect getaway for families and groups seeking tranquility and style.',
+    address: 'Canggu',
+    street: 'Jl. Pantai Batu Bolong No. 456',
+    photos: [
+      { url: 'https://via.placeholder.com/600x400/BFDBFE/1E3A8A?Text=Living+Room', name: 'Open-plan Living Room' },
+      { url: 'https://via.placeholder.com/600x400/BFDBFE/1E3A8A?Text=Private+Pool', name: 'Private Infinity Pool' },
+      { url: 'https://via.placeholder.com/600x400/BFDBFE/1E3A8A?Text=Bedroom', name: 'Master Bedroom' },
+    ],
+    checkInTime: '15:00',
+    airportPickup: true,
+    loyaltyRewardEnabled: false,
+    hotelVillaAmenities: {
+      wifi: true,
+      tv: true,
+      airConditioning: true,
+      kitchen: true,
+      pool: true,
+      parking: true,
+      petFriendly: true,
+    },
+  }
 ];
 
 let mockApplications: PartnerApplication[] = [
@@ -109,6 +229,10 @@ let mockTransactions: Transaction[] = [
     { id: 'tx-3', partnerId: 'driver-2', date: new Date(Date.now() - 300000).toISOString(), type: 'Ride', amount: 42000, status: 'completed', details: 'Blok M to Kelapa Gading' },
     { id: 'tx-4', partnerId: 'driver-1', date: new Date(Date.now() - 86400000).toISOString(), type: 'Delivery', amount: 12000, status: 'completed', details: 'Document from Thamrin to SCBD' },
     { id: 'tx-5', partnerId: 'vendor-1', date: new Date(Date.now() - 172800000).toISOString(), type: 'Order', amount: 120000, status: 'completed', details: 'Catering Box A x 4' },
+    { id: 'tx-6', partnerId: 'massage-therapist-1', date: new Date(Date.now() - 2 * 86400000).toISOString(), type: 'Wellness', amount: 220000, status: 'completed', details: '90-min Deep Tissue Massage' },
+    { id: 'tx-7', partnerId: 'massage-place-1', date: new Date(Date.now() - 3 * 86400000).toISOString(), type: 'Wellness', amount: 450000, status: 'completed', details: '120-min Aromatherapy Session' },
+    { id: 'tx-8', partnerId: 'hotel-1', date: new Date(Date.now() - 4 * 86400000).toISOString(), type: 'Booking', amount: 1700000, status: 'completed', details: 'Deluxe Queen Room x2 nights' },
+    { id: 'tx-9', partnerId: 'villa-1', date: new Date(Date.now() - 5 * 86400000).toISOString(), type: 'Booking', amount: 6000000, status: 'completed', details: 'Entire Villa x1 night' },
     { id: 'live-order-1', partnerId: 'vendor-1', date: new Date().toISOString(), type: 'Order', amount: 30000, status: 'in_progress', details: 'Soto Ayam x1, Sate Ayam x1' },
     { id: 'live-order-2', partnerId: 'vendor-1', date: new Date(Date.now() - 60000).toISOString(), type: 'Order', amount: 25000, status: 'in_progress', details: 'Gado-gado x1' },
 ];
@@ -146,7 +270,7 @@ let mockContentOverrides: ContentOverrides = {
 };
 
 // Populate new dynamic prices
-const defaultPrices: Record<PartnerType, { '3': number, '6': number, '12': number }> = {
+const defaultPrices: Record<string, { '3': number, '6': number, '12': number }> = {
     [PartnerType.BikeDriver]: { '3': 150000, '6': 280000, '12': 500000 },
     [PartnerType.CarDriver]: { '3': 200000, '6': 380000, '12': 700000 },
     [PartnerType.LorryDriver]: { '3': 250000, '6': 480000, '12': 900000 },
@@ -155,13 +279,19 @@ const defaultPrices: Record<PartnerType, { '3': number, '6': number, '12': numbe
     [PartnerType.CarRental]: { '3': 300000, '6': 580000, '12': 1100000 },
     [PartnerType.BikeRental]: { '3': 220000, '6': 420000, '12': 800000 },
     [PartnerType.LocalBusiness]: { '3': 180000, '6': 340000, '12': 650000 },
+    [PartnerType.MassageTherapist]: { '3': 130000, '6': 240000, '12': 420000 },
+    [PartnerType.MassagePlace]: { '3': 220000, '6': 400000, '12': 750000 },
+    [PartnerType.Hotel]: { '3': 500000, '6': 950000, '12': 1800000 },
+    [PartnerType.Villa]: { '3': 600000, '6': 1100000, '12': 2000000 },
 };
 
 Object.values(PartnerType).forEach(type => {
-    const slug = slugifyPartnerType(type);
-    mockContentOverrides.numbers[`membership-price-${slug}-3mo`] = defaultPrices[type]['3'];
-    mockContentOverrides.numbers[`membership-price-${slug}-6mo`] = defaultPrices[type]['6'];
-    mockContentOverrides.numbers[`membership-price-${slug}-12mo`] = defaultPrices[type]['12'];
+    const slug = slugifyPartnerType(type as PartnerType);
+    if(defaultPrices[type]) {
+      mockContentOverrides.numbers[`membership-price-${slug}-3mo`] = defaultPrices[type]['3'];
+      mockContentOverrides.numbers[`membership-price-${slug}-6mo`] = defaultPrices[type]['6'];
+      mockContentOverrides.numbers[`membership-price-${slug}-12mo`] = defaultPrices[type]['12'];
+    }
 });
 
 
@@ -255,6 +385,54 @@ let mockVehicles: Vehicle[] = [
     }
 ];
 
+let mockRooms: Room[] = [
+    {
+        id: 'room-1',
+        vendorId: 'hotel-1',
+        name: 'Deluxe Queen Room',
+        pricePerNight: 850000,
+        mainImage: 'https://via.placeholder.com/800x600/BEE3F8/2C5282?Text=Deluxe+Room',
+        thumbnails: [
+            'https://via.placeholder.com/400x300/BEE3F8/2C5282?Text=View',
+            'https://via.placeholder.com/400x300/BEE3F8/2C5282?Text=Bed',
+            'https://via.placeholder.com/400x300/BEE3F8/2C5282?Text=Bathroom',
+        ],
+        isAvailable: true,
+        amenities: { balcony: true, seaView: false, kitchenette: false },
+        specialOffer: { enabled: true, discountPercentage: 15 },
+    },
+    {
+        id: 'room-2',
+        vendorId: 'hotel-1',
+        name: 'Suite with Private Pool',
+        pricePerNight: 2100000,
+        mainImage: 'https://via.placeholder.com/800x600/C4F1F9/086F83?Text=Suite',
+        thumbnails: [
+            'https://via.placeholder.com/400x300/C4F1F9/086F83?Text=Pool',
+            'https://via.placeholder.com/400x300/C4F1F9/086F83?Text=Living+Area',
+            'https://via.placeholder.com/400x300/C4F1F9/086F83?Text=Terrace',
+        ],
+        isAvailable: false,
+        amenities: { balcony: true, privatePool: true, kitchenette: true },
+        specialOffer: { enabled: false, discountPercentage: 0 },
+    },
+    {
+        id: 'room-3',
+        vendorId: 'villa-1',
+        name: 'Entire 3-Bedroom Villa',
+        pricePerNight: 6000000,
+        mainImage: 'https://via.placeholder.com/800x600/D1D5DB/1F2937?Text=Villa+Exterior',
+        thumbnails: [
+            'https://via.placeholder.com/400x300/D1D5DB/1F2937?Text=Pool+Night',
+            'https://via.placeholder.com/400x300/D1D5DB/1F2937?Text=Dining+Area',
+            'https://via.placeholder.com/400x300/D1D5DB/1F2937?Text=Ocean+View',
+        ],
+        isAvailable: true,
+        amenities: { balcony: true, privatePool: true, kitchenette: true, seaView: true },
+        specialOffer: { enabled: true, discountPercentage: 20 },
+    },
+];
+
 // Helper for simulating network delay
 const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
     return new Promise(resolve => {
@@ -300,7 +478,7 @@ export const login = async (email: string, password: string): Promise<{ user: Us
             sessionStorage.setItem('authToken', token);
             sessionStorage.setItem('user', JSON.stringify(user));
             console.log('Mock login successful for:', user.role);
-            resolve({ user, token });
+            resolve({ user: JSON.parse(JSON.stringify(user)), token });
         }, 500);
     });
 };
@@ -331,7 +509,7 @@ export const getAdminStats = (): Promise<AdminStats> => mockApiCall({
     totalPartners: mockPartners.length,
     pendingApplications: mockApplications.filter(a => a.status === 'pending').length,
     activeDrivers: mockPartners.filter(p => p.role === Role.Driver && p.status === 'active').length,
-    activeVendorsAndBusinesses: mockPartners.filter(p => p.role === Role.Vendor && p.status === 'active').length,
+    activeVendorsAndBusinesses: mockPartners.filter(p => (p.role === Role.Vendor || p.role === Role.LodgingPartner) && p.status === 'active').length,
     pendingRenewals: mockRenewalSubmissions.filter(s => s.status === 'pending').length,
 });
 export const getApplications = (): Promise<PartnerApplication[]> => mockApiCall(mockApplications);
@@ -367,13 +545,22 @@ export const getPartner = (id: string): Promise<Partner> => {
 export const updatePartner = (id: string, data: Partial<Partner>): Promise<Partner> => {
     const partnerIndex = mockPartners.findIndex(p => p.id === id);
     if (partnerIndex > -1) {
-        mockPartners[partnerIndex] = { ...mockPartners[partnerIndex], ...data };
-        // also update the main user list
+        const existingPartner = mockPartners[partnerIndex];
+        // Deep merge for nested objects
+        const updatedPartner = {
+            ...existingPartner,
+            ...data,
+            profile: { ...existingPartner.profile, ...data.profile },
+            bankDetails: { ...existingPartner.bankDetails, ...data.bankDetails },
+            hotelVillaAmenities: { ...existingPartner.hotelVillaAmenities, ...data.hotelVillaAmenities },
+        };
+        mockPartners[partnerIndex] = updatedPartner;
+
         const userIndex = mockUsers.findIndex(u => u.id === id);
         if(userIndex > -1) {
-          mockUsers[userIndex] = { ...mockUsers[userIndex], ...data };
+          mockUsers[userIndex] = updatedPartner;
         }
-        return mockApiCall(mockPartners[partnerIndex], 200);
+        return mockApiCall(updatedPartner, 200);
     }
     return Promise.reject(new Error("Partner not found"));
 };
@@ -447,6 +634,7 @@ export const updateTourDestination = (id: string, data: Partial<TourDestination>
     return Promise.reject(new Error("Destination not found"));
 };
 export const deleteTourDestination = (id: string): Promise<void> => {
+    // FIX: The filter condition was comparing a TourDestination object `d` with an `id` string. Corrected to compare `d.id` with `id`.
     mockTourDestinations = mockTourDestinations.filter(d => d.id !== id);
     return mockApiCall(undefined, 200);
 };
@@ -513,4 +701,27 @@ export const updateVehicle = (id: string, data: Partial<Omit<Vehicle, 'id'>>): P
 export const deleteVehicle = (id: string): Promise<void> => {
     mockVehicles = mockVehicles.filter(v => v.id !== id);
     return mockApiCall(undefined, 200);
+};
+
+// --- Mock Lodging (Hotel/Villa) API ---
+export const getRoomsForProperty = (vendorId: string): Promise<Room[]> => mockApiCall(mockRooms.filter(r => r.vendorId === vendorId));
+
+export const createRoom = (vendorId: string, data: Omit<Room, 'id' | 'vendorId'>): Promise<Room> => {
+    const newRoom: Room = { ...data, id: `room-${Date.now()}`, vendorId };
+    mockRooms.push(newRoom);
+    return mockApiCall(newRoom);
+};
+
+export const updateRoom = (roomId: string, data: Partial<Omit<Room, 'id'>>): Promise<Room> => {
+    const roomIndex = mockRooms.findIndex(r => r.id === roomId);
+    if (roomIndex > -1) {
+        mockRooms[roomIndex] = { ...mockRooms[roomIndex], ...data };
+        return mockApiCall(mockRooms[roomIndex]);
+    }
+    return Promise.reject(new Error("Room not found"));
+};
+
+export const deleteRoom = (roomId: string): Promise<void> => {
+    mockRooms = mockRooms.filter(r => r.id !== roomId);
+    return mockApiCall(undefined);
 };

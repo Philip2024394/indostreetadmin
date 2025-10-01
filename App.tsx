@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { User, Role } from './types';
+import { User, Role, PartnerType } from './types';
 import LoginPage from './components/auth/LoginPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import DriverDashboard from './components/driver/DriverDashboard';
 import VendorDashboard from './components/vendor/VendorDashboard';
+import MassageDashboard from './components/massage/MassageDashboard';
+import LodgingDashboard from './components/lodging/LodgingDashboard';
 import * as api from './services/supabase';
 import { ContentProvider } from './contexts/ContentContext';
 
@@ -52,7 +54,13 @@ const App: React.FC = () => {
       case Role.Driver:
         return <DriverDashboard user={user} onLogout={handleLogout} />;
       case Role.Vendor:
+        const isMassagePartner = user.partnerType === PartnerType.MassageTherapist || user.partnerType === PartnerType.MassagePlace;
+        if (isMassagePartner) {
+            return <MassageDashboard user={user} onLogout={handleLogout} />;
+        }
         return <VendorDashboard user={user} onLogout={handleLogout} />;
+      case Role.LodgingPartner:
+        return <LodgingDashboard user={user} onLogout={handleLogout} />;
       default:
         // In a real app, you might want a more robust fallback or error page
         return <p>Unknown user role. Please contact support.</p>;

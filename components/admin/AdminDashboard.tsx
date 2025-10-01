@@ -12,11 +12,12 @@ import TourManagementPage from './TourManagementPage';
 import SiteContentPage from './SiteContentPage';
 import RenewalManagementPage from './RenewalManagementPage';
 import BikeFleetManagement from './BikeFleetManagement';
+import MassageManagementPage from './MassageManagementPage';
 import { Editable } from '../shared/Editable';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
-  BanknotesIcon
+  BanknotesIcon, SparklesIcon, LandmarkIcon
 } from '../shared/Icons';
 
 interface AdminDashboardProps {
@@ -24,7 +25,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet' | 'massage';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -35,6 +36,10 @@ const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.CarRental]: { icon: <KeyIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.BikeRental]: { icon: <KeyIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.LocalBusiness]: { icon: <BriefcaseIcon className="w-5 h-5 mr-2" /> },
+  [PartnerType.MassageTherapist]: { icon: <SparklesIcon className="w-5 h-5 mr-2" /> },
+  [PartnerType.MassagePlace]: { icon: <SparklesIcon className="w-5 h-5 mr-2" /> },
+  [PartnerType.Hotel]: { icon: <LandmarkIcon className="w-5 h-5 mr-2" /> },
+  [PartnerType.Villa]: { icon: <LandmarkIcon className="w-5 h-5 mr-2" /> },
 };
 
 
@@ -104,7 +109,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
   }, [partners, searchTerm]);
 
   const statusBadge = (status: 'active' | 'pending' | 'suspended' | 'approved' | 'rejected') => {
-    const statusClasses: Record<typeof status, string> = {
+    const statusClasses: Record<string, string> = {
         pending: 'bg-yellow-100 text-yellow-800',
         approved: 'bg-blue-100 text-blue-800',
         rejected: 'bg-red-100 text-red-800',
@@ -120,6 +125,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         case 'applications': return 'Application Management';
         case 'partners': return 'Partner Directory';
         case 'bikeFleet': return 'Bike Fleet Management';
+        case 'massage': return 'Massage & Wellness Management';
         case 'renewals': return 'Membership Renewals';
         case 'financials': return 'Financial Overview';
         case 'analytics': return 'Business Analytics';
@@ -136,6 +142,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     switch (view) {
         case 'bikeFleet':
             return <BikeFleetManagement />;
+        case 'massage':
+            return <MassageManagementPage onPartnerSelect={setSelectedPartner} />;
         case 'renewals':
             return <RenewalManagementPage onPartnerSelect={setSelectedPartner}/>;
         case 'financials':
@@ -209,7 +217,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 } flex items-center whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
                               >
-                                {partnerTypeConfig[type].icon}
+                                {partnerTypeConfig[type as PartnerType].icon}
                                 {type}
                               </button>
                             ))}
