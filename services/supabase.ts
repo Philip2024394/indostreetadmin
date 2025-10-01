@@ -1,3 +1,4 @@
+
 import {
   User,
   Role,
@@ -12,12 +13,18 @@ import {
   TourDestination,
   PartnerType,
   ContentOverrides,
+  RenewalSubmission,
+  PaymentMethod,
 } from '../types';
 
 // #region MOCK DATABASE
 // This section contains a complete in-memory mock database to allow the app
 // to function without a real backend. When the backend is ready, this section
 // and the mock implementations of the API functions can be removed.
+
+// A simple base64 encoded 1x1 transparent png
+const tinyBase64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
 
 const mockUsers: (User | Partner)[] = [
   {
@@ -36,6 +43,7 @@ const mockUsers: (User | Partner)[] = [
     totalEarnings: 12500000,
     memberSince: '2022-01-15T09:00:00Z',
     phone: '081234567890',
+    activationExpiry: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 5 days
     rideRatePerKm: 2600,
     minFare: 8000,
     bankDetails: { bankName: 'BCA', accountHolderName: 'Budi Santoso', accountNumber: '1234567890' },
@@ -55,6 +63,7 @@ const mockUsers: (User | Partner)[] = [
     totalEarnings: 28750000,
     memberSince: '2021-11-20T09:00:00Z',
     phone: '081298765432',
+    activationExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 90 days
     rideRatePerKm: 3800,
     minFare: 16000,
     rentalDetails: { isAvailableForRental: true, dailyRate: 350000, weeklyRate: 2100000 },
@@ -76,6 +85,7 @@ const mockUsers: (User | Partner)[] = [
     totalEarnings: 45200000,
     memberSince: '2022-03-10T09:00:00Z',
     phone: '085678901234',
+    activationExpiry: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Expired 2 days ago
     bankDetails: { bankName: 'BRI', accountHolderName: 'Siti Aminah', accountNumber: '555666777' },
     profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Ibu Siti', profilePicture: 'https://i.pravatar.cc/150?u=vendor-1' },
   },
@@ -120,6 +130,35 @@ let mockTourDestinations: TourDestination[] = [
     { id: 'tour-3', name: 'Monas (National Monument)', category: 'Temples & Historical Sites', description: 'The iconic monument in the center of Merdeka Square.' },
 ];
 
+let mockContentOverrides: ContentOverrides = { 
+    text: {
+        'renewal-payment-instructions': 'Please transfer to the following account and upload your receipt.',
+        'renewal-bank-name': 'BCA (Bank Central Asia)',
+        'renewal-account-number': '123-456-7890',
+        'renewal-account-holder': 'PT IndoStreet Jaya',
+    }, 
+    numbers: {
+        'membership-price-3mo': 150000,
+        'membership-price-6mo': 280000,
+        'membership-price-12mo': 500000,
+    }, 
+    assets: {} 
+};
+
+let mockRenewalSubmissions: RenewalSubmission[] = [
+    {
+        id: 'renewal-1',
+        partnerId: 'driver-2', // Citra Dewi
+        partnerName: 'Citra Dewi',
+        submittedAt: new Date(Date.now() - 86400000).toISOString(),
+        selectedPackage: 6,
+        transactionNumber: 'INV/2024/07/12345',
+        paymentMethod: 'Bank Transfer',
+        receiptImage: 'iVBORw0KGgoAAAANSUhEUgAAAPoAAAC+CAYAAAD/K0OdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACVSURBVHhe7cEBDQAAAMKg909tDwcFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfg2V4gABG1s0JAAAAABJRU5ErkJggg==', // placeholder receipt image
+        status: 'pending',
+    }
+];
+
 // Helper for simulating network delay
 const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
     return new Promise(resolve => {
@@ -135,7 +174,6 @@ const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
 
 // In a real app, this would be in a .env file, not hardcoded.
 const BASE_URL = '/api/v1'; // This is kept for when we switch to the real API.
-const CONTENT_API_URL = 'http://localhost:3001/content';
 
 /**
  * Retrieves the authentication token from session storage.
@@ -198,6 +236,7 @@ export const getAdminStats = (): Promise<AdminStats> => mockApiCall({
     pendingApplications: mockApplications.filter(a => a.status === 'pending').length,
     activeDrivers: mockPartners.filter(p => p.role === Role.Driver && p.status === 'active').length,
     activeVendorsAndBusinesses: mockPartners.filter(p => p.role === Role.Vendor && p.status === 'active').length,
+    pendingRenewals: mockRenewalSubmissions.filter(s => s.status === 'pending').length,
 });
 export const getApplications = (): Promise<PartnerApplication[]> => mockApiCall(mockApplications);
 export const getPartners = (): Promise<Partner[]> => mockApiCall(mockPartners);
@@ -317,32 +356,34 @@ export const deleteTourDestination = (id: string): Promise<void> => {
 };
 
 // --- LIVE CMS API ---
-export const getContentOverrides = async (): Promise<ContentOverrides> => {
-  try {
-    const response = await fetch(CONTENT_API_URL);
-    if (!response.ok) {
-      console.error("Failed to fetch content from central API. Using empty defaults.");
-      return { text: {}, numbers: {}, assets: {} };
-    }
-    return response.json();
-  } catch (error) {
-    console.error("Network error fetching content from central API. Is the server running?", error);
-    return { text: {}, numbers: {}, assets: {} };
-  }
+export const getContentOverrides = (): Promise<ContentOverrides> => {
+  return mockApiCall(mockContentOverrides);
 };
 
-export const updateContentOverrides = async (newOverrides: ContentOverrides): Promise<ContentOverrides> => {
-  const response = await fetch(CONTENT_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // In a real app, you'd add an admin auth token here
-    },
-    body: JSON.stringify(newOverrides),
-  });
+export const updateContentOverrides = (newOverrides: ContentOverrides): Promise<ContentOverrides> => {
+  mockContentOverrides = newOverrides;
+  return mockApiCall(mockContentOverrides, 200);
+};
 
-  if (!response.ok) {
-      throw new Error("Failed to update content in central API");
-  }
-  return response.json();
+// --- Membership Renewal API ---
+export const getRenewalSubmissions = (): Promise<RenewalSubmission[]> => {
+    return mockApiCall(mockRenewalSubmissions);
+};
+export const createRenewalSubmission = (data: Omit<RenewalSubmission, 'id' | 'submittedAt' | 'status'>): Promise<RenewalSubmission> => {
+    const newSubmission: RenewalSubmission = {
+        ...data,
+        id: `renewal-${Date.now()}`,
+        submittedAt: new Date().toISOString(),
+        status: 'pending',
+    };
+    mockRenewalSubmissions.push(newSubmission);
+    return mockApiCall(newSubmission, 200);
+};
+export const updateRenewalSubmission = (id: string, data: Partial<RenewalSubmission>): Promise<RenewalSubmission> => {
+    const subIndex = mockRenewalSubmissions.findIndex(s => s.id === id);
+    if (subIndex > -1) {
+        mockRenewalSubmissions[subIndex] = { ...mockRenewalSubmissions[subIndex], ...data };
+        return mockApiCall(mockRenewalSubmissions[subIndex], 200);
+    }
+    return Promise.reject(new Error("Renewal submission not found"));
 };

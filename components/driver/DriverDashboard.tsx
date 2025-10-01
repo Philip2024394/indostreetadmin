@@ -10,7 +10,10 @@ import EarningsAndHistory from './EarningsAndHistory';
 import TourPricing from './TourPricing';
 import ProfileManagement from '../shared/ProfileManagement';
 import VehicleRentalManagement from './VehicleRentalManagement';
+import MembershipExpiryNotification from '../shared/MembershipExpiryNotification';
+import RenewalModal from '../shared/RenewalModal';
 import { Editable } from '../shared/Editable';
+import WeightsDimensionsGuide from './WeightsDimensionsGuide';
 
 interface DriverDashboardProps {
   user: User;
@@ -22,25 +25,27 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout }) => 
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [partner, setPartner] = useState<Partner | null>(null);
   const [loadingPartner, setLoadingPartner] = useState(true);
+  const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
 
   // Fix: Changed NodeJS.Timeout to number for browser compatibility.
   // The 'setInterval' function in a browser environment returns a number, not a NodeJS.Timeout object.
   const requestInterval = useRef<number | null>(null);
 
-  useEffect(() => {
-    const fetchPartnerData = async () => {
-        setLoadingPartner(true);
-        try {
-            const currentPartner = await api.getPartner(user.id);
-            setPartner(currentPartner);
-        } catch (error) {
-            console.error("Failed to fetch partner data:", error);
-        } finally {
-            setLoadingPartner(false);
-        }
-    };
-    fetchPartnerData();
+  const fetchPartnerData = useCallback(async () => {
+    setLoadingPartner(true);
+    try {
+        const currentPartner = await api.getPartner(user.id);
+        setPartner(currentPartner);
+    } catch (error) {
+        console.error("Failed to fetch partner data:", error);
+    } finally {
+        setLoadingPartner(false);
+    }
   }, [user.id]);
+
+  useEffect(() => {
+    fetchPartnerData();
+  }, [fetchPartnerData]);
 
   const fetchNewRequest = useCallback(async () => {
     try {
@@ -116,6 +121,9 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout }) => 
 
   return (
     <Layout user={user} onLogout={onLogout} title={dashboardTitle}>
+       <div className="mb-6">
+          <MembershipExpiryNotification partner={partner} onRenew={() => setIsRenewalModalOpen(true)} />
+       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Profile & Availability */}
         <div className="lg:col-span-1 space-y-8">
@@ -161,6 +169,9 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout }) => 
           
           {/* Partner Requirements */}
           <PolicySection type={driverType} />
+
+          {/* Weights & Dimensions Guide */}
+          <WeightsDimensionsGuide />
         </div>
 
         {/* Right Column: Live Requests & Earnings */}
@@ -199,6 +210,12 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout }) => 
            <EarningsAndHistory user={user} />
         </div>
       </div>
+       {isRenewalModalOpen && partner && (
+        <RenewalModal
+          partner={partner}
+          onClose={() => setIsRenewalModalOpen(false)}
+        />
+      )}
     </Layout>
   );
 };

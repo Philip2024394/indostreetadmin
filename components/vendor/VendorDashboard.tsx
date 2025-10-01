@@ -7,8 +7,11 @@ import ItemEditorModal from './ItemEditorModal';
 import LiveOrders from './LiveOrders';
 import EarningsAndHistory from './EarningsAndHistory';
 import ProfileManagement from '../shared/ProfileManagement';
+import MembershipExpiryNotification from '../shared/MembershipExpiryNotification';
+import RenewalModal from '../shared/RenewalModal';
 import { Editable } from '../shared/Editable';
 import { PencilIcon, TrashIcon, PlusCircleIcon } from '../shared/Icons';
+import SafeTradingGuide from './SafeTradingGuide';
 
 interface VendorDashboardProps {
   user: User;
@@ -19,6 +22,7 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
   const [items, setItems] = useState<VendorItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<VendorItem | null>(null);
   const [partner, setPartner] = useState<Partner | null>(null);
 
@@ -103,6 +107,9 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
 
   return (
     <Layout user={user} onLogout={onLogout} title={user.profile.shopName || 'Vendor Dashboard'}>
+       <div className="mb-6">
+          <MembershipExpiryNotification partner={partner} onRenew={() => setIsRenewalModalOpen(true)} />
+       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Live Orders & Item Management */}
         <div className="lg:col-span-2 space-y-8">
@@ -163,6 +170,7 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
         {/* Right Column: Profile & Earnings */}
         <div className="lg:col-span-1 space-y-8">
           <ProfileManagement partner={partner} onUpdate={handleUpdatePartner} />
+          <SafeTradingGuide />
           <EarningsAndHistory user={user} />
         </div>
       </div>
@@ -172,6 +180,12 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
             item={editingItem}
             onClose={handleCloseModal}
             onSave={handleSaveItem}
+        />
+      )}
+       {isRenewalModalOpen && partner && (
+        <RenewalModal
+          partner={partner}
+          onClose={() => setIsRenewalModalOpen(false)}
         />
       )}
     </Layout>

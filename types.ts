@@ -113,6 +113,7 @@ export interface AdminStats {
   pendingApplications: number;
   activeDrivers: number;
   activeVendorsAndBusinesses: number;
+  pendingRenewals: number;
 }
 
 export interface AnalyticsSummary {
@@ -157,4 +158,19 @@ export interface ContentOverrides {
   text: Record<string, string>;
   numbers: Record<string, number>;
   assets: Record<string, string>; // base64 strings
+}
+
+export const PaymentMethods = ['Bank Transfer', 'Indomaret', 'Alfamart', 'GoPay', 'OVO', 'ShopeePay'] as const;
+export type PaymentMethod = typeof PaymentMethods[number];
+
+export interface RenewalSubmission {
+  id: string;
+  partnerId: string;
+  partnerName: string; // denormalized for easier display
+  submittedAt: string; // ISO Date string
+  selectedPackage: 3 | 6 | 12; // months
+  transactionNumber: string;
+  paymentMethod: PaymentMethod;
+  receiptImage: string; // base64 string
+  status: 'pending' | 'approved' | 'rejected';
 }

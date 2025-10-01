@@ -228,3 +228,24 @@ export const DevicePhoneMobileIcon: React.FC<{className?: string}> = ({ classNam
       <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75A2.25 2.25 0 0015.75 1.5h-2.25m-3.75 0h3.75M12 18.75h.008v.008H12v-.008z" />
     </svg>
 );
+
+export const CubeIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7v10l8 4m0-14v10" />
+    </svg>
+);
+
+export const TruckIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 100-4 2 2 0 000 4z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 17a2 2 0 100-4 2 2 0 000 4z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 17H6V6h10v4l4 4v2h-3z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 17H4a1 1 0 01-1-1v-4a1 1 0 011-1h2" />
+    </svg>
+);
+
+export const RealCarIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 17l-4 4m0 0l4-4m-4 4h16m-4-4l4 4m0 0l-4-4m-4-12v-2a2 2 0 00-2-2H9a2 2 0 00-2 2v2m4 0h4m-4 0H5a2 2 0 00-2 2v6a2 2 0 002 2h14a2 2 0 002-2v-6a2 2 0 00-2-2h-3m-4 0h4" />
+    </svg>
+);

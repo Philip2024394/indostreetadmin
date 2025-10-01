@@ -30,7 +30,7 @@ const SiteContentPage: React.FC = () => {
         <div className="space-y-8">
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
                 <h4 className="font-bold text-yellow-800">Content Management</h4>
-                <p className="text-sm text-yellow-700 mt-1">This page lists all content that has been overridden from its default value. To edit new content, enable "Edit Mode" in the header and click on elements directly throughout the application.</p>
+                <p className="text-sm text-yellow-700 mt-1">This page lists all content that has been overridden from its default value (e.g., membership prices). To edit new content, enable "Edit Mode" in the header and click on elements directly throughout the application.</p>
             </div>
             {renderSection('Text Overrides', content.text, updateText)}
             {renderSection('Number Overrides', content.numbers, updateNumber)}
