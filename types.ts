@@ -173,4 +173,6 @@ export interface RenewalSubmission {
   paymentMethod: PaymentMethod;
   receiptImage: string; // base64 string
   status: 'pending' | 'approved' | 'rejected';
+  amountPaid: number;
+  approvedAt?: string; // ISO date string
 }

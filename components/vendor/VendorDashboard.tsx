@@ -186,6 +186,7 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
         <RenewalModal
           partner={partner}
           onClose={() => setIsRenewalModalOpen(false)}
+          onSuccess={fetchData}
         />
       )}
     </Layout>

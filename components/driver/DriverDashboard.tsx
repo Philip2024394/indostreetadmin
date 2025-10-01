@@ -118,102 +118,65 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout }) => 
   };
 
   const { type: driverType, title: dashboardTitle } = getDashboardInfo();
-
+  
   return (
     <Layout user={user} onLogout={onLogout} title={dashboardTitle}>
        <div className="mb-6">
           <MembershipExpiryNotification partner={partner} onRenew={() => setIsRenewalModalOpen(true)} />
        </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Profile & Availability */}
-        <div className="lg:col-span-1 space-y-8">
-          
-          <ProfileManagement partner={partner} onUpdate={handleUpdatePartner} />
-
-          {/* Availability Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                <Editable editId="driver-availability-title" type="text" defaultValue="Availability Status" />
-            </h4>
-            <div className="flex items-center justify-center p-4 border rounded-lg">
-                <ToggleSwitch 
-                  enabled={isOnline}
-                  onChange={setIsOnline}
-                  enabledText="Online"
-                  disabledText="Offline"
-                />
+        {/* Left Column: Requests & Availability */}
+        <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white rounded-lg shadow-md">
+                <div className="p-6 border-b flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-semibold text-gray-800">
+                           <Editable editId={`driver-${driverType}-availability-title`} type="text" defaultValue="Availability" />
+                        </h3>
+                        <p className="text-sm text-gray-500">Go online to start receiving ride and delivery requests.</p>
+                    </div>
+                    <ToggleSwitch 
+                        enabled={isOnline} 
+                        onChange={setIsOnline} 
+                        enabledText="Online"
+                        disabledText="Offline"
+                    />
+                </div>
+                <div className="p-4 sm:p-6 space-y-4">
+                     {isOnline && requests.length === 0 && (
+                        <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                            <p className="text-gray-500 font-medium">Waiting for requests...</p>
+                            <p className="text-sm text-gray-400 mt-1">You will be notified when a new request arrives.</p>
+                        </div>
+                    )}
+                    {requests.map(req => (
+                        <RideRequestCard 
+                            key={req.id} 
+                            request={req}
+                            onAccept={handleAcceptRequest}
+                            onReject={handleRejectRequest}
+                        />
+                    ))}
+                </div>
             </div>
-            <p className="text-center text-sm text-gray-500 mt-3">
-              You are currently {isOnline ? 'online and ready to receive orders.' : 'offline.'}
-            </p>
-          </div>
-          
-           {/* Rate Adjuster */}
-          {(driverType === 'car' || driverType === 'bike') && <RateAdjuster partner={partner} onUpdate={handleUpdatePartner} />}
-
-          {/* Vehicle Rental Management */}
-          {(driverType === 'car' || driverType === 'bike') && <VehicleRentalManagement partner={partner} onUpdate={handleUpdatePartner} />}
-
-          {/* Tour Pricing */}
-          {(driverType === 'car' || driverType === 'bike') && <TourPricing partner={partner} onUpdate={handleUpdatePartner} />}
-
-           {/* Vehicle Info Card */}
-           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Vehicle Information</h4>
-            <div className="space-y-2 text-sm text-gray-700">
-                <p><span className="font-medium text-gray-500">Type:</span> {user.profile.vehicle?.type}</p>
-                <p><span className="font-medium text-gray-500">Model:</span> {user.profile.vehicle?.brand} {user.profile.vehicle?.model}</p>
-                <p><span className="font-medium text-gray-500">License Plate:</span> {user.profile.vehicle?.licensePlate}</p>
-            </div>
-          </div>
-          
-          {/* Partner Requirements */}
-          <PolicySection type={driverType} />
-
-          {/* Weights & Dimensions Guide */}
-          <WeightsDimensionsGuide />
+             {partner?.partnerType === PartnerType.CarDriver && <VehicleRentalManagement partner={partner} onUpdate={handleUpdatePartner} />}
+             {partner?.partnerType === PartnerType.CarDriver && <TourPricing partner={partner} onUpdate={handleUpdatePartner} />}
         </div>
 
-        {/* Right Column: Live Requests & Earnings */}
-        <div className="lg:col-span-2 space-y-8">
-           <div className="bg-white rounded-lg shadow-md">
-            <div className="p-6 border-b">
-                <h3 className="text-xl font-semibold text-gray-800">
-                    <Editable editId="driver-requests-title" type="text" defaultValue="Live Ride Requests" />
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">Incoming ride opportunities will appear below.</p>
-            </div>
-            <div className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              {!isOnline ? (
-                 <div className="text-center py-10 border-2 border-dashed rounded-lg">
-                    <p className="text-gray-500 font-medium">You are offline</p>
-                    <p className="text-sm text-gray-400 mt-1">Go online to start receiving ride requests.</p>
-                </div>
-              ) : requests.length === 0 ? (
-                 <div className="text-center py-10 border-2 border-dashed rounded-lg">
-                    <p className="text-gray-500 font-medium">Waiting for requests...</p>
-                    <p className="text-sm text-gray-400 mt-1">We'll notify you when a new ride is available.</p>
-                </div>
-              ) : (
-                requests.map(request => (
-                  <RideRequestCard 
-                    key={request.id}
-                    request={request}
-                    onAccept={handleAcceptRequest}
-                    onReject={handleRejectRequest}
-                  />
-                ))
-              )}
-            </div>
-           </div>
-
-           <EarningsAndHistory user={user} />
+        {/* Right Column: Profile, Rates, History */}
+        <div className="lg:col-span-1 space-y-8">
+          <ProfileManagement partner={partner} onUpdate={handleUpdatePartner} />
+          {driverType === 'lorry' ? <WeightsDimensionsGuide /> : <RateAdjuster partner={partner} onUpdate={handleUpdatePartner} />}
+          <EarningsAndHistory user={user} />
+          {/* <PolicySection type={driverType} /> */}
         </div>
       </div>
-       {isRenewalModalOpen && partner && (
+
+      {isRenewalModalOpen && partner && (
         <RenewalModal
           partner={partner}
           onClose={() => setIsRenewalModalOpen(false)}
+          onSuccess={fetchPartnerData}
         />
       )}
     </Layout>

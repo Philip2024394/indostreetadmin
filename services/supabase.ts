@@ -25,6 +25,8 @@ import {
 // A simple base64 encoded 1x1 transparent png
 const tinyBase64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
+const slugifyPartnerType = (type: PartnerType): string => type.toLowerCase().replace(/\s+/g, '-');
+
 
 const mockUsers: (User | Partner)[] = [
   {
@@ -137,13 +139,29 @@ let mockContentOverrides: ContentOverrides = {
         'renewal-account-number': '123-456-7890',
         'renewal-account-holder': 'PT IndoStreet Jaya',
     }, 
-    numbers: {
-        'membership-price-3mo': 150000,
-        'membership-price-6mo': 280000,
-        'membership-price-12mo': 500000,
-    }, 
+    numbers: {}, 
     assets: {} 
 };
+
+// Populate new dynamic prices
+const defaultPrices: Record<PartnerType, { '3': number, '6': number, '12': number }> = {
+    [PartnerType.BikeDriver]: { '3': 150000, '6': 280000, '12': 500000 },
+    [PartnerType.CarDriver]: { '3': 200000, '6': 380000, '12': 700000 },
+    [PartnerType.LorryDriver]: { '3': 250000, '6': 480000, '12': 900000 },
+    [PartnerType.FoodVendor]: { '3': 120000, '6': 220000, '12': 400000 },
+    [PartnerType.StreetShop]: { '3': 100000, '6': 180000, '12': 320000 },
+    [PartnerType.CarRental]: { '3': 300000, '6': 580000, '12': 1100000 },
+    [PartnerType.BikeRental]: { '3': 220000, '6': 420000, '12': 800000 },
+    [PartnerType.LocalBusiness]: { '3': 180000, '6': 340000, '12': 650000 },
+};
+
+Object.values(PartnerType).forEach(type => {
+    const slug = slugifyPartnerType(type);
+    mockContentOverrides.numbers[`membership-price-${slug}-3mo`] = defaultPrices[type]['3'];
+    mockContentOverrides.numbers[`membership-price-${slug}-6mo`] = defaultPrices[type]['6'];
+    mockContentOverrides.numbers[`membership-price-${slug}-12mo`] = defaultPrices[type]['12'];
+});
+
 
 let mockRenewalSubmissions: RenewalSubmission[] = [
     {
@@ -152,6 +170,7 @@ let mockRenewalSubmissions: RenewalSubmission[] = [
         partnerName: 'Citra Dewi',
         submittedAt: new Date(Date.now() - 86400000).toISOString(),
         selectedPackage: 6,
+        amountPaid: defaultPrices[PartnerType.CarDriver]['6'],
         transactionNumber: 'INV/2024/07/12345',
         paymentMethod: 'Bank Transfer',
         receiptImage: 'iVBORw0KGgoAAAANSUhEUgAAAPoAAAC+CAYAAAD/K0OdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACVSURBVHhe7cEBDQAAAMKg909tDwcFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfg2V4gABG1s0JAAAAABJRU5ErkJggg==', // placeholder receipt image
@@ -382,7 +401,15 @@ export const createRenewalSubmission = (data: Omit<RenewalSubmission, 'id' | 'su
 export const updateRenewalSubmission = (id: string, data: Partial<RenewalSubmission>): Promise<RenewalSubmission> => {
     const subIndex = mockRenewalSubmissions.findIndex(s => s.id === id);
     if (subIndex > -1) {
-        mockRenewalSubmissions[subIndex] = { ...mockRenewalSubmissions[subIndex], ...data };
+        const originalSubmission = mockRenewalSubmissions[subIndex];
+        const updatedSubmission = { ...originalSubmission, ...data };
+
+        // If status is changed to 'approved', set the approval date
+        if (data.status === 'approved' && originalSubmission.status !== 'approved') {
+            updatedSubmission.approvedAt = new Date().toISOString();
+        }
+
+        mockRenewalSubmissions[subIndex] = updatedSubmission;
         return mockApiCall(mockRenewalSubmissions[subIndex], 200);
     }
     return Promise.reject(new Error("Renewal submission not found"));

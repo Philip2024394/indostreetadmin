@@ -1,8 +1,74 @@
 import React from 'react';
 import { useContent } from '../../contexts/ContentContext';
+import { PartnerType } from '../../types';
+
+const slugifyPartnerType = (type: PartnerType): string => type.toLowerCase().replace(/\s+/g, '-');
+
+const MembershipPricingEditor: React.FC = () => {
+    const { content, updateNumber } = useContent();
+
+    return (
+        <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Membership Pricing</h3>
+            <div className="space-y-6">
+                {Object.values(PartnerType).map(type => {
+                    const slug = slugifyPartnerType(type);
+                    const price3moKey = `membership-price-${slug}-3mo`;
+                    const price6moKey = `membership-price-${slug}-6mo`;
+                    const price12moKey = `membership-price-${slug}-12mo`;
+                    
+                    const price3mo = content.numbers[price3moKey] || 0;
+                    const price6mo = content.numbers[price6moKey] || 0;
+                    const price12mo = content.numbers[price12moKey] || 0;
+
+                    return (
+                        <div key={type} className="p-4 border rounded-lg bg-gray-50/50">
+                            <h4 className="font-semibold text-gray-700">{type}</h4>
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">3 Months (Rp)</label>
+                                    <input
+                                        type="number"
+                                        value={price3mo}
+                                        onChange={(e) => updateNumber(price3moKey, Number(e.target.value))}
+                                        className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">6 Months (Rp)</label>
+                                    <input
+                                        type="number"
+                                        value={price6mo}
+                                        onChange={(e) => updateNumber(price6moKey, Number(e.target.value))}
+                                        className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">12 Months (Rp)</label>
+                                    <input
+                                        type="number"
+                                        value={price12mo}
+                                        onChange={(e) => updateNumber(price12moKey, Number(e.target.value))}
+                                        className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 
 const SiteContentPage: React.FC = () => {
     const { content, updateText, updateNumber } = useContent();
+
+    // Fix: Explicitly type `otherNumbers` as Record<string, number> to address type inference issues with Object.fromEntries.
+    const otherNumbers: Record<string, number> = Object.fromEntries(
+        Object.entries(content.numbers).filter(([key]) => !key.startsWith('membership-price-'))
+    );
 
     const renderSection = (title: string, data: Record<string, string | number>, updater: (id: string, value: any) => void) => {
         if (Object.keys(data).length === 0) return null;
@@ -30,10 +96,13 @@ const SiteContentPage: React.FC = () => {
         <div className="space-y-8">
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
                 <h4 className="font-bold text-yellow-800">Content Management</h4>
-                <p className="text-sm text-yellow-700 mt-1">This page lists all content that has been overridden from its default value (e.g., membership prices). To edit new content, enable "Edit Mode" in the header and click on elements directly throughout the application.</p>
+                <p className="text-sm text-yellow-700 mt-1">This page allows direct editing of key values. Membership prices can be set below. To edit other content, enable "Edit Mode" in the header and click on elements directly throughout the application.</p>
             </div>
+            
+            <MembershipPricingEditor />
+            
             {renderSection('Text Overrides', content.text, updateText)}
-            {renderSection('Number Overrides', content.numbers, updateNumber)}
+            {renderSection('Other Number Overrides', otherNumbers, updateNumber)}
             {/* Asset overrides (images) are best managed visually via Edit Mode */}
              {Object.keys(content.assets).length > 0 && (
                  <div className="bg-white p-6 rounded-lg shadow-md">
@@ -45,10 +114,10 @@ const SiteContentPage: React.FC = () => {
                  </div>
              )}
 
-            {Object.keys(content.text).length === 0 && Object.keys(content.numbers).length === 0 && Object.keys(content.assets).length === 0 && (
+            {Object.keys(content.text).length === 0 && Object.keys(otherNumbers).length === 0 && Object.keys(content.assets).length === 0 && (
                 <div className="text-center py-10 px-6 text-gray-500 bg-white rounded-lg shadow-md">
-                    <p>No content has been customized yet.</p>
-                    <p className="text-sm mt-1">Enable "Edit Mode" to start editing.</p>
+                    <p>No non-membership content has been customized yet.</p>
+                    <p className="text-sm mt-1">Enable "Edit Mode" to start editing other site content.</p>
                 </div>
             )}
         </div>
