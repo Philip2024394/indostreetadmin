@@ -152,3 +152,9 @@ export interface TourDestination {
   category: 'Temples & Historical Sites' | 'Nature & Outdoors' | 'Culture & Art';
   description: string;
 }
+
+export interface ContentOverrides {
+  text: Record<string, string>;
+  numbers: Record<string, number>;
+  assets: Record<string, string>; // base64 strings
+}

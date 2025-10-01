@@ -1,40 +1,32 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Role } from './types';
 import LoginPage from './components/auth/LoginPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import DriverDashboard from './components/driver/DriverDashboard';
 import VendorDashboard from './components/vendor/VendorDashboard';
-import { supabase, MOCK_USERS } from './services/supabase';
+import * as api from './services/supabase';
+import { ContentProvider } from './contexts/ContentContext';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // A mock session check
+  // Check for an active session on initial load
   useEffect(() => {
-    // In a real app, you would check for an active session here.
-    // We will just set loading to false after a short delay.
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    const sessionUser = api.checkSession();
+    if (sessionUser) {
+      setUser(sessionUser);
+    }
+    setLoading(false);
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
     setUser(loggedInUser);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    api.logout();
     setUser(null);
-  };
-
-  const handleSwitchRole = (newRole: Role) => {
-    const newUser = MOCK_USERS.find(u => u.role === newRole);
-    if (newUser) {
-      setUser(newUser);
-    }
   };
 
   if (loading) {
@@ -56,20 +48,23 @@ const App: React.FC = () => {
 
     switch (user.role) {
       case Role.Admin:
-        return <AdminDashboard user={user} onLogout={handleLogout} onSwitchRole={handleSwitchRole} />;
+        return <AdminDashboard user={user} onLogout={handleLogout} />;
       case Role.Driver:
-        return <DriverDashboard user={user} onLogout={handleLogout} onSwitchRole={handleSwitchRole} />;
+        return <DriverDashboard user={user} onLogout={handleLogout} />;
       case Role.Vendor:
-        return <VendorDashboard user={user} onLogout={handleLogout} onSwitchRole={handleSwitchRole} />;
+        return <VendorDashboard user={user} onLogout={handleLogout} />;
       default:
-        return <p>Unknown user role.</p>;
+        // In a real app, you might want a more robust fallback or error page
+        return <p>Unknown user role. Please contact support.</p>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {user ? renderDashboard() : <LoginPage onLogin={handleLogin} />}
-    </div>
+    <ContentProvider>
+      <div className="min-h-screen bg-gray-100">
+        {user ? renderDashboard() : <LoginPage onLogin={handleLogin} />}
+      </div>
+    </ContentProvider>
   );
 };
 

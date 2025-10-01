@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { TourDestination } from '../../types';
 import TourEditorModal from './TourEditorModal';
 import { PlusCircleIcon, PencilIcon, TrashIcon, LandmarkIcon } from '../shared/Icons';
@@ -12,11 +13,14 @@ const TourManagementPage: React.FC = () => {
 
     const fetchData = useCallback(async () => {
         setLoading(true);
-        const { data } = await supabase.from('tour_destinations').select('*');
-        if (data) {
+        try {
+            const data = await api.getTourDestinations();
             setDestinations(data);
+        } catch (error) {
+            console.error("Failed to fetch tour destinations:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     useEffect(() => {
@@ -34,19 +38,28 @@ const TourManagementPage: React.FC = () => {
     };
 
     const handleSave = async (data: Omit<TourDestination, 'id'>) => {
-        if (editingDestination) { // Update
-            await supabase.from('tour_destinations').update(data).eq('id', editingDestination.id);
-        } else { // Create
-            await supabase.from('tour_destinations').insert(data);
+        try {
+            if (editingDestination) { // Update
+                await api.updateTourDestination(editingDestination.id, data);
+            } else { // Create
+                await api.createTourDestination(data);
+            }
+            fetchData();
+        } catch (error) {
+            console.error("Failed to save destination:", error);
+        } finally {
+            handleCloseModal();
         }
-        handleCloseModal();
-        fetchData();
     };
 
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this destination? This action cannot be undone.')) {
-            await supabase.from('tour_destinations').delete().eq('id', id);
-            fetchData();
+            try {
+                await api.deleteTourDestination(id);
+                fetchData();
+            } catch (error) {
+                console.error("Failed to delete destination:", error);
+            }
         }
     };
 

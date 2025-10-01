@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, VendorItem, Role, Partner } from '../../types';
-import { supabase, MOCK_PARTNERS } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import Layout from '../shared/Layout';
 import ToggleSwitch from '../shared/ToggleSwitch';
 import ItemEditorModal from './ItemEditorModal';
 import LiveOrders from './LiveOrders';
 import EarningsAndHistory from './EarningsAndHistory';
 import ProfileManagement from '../shared/ProfileManagement';
+import { Editable } from '../shared/Editable';
 import { PencilIcon, TrashIcon, PlusCircleIcon } from '../shared/Icons';
 
 interface VendorDashboardProps {
   user: User;
   onLogout: () => void;
-  onSwitchRole: (role: Role) => void;
 }
 
-const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout, onSwitchRole }) => {
+const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => {
   const [items, setItems] = useState<VendorItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,16 +24,18 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout, onSwi
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    // Fetch items
-    const { data: itemsData, error } = await supabase.from('vendor_items').select('*').eq('vendorId', user.id);
-    if (itemsData) setItems(itemsData);
-    if (error) console.error('Error fetching items:', error);
-    
-    // Fetch partner data
-    const currentPartner = MOCK_PARTNERS.find(p => p.id === user.id) || null;
-    setPartner(currentPartner);
-
-    setLoading(false);
+    try {
+        const [itemsData, partnerData] = await Promise.all([
+            api.getVendorItems(user.id),
+            api.getPartner(user.id),
+        ]);
+        setItems(itemsData);
+        setPartner(partnerData);
+    } catch (error) {
+        console.error('Error fetching vendor data:', error);
+    } finally {
+        setLoading(false);
+    }
   }, [user.id]);
 
   useEffect(() => {
@@ -44,7 +46,12 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout, onSwi
       setItems(currentItems => currentItems.map(item => 
           item.id === itemId ? { ...item, isAvailable } : item
       ));
-      await supabase.from('vendor_items').update({ isAvailable }).eq('id', itemId);
+      try {
+        await api.updateVendorItem(itemId, { isAvailable });
+      } catch (error) {
+          console.error("Failed to update item availability:", error);
+          fetchData(); // Revert optimistic update on failure
+      }
   };
   
   const handleOpenModal = (item: VendorItem | null = null) => {
@@ -58,33 +65,44 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout, onSwi
   };
 
   const handleSaveItem = async (itemData: Omit<VendorItem, 'id' | 'vendorId'>) => {
-    if (editingItem) { // Update
-      await supabase.from('vendor_items').update(itemData).eq('id', editingItem.id);
-    } else { // Create
-      await supabase.from('vendor_items').insert({ ...itemData, vendorId: user.id });
+    try {
+        if (editingItem) { // Update
+          await api.updateVendorItem(editingItem.id, itemData);
+        } else { // Create
+          await api.createVendorItem(user.id, itemData);
+        }
+        fetchData(); // Refresh list
+    } catch (error) {
+        console.error("Failed to save item:", error);
+    } finally {
+        handleCloseModal();
     }
-    handleCloseModal();
-    fetchData(); // Refresh list
   };
   
   const handleDeleteItem = async (itemId: string) => {
     if(window.confirm('Are you sure you want to delete this item?')) {
-        await supabase.from('vendor_items').delete().eq('id', itemId);
-        fetchData(); // Refresh list
+        try {
+            await api.deleteVendorItem(itemId);
+            fetchData(); // Refresh list
+        } catch (error) {
+            console.error("Failed to delete item:", error);
+        }
     }
   };
 
   const handleUpdatePartner = async (updatedData: Partial<Partner>) => {
       if (!partner) return;
-      const { data } = await supabase.from('partners').update(updatedData).eq('id', partner.id);
-      if (data) {
-          setPartner(data[0]);
+      try {
+        const updatedPartner = await api.updatePartner(partner.id, updatedData);
+        setPartner(updatedPartner);
+      } catch (error) {
+          console.error("Failed to update partner:", error);
       }
   };
 
 
   return (
-    <Layout user={user} onLogout={onLogout} title={user.profile.shopName || 'Vendor Dashboard'} onSwitchRole={onSwitchRole}>
+    <Layout user={user} onLogout={onLogout} title={user.profile.shopName || 'Vendor Dashboard'}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Live Orders & Item Management */}
         <div className="lg:col-span-2 space-y-8">
@@ -92,7 +110,9 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout, onSwi
             <div className="bg-white rounded-lg shadow-md">
                 <div className="p-6 border-b flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-semibold text-gray-800">Item Management</h3>
+                        <h3 className="text-xl font-semibold text-gray-800">
+                           <Editable editId="vendor-item-mgmt-title" type="text" defaultValue="Item Management" />
+                        </h3>
                         <p className="text-sm text-gray-500">Add, edit, and manage your item availability.</p>
                     </div>
                     <button 
@@ -110,10 +130,19 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout, onSwi
                         {items.map(item => (
                             <div key={item.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
                                 <div className="flex items-center space-x-4">
-                                    <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-md object-cover" />
+                                    <Editable 
+                                      editId={`item-${item.id}-image`} 
+                                      type="asset" 
+                                      defaultValue={<img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-md object-cover" />}
+                                      className="w-16 h-16"
+                                    />
                                     <div>
-                                        <p className="font-semibold text-gray-800">{item.name}</p>
-                                        <p className="text-sm text-gray-600">Rp {item.price.toLocaleString('id-ID')}</p>
+                                        <p className="font-semibold text-gray-800">
+                                            <Editable editId={`item-${item.id}-name`} type="text" defaultValue={item.name} />
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                             <Editable editId={`item-${item.id}-price`} type="number" defaultValue={item.price} prefix="Rp " />
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-4">

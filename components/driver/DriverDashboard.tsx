@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Role, RideRequest, PartnerType, Partner } from '../../types';
-import { supabase, MOCK_PARTNERS } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import Layout from '../shared/Layout';
 import ToggleSwitch from '../shared/ToggleSwitch';
 import RideRequestCard from './RideRequestCard';
@@ -10,14 +10,14 @@ import EarningsAndHistory from './EarningsAndHistory';
 import TourPricing from './TourPricing';
 import ProfileManagement from '../shared/ProfileManagement';
 import VehicleRentalManagement from './VehicleRentalManagement';
+import { Editable } from '../shared/Editable';
 
 interface DriverDashboardProps {
   user: User;
   onLogout: () => void;
-  onSwitchRole: (role: Role) => void;
 }
 
-const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwitchRole }) => {
+const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout }) => {
   const [isOnline, setIsOnline] = useState(false);
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [partner, setPartner] = useState<Partner | null>(null);
@@ -28,27 +28,34 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
   const requestInterval = useRef<number | null>(null);
 
   useEffect(() => {
-    const fetchPartnerData = () => {
+    const fetchPartnerData = async () => {
         setLoadingPartner(true);
-        // In a real app, you might fetch this from an API endpoint `/api/partners/me`
-        // For the mock, we find the partner from the full list.
-        const currentPartner = MOCK_PARTNERS.find(p => p.id === user.id) || null;
-        setPartner(currentPartner);
-        setLoadingPartner(false);
+        try {
+            const currentPartner = await api.getPartner(user.id);
+            setPartner(currentPartner);
+        } catch (error) {
+            console.error("Failed to fetch partner data:", error);
+        } finally {
+            setLoadingPartner(false);
+        }
     };
     fetchPartnerData();
   }, [user.id]);
 
   const fetchNewRequest = useCallback(async () => {
-    const { data } = await supabase.from('ride_requests').select();
-    if (data && data.length > 0) {
-      const newRequest = { ...data[0], id: `ride-${Date.now()}` }; // Ensure unique ID for list keys
-      setRequests(prev => {
-        if (prev.find(r => r.pickupLocation === newRequest.pickupLocation && r.destination === newRequest.destination)) {
-          return prev; // Avoid adding duplicate requests
+    try {
+        const data = await api.getRideRequests();
+        if (data && data.length > 0) {
+          const newRequest = { ...data[0], id: `ride-${Date.now()}` }; // Ensure unique ID for list keys
+          setRequests(prev => {
+            if (prev.find(r => r.pickupLocation === newRequest.pickupLocation && r.destination === newRequest.destination)) {
+              return prev; // Avoid adding duplicate requests for demo purposes
+            }
+            return [newRequest, ...prev].slice(0, 5); // Keep the list from growing indefinitely
+          });
         }
-        return [newRequest, ...prev];
-      });
+    } catch (error) {
+        console.error("Failed to fetch ride requests:", error);
     }
   }, []);
 
@@ -75,7 +82,7 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
   const handleAcceptRequest = (id: string) => {
     console.log(`Accepted request ${id}`);
     setRequests(prev => prev.filter(r => r.id !== id));
-    // Here you would typically have more logic, e.g., navigate to an active ride screen
+    // Here you would typically have more logic, e.g., call an API to accept the ride
   };
 
   const handleRejectRequest = (id: string) => {
@@ -85,9 +92,11 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
   
   const handleUpdatePartner = async (updatedData: Partial<Partner>) => {
       if (!partner) return;
-      const { data } = await supabase.from('partners').update(updatedData).eq('id', partner.id);
-      if (data) {
-          setPartner(data[0]);
+      try {
+        const updatedPartner = await api.updatePartner(partner.id, updatedData);
+        setPartner(updatedPartner);
+      } catch (error) {
+          console.error("Failed to update partner:", error);
       }
   };
 
@@ -106,7 +115,7 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
   const { type: driverType, title: dashboardTitle } = getDashboardInfo();
 
   return (
-    <Layout user={user} onLogout={onLogout} title={dashboardTitle} onSwitchRole={onSwitchRole}>
+    <Layout user={user} onLogout={onLogout} title={dashboardTitle}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Profile & Availability */}
         <div className="lg:col-span-1 space-y-8">
@@ -115,7 +124,9 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
 
           {/* Availability Card */}
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Availability Status</h4>
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">
+                <Editable editId="driver-availability-title" type="text" defaultValue="Availability Status" />
+            </h4>
             <div className="flex items-center justify-center p-4 border rounded-lg">
                 <ToggleSwitch 
                   enabled={isOnline}
@@ -156,7 +167,9 @@ const DriverDashboard: React.FC<DriverDashboardProps> = ({ user, onLogout, onSwi
         <div className="lg:col-span-2 space-y-8">
            <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b">
-                <h3 className="text-xl font-semibold text-gray-800">Live Ride Requests</h3>
+                <h3 className="text-xl font-semibold text-gray-800">
+                    <Editable editId="driver-requests-title" type="text" defaultValue="Live Ride Requests" />
+                </h3>
                 <p className="text-sm text-gray-500 mt-1">Incoming ride opportunities will appear below.</p>
             </div>
             <div className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">

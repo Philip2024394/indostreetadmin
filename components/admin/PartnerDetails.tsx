@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Partner, Transaction, AdminMessage } from '../../types';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { ChevronLeftIcon, UserCircleIcon, StarIcon, BriefcaseIcon, CheckIcon, PaperAirplaneIcon } from '../shared/Icons';
 import ToggleSwitch from '../shared/ToggleSwitch';
 
@@ -73,14 +74,15 @@ const PartnerChat: React.FC<{ partner: Partner }> = ({ partner }) => {
 
     const fetchMessages = useCallback(async () => {
         setLoading(true);
-        const { data } = await supabase.from('admin_messages').select('*');
-        if (data) {
-            const partnerMessages = data
-                .filter(m => m.recipientId === partner.id || m.recipientId === 'all')
-                .sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
-            setMessages(partnerMessages);
+        try {
+            const data = await api.getMessagesForPartner(partner.id);
+            const sortedMessages = data.sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+            setMessages(sortedMessages);
+        } catch (error) {
+            console.error("Failed to fetch messages for partner:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [partner.id]);
 
     useEffect(() => {
@@ -91,13 +93,13 @@ const PartnerChat: React.FC<{ partner: Partner }> = ({ partner }) => {
         e.preventDefault();
         if (newMessage.trim() === '') return;
         
-        await supabase.from('admin_messages').insert({
-            recipientId: partner.id,
-            content: newMessage,
-        });
-
-        setNewMessage('');
-        fetchMessages(); // Refresh messages
+        try {
+            await api.sendMessage(partner.id, newMessage);
+            setNewMessage('');
+            fetchMessages(); // Refresh messages
+        } catch (error) {
+            console.error("Failed to send message:", error);
+        }
     };
 
     return (
@@ -141,11 +143,14 @@ const PartnerDetails: React.FC<PartnerDetailsProps> = ({ partner, onBack }) => {
 
     const fetchTransactions = useCallback(async () => {
         setLoading(true);
-        const { data } = await supabase.from('transactions').select('*').eq('partnerId', partner.id);
-        if (data) {
+        try {
+            const data = await api.getTransactionsForPartner(partner.id);
             setTransactions(data);
+        } catch (error) {
+            console.error("Failed to fetch transactions:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [partner.id]);
 
     useEffect(() => {
@@ -153,9 +158,12 @@ const PartnerDetails: React.FC<PartnerDetailsProps> = ({ partner, onBack }) => {
     }, [fetchTransactions]);
 
     const handlePartnerUpdate = async (updatedData: Partial<Partner>) => {
-        const { data } = await supabase.from('partners').update(updatedData).eq('id', partner.id);
-        if (data) {
-            setCurrentPartner(data[0]);
+        try {
+            const updatedPartner = await api.updatePartner(partner.id, updatedData);
+            setCurrentPartner(updatedPartner);
+        } catch (error) {
+            console.error("Failed to update partner:", error);
+            // Optionally, revert state or show an error message
         }
     };
     

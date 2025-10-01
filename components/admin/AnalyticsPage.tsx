@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { AnalyticsSummary } from '../../types';
 import { UserGroupIcon, ChartBarIcon, TrendingUpIcon, TrendingDownIcon } from '../shared/Icons';
 
@@ -55,11 +55,14 @@ const AnalyticsPage: React.FC = () => {
     useEffect(() => {
         const fetchSummary = async () => {
             setLoading(true);
-            const { data } = await supabase.from('analytics_summary').select();
-            if (data) {
-                setSummary(data[0]);
+            try {
+                const data = await api.getAnalyticsSummary();
+                setSummary(data);
+            } catch (error) {
+                console.error("Failed to fetch analytics summary:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         fetchSummary();
     }, []);

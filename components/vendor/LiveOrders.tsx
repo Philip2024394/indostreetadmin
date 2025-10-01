@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Transaction } from '../../types';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
+import { Editable } from '../shared/Editable';
 import { ClipboardListIcon, ExclamationCircleIcon, CheckIcon, XIcon } from '../shared/Icons';
 
 interface LiveOrdersProps {
@@ -13,14 +14,19 @@ const LiveOrders: React.FC<LiveOrdersProps> = ({ user }) => {
 
     const fetchOrders = useCallback(async () => {
         setLoading(true);
-        const { data } = await supabase.from('transactions').select('*').eq('partnerId', user.id);
-        if(data) {
-            const inProgressOrders = data
-                .filter(tx => tx.status === 'in_progress' && tx.type === 'Order')
-                .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            setOrders(inProgressOrders);
+        try {
+            const data = await api.getTransactionsForPartner(user.id);
+            if(data) {
+                const inProgressOrders = data
+                    .filter(tx => tx.status === 'in_progress' && tx.type === 'Order')
+                    .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                setOrders(inProgressOrders);
+            }
+        } catch (error) {
+            console.error("Failed to fetch live orders:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [user.id]);
 
     useEffect(() => {
@@ -31,14 +37,21 @@ const LiveOrders: React.FC<LiveOrdersProps> = ({ user }) => {
 
     const handleUpdateStatus = async (orderId: string, status: 'completed' | 'cancelled') => {
         setOrders(prev => prev.filter(o => o.id !== orderId)); // Optimistic update
-        await supabase.from('transactions').update({ status }).eq('id', orderId);
-        // No need to refetch, already handled by optimistic update and polling
+        try {
+            await api.updateTransaction(orderId, { status });
+            // No need to refetch, already handled by optimistic update and polling
+        } catch (error) {
+            console.error("Failed to update order status:", error);
+            fetchOrders(); // Revert on failure
+        }
     };
 
     return (
         <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b">
-                <h3 className="text-xl font-semibold text-gray-800">Live Orders</h3>
+                <h3 className="text-xl font-semibold text-gray-800">
+                    <Editable editId="vendor-live-orders-title" type="text" defaultValue="Live Orders" />
+                </h3>
                 <p className="text-sm text-gray-500 mt-1">New incoming orders will appear below.</p>
             </div>
             <div className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">

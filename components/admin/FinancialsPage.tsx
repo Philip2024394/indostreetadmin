@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase, MOCK_PARTNERS } from '../../services/supabase';
-import { Transaction, Partner, PartnerType } from '../../types';
+import * as api from '../../services/supabase';
+import { Transaction, Partner } from '../../types';
 import StatCard from './StatCard';
 import MonthlyReport from './MonthlyReport';
 import { DollarSignIcon, TrendingUpIcon, TrendingDownIcon, SearchIcon } from '../shared/Icons';
@@ -9,28 +10,36 @@ const INDOSTREET_CUT_PERCENTAGE = 0.20; // 20%
 
 const FinancialsPage: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [partners, setPartners] = useState<Partner[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showReport, setShowReport] = useState(false);
 
     useEffect(() => {
-        const fetchTransactions = async () => {
+        const fetchData = async () => {
             setLoading(true);
-            const { data } = await supabase.from('transactions').select();
-            if (data) {
-                setTransactions(data);
+            try {
+                const [transactionsData, partnersData] = await Promise.all([
+                    api.getTransactions(),
+                    api.getPartners(),
+                ]);
+                setTransactions(transactionsData);
+                setPartners(partnersData);
+            } catch (error) {
+                console.error("Failed to fetch financial data:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
-        fetchTransactions();
+        fetchData();
     }, []);
 
     const partnersMap = useMemo(() => {
         const map = new Map<string, Partner>();
-        MOCK_PARTNERS.forEach(p => map.set(p.id, p));
+        partners.forEach(p => map.set(p.id, p));
         return map;
-    }, []);
+    }, [partners]);
 
     const filteredTransactions = useMemo(() => {
         return transactions.filter(tx => {

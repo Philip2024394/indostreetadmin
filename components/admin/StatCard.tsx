@@ -1,8 +1,7 @@
-
 import React from 'react';
 
 interface StatCardProps {
-  title: string;
+  title: React.ReactNode;
   value: string | number;
   icon: React.ReactNode;
 }
@@ -14,7 +13,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => {
         {icon}
       </div>
       <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <div className="text-sm font-medium text-gray-500">{title}</div>
         <p className="text-2xl font-bold text-gray-900">{value}</p>
       </div>
     </div>

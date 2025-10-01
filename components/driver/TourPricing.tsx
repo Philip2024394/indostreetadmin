@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Partner, TourDestination } from '../../types';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { LandmarkIcon } from '../shared/Icons';
 
 interface TourPricingProps {
@@ -18,11 +19,14 @@ const TourPricing: React.FC<TourPricingProps> = ({ partner, onUpdate }) => {
   useEffect(() => {
     const fetchDestinations = async () => {
       setLoading(true);
-      const { data } = await supabase.from('tour_destinations').select();
-      if (data) {
+      try {
+        const data = await api.getTourDestinations();
         setDestinations(data);
+      } catch (error) {
+          console.error("Failed to fetch tour destinations:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchDestinations();
   }, []);
@@ -49,10 +53,15 @@ const TourPricing: React.FC<TourPricingProps> = ({ partner, onUpdate }) => {
   };
   
   const groupedDestinations = useMemo(() => {
-    return destinations.reduce((acc, dest) => {
-        (acc[dest.category] = acc[dest.category] || []).push(dest);
-        return acc;
-    }, {} as Record<TourDestination['category'], TourDestination[]>);
+    // Fix: Group destinations by category using a forEach loop for clearer type inference.
+    const groups: { [key: string]: TourDestination[] } = {};
+    destinations.forEach((dest) => {
+      if (!groups[dest.category]) {
+        groups[dest.category] = [];
+      }
+      groups[dest.category].push(dest);
+    });
+    return groups;
   }, [destinations]);
 
   if (loading) {
@@ -75,10 +84,11 @@ const TourPricing: React.FC<TourPricingProps> = ({ partner, onUpdate }) => {
             </div>
         </div>
         <div className="space-y-6 max-h-96 overflow-y-auto pr-2">
-            {Object.entries(groupedDestinations).map(([category, dests]) => (
+            {/* FIX: Use Object.keys to iterate over grouped destinations. This provides better type safety than Object.entries with index signatures, resolving the issue where 'dests.map' would fail because 'dests' was inferred as 'unknown'. */}
+            {Object.keys(groupedDestinations).map((category) => (
                  <div key={category} className="space-y-4 pt-4 border-t first:border-t-0 first:pt-0">
                     <h5 className="font-medium text-gray-700">{category}</h5>
-                    {dests.map(dest => (
+                    {groupedDestinations[category].map(dest => (
                         <div key={dest.id}>
                             <label htmlFor={`tour-${dest.id}`} className="block text-sm font-medium text-gray-700">{dest.name}</label>
                             <p className="text-xs text-gray-500 mb-1">{dest.description}</p>

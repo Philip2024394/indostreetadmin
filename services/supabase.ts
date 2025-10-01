@@ -1,338 +1,348 @@
-import { Role, User, PartnerApplication, VendorItem, AdminStats, PartnerType, Partner, Transaction, AnalyticsSummary, RideRequest, AdminMessage, TourDestination } from '../types';
+import {
+  User,
+  Role,
+  PartnerApplication,
+  VendorItem,
+  AdminStats,
+  Partner,
+  Transaction,
+  AnalyticsSummary,
+  RideRequest,
+  AdminMessage,
+  TourDestination,
+  PartnerType,
+  ContentOverrides,
+} from '../types';
 
-// MOCK DATA
-const MOCK_USERS: User[] = [
-  { id: 'admin-1', email: 'admin@indostreet.com', role: Role.Admin, profile: { name: 'Admin IndoStreet' } },
-  { id: 'driver-1', email: 'driver@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } } },
-  { id: 'driver-2', email: 'cardriver@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } } },
-  { id: 'vendor-1', email: 'vendor@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti' } },
-  { id: 'driver-4', email: 'lorrydriver@indostreet.com', role: Role.Driver, profile: { name: 'Joko Widodo', profilePicture: 'https://picsum.photos/seed/driver4/200', vehicle: { type: 'Lorry', brand: 'Mitsubishi', model: 'Fuso', year: 2020, licensePlate: 'L 9876 KLM' } } },
-];
+// #region MOCK DATABASE
+// This section contains a complete in-memory mock database to allow the app
+// to function without a real backend. When the backend is ready, this section
+// and the mock implementations of the API functions can be removed.
 
-let MOCK_PARTNERS: Partner[] = [
-    { id: 'driver-1', email: 'budi.s@indostreet.com', role: Role.Driver, profile: { name: 'Budi Santoso', profilePicture: 'https://picsum.photos/seed/driver1/200', vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2022, licensePlate: 'B 1234 XYZ' } }, partnerType: PartnerType.BikeDriver, status: 'active', rating: 4.8, totalEarnings: 1250000, memberSince: '2023-01-15T09:00:00Z', phone: '081234567890', activationExpiry: '2025-01-15T09:00:00Z', rideRatePerKm: 2600, minFare: 8000, parcelRatePerKm: 2000, hourlyHireRate: 25000, dailyHireRate: 200000, tourRates: { 'borobudur': 150000, 'prambanan': 100000, 'merapi': 120000 }, bankDetails: { bankName: 'BCA', accountHolderName: 'Budi Santoso', accountNumber: '1234567890' }, rentalDetails: { isAvailableForRental: true, dailyRate: 120000, weeklyRate: 750000 } },
-    { id: 'vendor-1', email: 'siti.a@indostreet.com', role: Role.Vendor, profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Goreng Bu Siti', profilePicture: 'https://picsum.photos/seed/vendor1/200' }, partnerType: PartnerType.FoodVendor, status: 'active', rating: 4.9, totalEarnings: 3500000, memberSince: '2022-11-20T14:00:00Z', phone: '081234567891', activationExpiry: '2024-12-20T14:00:00Z', bankDetails: { bankName: 'Mandiri', accountHolderName: 'Siti Aminah', accountNumber: '0987654321' } },
-    { id: 'driver-2', email: 'eko.p@indostreet.com', role: Role.Driver, profile: { name: 'Eko Prasetyo', profilePicture: 'https://picsum.photos/seed/driver2/200', vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'D 5678 ABC' } }, partnerType: PartnerType.CarDriver, status: 'suspended', rating: 4.7, totalEarnings: 2100000, memberSince: '2023-03-10T11:00:00Z', phone: '081234567892', activationExpiry: '2024-09-10T11:00:00Z', rideRatePerKm: 3500, minFare: 15200, parcelRatePerKm: 3000, hourlyHireRate: 75000, dailyHireRate: 600000, tourRates: { 'borobudur': 300000, 'prambanan': 250000, 'merapi': 280000, 'malioboro': 150000 }, bankDetails: { bankName: 'BNI', accountHolderName: 'Eko Prasetyo', accountNumber: '1122334455' }, rentalDetails: { isAvailableForRental: false, dailyRate: 350000, weeklyRate: 2100000 } },
-    { id: 'rental-1', email: 'sewa@cepat.com', role: Role.Vendor, profile: { name: 'Rental Cepat', shopName: 'Sewa Mobil Cepat', profilePicture: 'https://picsum.photos/seed/rental1/200' }, partnerType: PartnerType.CarRental, status: 'active', rating: 4.6, totalEarnings: 5200000, memberSince: '2023-05-01T08:00:00Z', phone: '081234567893' },
-    { id: 'driver-3', email: 'agus.s@email.com', role: Role.Driver, profile: { name: 'Agus Setiawan' }, partnerType: PartnerType.BikeDriver, status: 'pending', rating: 0, totalEarnings: 0, memberSince: '2024-07-28T10:00:00Z', phone: '081234567894' },
-    { id: 'driver-4', email: 'joko.w@indostreet.com', role: Role.Driver, profile: { name: 'Joko Widodo', profilePicture: 'https://picsum.photos/seed/driver4/200', vehicle: { type: 'Lorry', brand: 'Mitsubishi', model: 'Fuso', year: 2020, licensePlate: 'L 9876 KLM' } }, partnerType: PartnerType.LorryDriver, status: 'active', rating: 4.6, totalEarnings: 4500000, memberSince: '2023-08-20T11:00:00Z', phone: '081234567895', activationExpiry: '2025-08-20T11:00:00Z' },
-]
-
-let MOCK_MESSAGES: AdminMessage[] = [
-    { id: 'msg-1', senderId: 'admin-1', recipientId: 'driver-1', content: 'Please update your vehicle registration photo. The current one is blurry.', sentAt: '2024-07-28T10:00:00Z', readBy: [] },
-    { id: 'msg-2', senderId: 'admin-1', recipientId: 'all', content: 'Happy holidays to all our partners! Drive safe and thank you for your hard work.', sentAt: '2024-07-27T15:00:00Z', readBy: ['driver-2'] },
-    { id: 'msg-3', senderId: 'admin-1', recipientId: 'vendor-1', content: 'There is a system-wide promotion for Nasi Goreng next week. Please ensure you have enough stock.', sentAt: '2024-07-29T11:00:00Z', readBy: ['vendor-1'] },
-];
-
-let MOCK_PARTNER_APPLICATIONS: PartnerApplication[] = [
-  // Bike Drivers
-  { id: 'app1', name: 'Agus Setiawan', email: 'agus.s@email.com', phone: '081234567890', status: 'pending', partnerType: PartnerType.BikeDriver, submittedAt: '2024-07-28T10:00:00Z', documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Motorcycle', brand: 'Yamaha', model: 'NMAX', year: 2021, licensePlate: 'D 5678 ABC' } },
-  { id: 'app2', name: 'Dewi Lestari', email: 'dewi.l@email.com', phone: '081234567891', status: 'pending', partnerType: PartnerType.BikeDriver, submittedAt: '2024-07-27T15:30:00Z', documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Motorcycle', brand: 'Suzuki', model: 'Address', year: 2023, licensePlate: 'F 9012 DEF' } },
-  // Car Drivers
-  { id: 'app3', name: 'Eko Prasetyo', email: 'eko.p@email.com', phone: '081234567892', status: 'pending', partnerType: PartnerType.CarDriver, submittedAt: '2024-07-26T09:00:00Z', documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2022, licensePlate: 'B 3456 GHI' } },
-  // Food Vendors
-  { id: 'app4', name: 'Warung Makan Sedap', email: 'info@sedap.com', phone: '081234567893', status: 'pending', partnerType: PartnerType.FoodVendor, submittedAt: '2024-07-25T11:00:00Z', documents: { eKtp: '#', skck: '#', businessLicense: '#' } },
-  // Street Shops
-  { id: 'app5', name: 'Toko Kelontong Pak Jaya', email: 'jaya@email.com', phone: '081234567894', status: 'pending', partnerType: PartnerType.StreetShop, submittedAt: '2024-07-24T14:20:00Z', documents: { eKtp: '#', skck: '#', businessLicense: '#' } },
-  // Car Rentals
-  { id: 'app6', name: 'Sewa Mobil Cepat', email: 'rental@cepat.com', phone: '081234567895', status: 'pending', partnerType: PartnerType.CarRental, submittedAt: '2024-07-23T18:00:00Z', documents: { eKtp: '#', skck: '#', businessLicense: '#' } },
-  // Bike Rentals
-  { id: 'app7', name: 'Rental Motor Kilat', email: 'cs@kilatmotor.com', phone: '081234567896', status: 'pending', partnerType: PartnerType.BikeRental, submittedAt: '2024-07-22T09:45:00Z', documents: { eKtp: '#', skck: '#', businessLicense: '#' } },
-  // Local Business
-  { id: 'app8', name: 'Laundry Bersih Wangi', email: 'laundry@bersih.com', phone: '081234567897', status: 'pending', partnerType: PartnerType.LocalBusiness, submittedAt: '2024-07-21T12:00:00Z', documents: { eKtp: '#', skck: '#', businessLicense: '#' } },
-  // Approved application for testing
-  { id: 'app9', name: 'Rina Hartati', email: 'rina.h@email.com', phone: '081234567899', status: 'approved', partnerType: PartnerType.BikeDriver, submittedAt: '2024-07-20T09:00:00Z', documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'PCX', year: 2022, licensePlate: 'B 3456 GHI' } },
-];
-
-let MOCK_ITEMS: VendorItem[] = [
-  { id: 'item1', vendorId: 'vendor-1', name: 'Nasi Goreng Spesial', price: 25000, isAvailable: true, imageUrl: 'https://picsum.photos/seed/nasigoreng/400' },
-  { id: 'item2', vendorId: 'vendor-1', name: 'Mie Goreng Ayam', price: 22000, isAvailable: true, imageUrl: 'https://picsum.photos/seed/miegoreng/400' },
-  { id: 'item3', vendorId: 'vendor-1', name: 'Kwetiau Siram', price: 27000, isAvailable: false, imageUrl: 'https://picsum.photos/seed/kwetiau/400' },
-  { id: 'item4', vendorId: 'vendor-1', name: 'Es Teh Manis', price: 5000, isAvailable: true, imageUrl: 'https://picsum.photos/seed/esteh/400' },
-];
-
-let MOCK_TRANSACTIONS: Transaction[] = [
-    { id: 'txn1', partnerId: 'driver-1', date: '2024-07-28T10:05:00Z', type: 'Ride', amount: 15000, status: 'completed', details: 'Sudirman to Thamrin' },
-    { id: 'txn2', partnerId: 'driver-1', date: '2024-07-28T11:20:00Z', type: 'Delivery', amount: 25000, status: 'completed', details: 'Food delivery from McD' },
-    { id: 'txn3', partnerId: 'vendor-1', date: '2024-07-28T12:30:00Z', type: 'Order', amount: 52000, status: 'completed', details: 'Nasi Goreng x2, Es Teh x1' },
-    { id: 'txn4', partnerId: 'driver-2', date: '2024-07-28T13:00:00Z', type: 'Ride', amount: 75000, status: 'completed', details: 'Airport Transfer' },
-    { id: 'txn5', partnerId: 'rental-1', date: '2024-07-27T10:00:00Z', type: 'Rental', amount: 350000, status: 'completed', details: 'Toyota Avanza - 1 day' },
-    { id: 'txn6', partnerId: 'vendor-1', date: '2024-07-28T13:15:00Z', type: 'Order', amount: 22000, status: 'completed', details: 'Mie Goreng x1' },
-    { id: 'txn7', partnerId: 'driver-1', date: '2024-07-28T14:00:00Z', type: 'Ride', amount: 18000, status: 'cancelled', details: 'Blok M to Senayan' },
-    { id: 'txn8', partnerId: 'driver-2', date: '2024-07-27T18:00:00Z', type: 'Ride', amount: 55000, status: 'completed', details: 'City Tour' },
-    { id: 'txn9', partnerId: 'driver-1', date: '2024-07-26T08:00:00Z', type: 'Ride', amount: 12000, status: 'completed', details: 'Kuningan to Tebet' },
-    { id: 'txn10', partnerId: 'driver-4', date: '2024-07-28T09:00:00Z', type: 'Delivery', amount: 250000, status: 'completed', details: 'Furniture transport' },
-    { id: 'txn11', partnerId: 'driver-4', date: '2024-07-27T14:30:00Z', type: 'Delivery', amount: 180000, status: 'in_progress', details: 'Moving boxes' },
-    { id: 'txn12', partnerId: 'vendor-1', date: new Date(Date.now() - 60000).toISOString(), type: 'Order', amount: 72000, status: 'in_progress', details: 'Nasi Goreng Spesial x2, Kwetiau Siram x1' },
-    { id: 'txn13', partnerId: 'vendor-1', date: new Date(Date.now() - 120000).toISOString(), type: 'Order', amount: 27000, status: 'in_progress', details: 'Mie Goreng Ayam x1, Es Teh Manis x1' },
-];
-
-const MOCK_RIDE_REQUESTS: RideRequest[] = [
-    { id: 'ride1', pickupLocation: 'Grand Indonesia', destination: 'Stasiun Sudirman', fare: 12000, customerName: 'Rina', customerRating: 4.8 },
-    { id: 'ride2', pickupLocation: 'Blok M Plaza', destination: 'Senayan City', fare: 15000, customerName: 'Joko', customerRating: 4.9 },
-    { id: 'ride3', pickupLocation: 'Kota Kasablanka', destination: 'Kuningan City', fare: 10000, customerName: 'Sari', customerRating: 4.7 },
-    { id: 'ride4', pickupLocation: 'Pacific Place', destination: 'Gelora Bung Karno', fare: 18000, customerName: 'Putra', customerRating: 5.0 },
-    { id: 'ride5', pickupLocation: 'Bandara Soekarno-Hatta', destination: 'Menteng', fare: 85000, customerName: 'David', customerRating: 4.8 },
-];
-
-let MOCK_TOUR_DESTINATIONS: TourDestination[] = [
-    // Temples & Historical Sites
-    { id: 'borobudur', name: 'Borobudur Temple', category: 'Temples & Historical Sites', description: "World's largest Buddhist temple." },
-    { id: 'prambanan', name: 'Prambanan Temple', category: 'Temples & Historical Sites', description: "Magnificent 9th-century Hindu temple." },
-    { id: 'ratu_boko', name: 'Ratu Boko Palace', category: 'Temples & Historical Sites', description: "Archaeological site with stunning sunset views." },
-    { id: 'sewu', name: 'Sewu Temple', category: 'Temples & Historical Sites', description: "Significant Buddhist temple near Prambanan." },
-    { id: 'plaosan', name: 'Plaosan Temple', category: 'Temples & Historical Sites', description: "Unique blend of Hindu and Buddhist architecture." },
-    { id: 'taman_sari', name: 'Taman Sari (Water Castle)', category: 'Temples & Historical Sites', description: "Former royal garden and bathing complex." },
-    { id: 'keraton', name: 'Keraton Yogyakarta', category: 'Temples & Historical Sites', description: "Official residence of the Sultan." },
-    // Nature & Outdoors
-    { id: 'merapi', name: 'Mount Merapi', category: 'Nature & Outdoors', description: "Legendary active volcano for jeep tours." },
-    { id: 'jomblang', name: 'Jomblang Cave', category: 'Nature & Outdoors', description: 'Famous for its "heavenly light" view.' },
-    { id: 'gunung_kidul', name: 'Gunung Kidul Beaches', category: 'Nature & Outdoors', description: "Region known for beautiful beaches." },
-    { id: 'timang', name: 'Timang Beach', category: 'Nature & Outdoors', description: "Famous for its adventurous cliff swing." },
-    { id: 'tebing_breksi', name: 'Tebing Breksi', category: 'Nature & Outdoors', description: "Unique cliff formation with stunning views." },
-    { id: 'mangunan', name: 'Mangunan Pines Forest', category: 'Nature & Outdoors', description: "Popular spot for nature and scenic views." },
-    // Culture & Art
-    { id: 'malioboro', name: 'Jalan Malioboro', category: 'Culture & Art', description: "Famous street for shopping and street food." },
-    { id: 'ramayana', name: 'Ramayana Ballet', category: 'Culture & Art', description: "Spectacular performance at Prambanan." },
-    { id: 'sonobudoyo', name: 'Sonobudoyo Museum', category: 'Culture & Art', description: "Houses historical artifacts and Javanese artworks." },
-];
-
-
-const MOCK_ANALYTICS_SUMMARY: AnalyticsSummary = {
-    partnerGrowth: { total: MOCK_PARTNERS.length, change: 15.5 },
-    rideAndOrderVolume: { total: MOCK_TRANSACTIONS.filter(t => t.status === 'completed').length, change: 22.1 },
-    popularServices: [
-        { name: PartnerType.BikeDriver, count: 4500 },
-        { name: PartnerType.FoodVendor, count: 2100 },
-        { name: PartnerType.CarDriver, count: 1500 },
-        { name: PartnerType.CarRental, count: 800 },
-    ],
-    peakHours: [
-        { hour: '08:00 AM', count: 750 },
-        { hour: '12:00 PM', count: 980 },
-        { hour: '06:00 PM', count: 1200 },
-    ]
-};
-
-// MOCK SUPABASE CLIENT
-const mockSupabaseClient = {
-  auth: {
-    signIn: async ({ email, password }: {email: string, password?: string}) => {
-      return new Promise<{ data: { user: User | null }; error: Error | null }>((resolve, reject) => {
-        setTimeout(() => {
-          const user = MOCK_USERS.find(u => u.email === email);
-          if (user && password === 'password') { // Generic password for mock
-            const partner = MOCK_PARTNERS.find(p => p.id === user.id);
-            if (partner) {
-                user.partnerType = partner.partnerType;
-            }
-            resolve({ data: { user }, error: null });
-          } else {
-            resolve({ data: { user: null }, error: new Error('Invalid login credentials') });
-          }
-        }, 500);
-      });
-    },
-    signOut: async () => {
-      return new Promise<{ error: Error | null }>(resolve => {
-        setTimeout(() => {
-          resolve({ error: null });
-        }, 200);
-      });
+const mockUsers: (User | Partner)[] = [
+  {
+    id: 'admin-1',
+    email: 'admin@indostreet.com',
+    role: Role.Admin,
+    profile: { name: 'Admin IndoStreet', profilePicture: 'https://i.pravatar.cc/150?u=admin-1' },
+  },
+  {
+    id: 'driver-1',
+    email: 'driver@indostreet.com',
+    role: Role.Driver,
+    partnerType: PartnerType.BikeDriver,
+    status: 'active',
+    rating: 4.8,
+    totalEarnings: 12500000,
+    memberSince: '2022-01-15T09:00:00Z',
+    phone: '081234567890',
+    rideRatePerKm: 2600,
+    minFare: 8000,
+    bankDetails: { bankName: 'BCA', accountHolderName: 'Budi Santoso', accountNumber: '1234567890' },
+    profile: {
+      name: 'Budi Santoso',
+      profilePicture: 'https://i.pravatar.cc/150?u=driver-1',
+      vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2021, licensePlate: 'B 1234 ABC' },
     },
   },
-  from: (tableName: string) => {
-    return {
-      select: (columns = '*') => {
-        return {
-          eq: (column: string, value: any) => {
-             return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
-                setTimeout(() => {
-                    if(tableName === 'vendor_items' && column === 'vendorId'){
-                        resolve({ data: MOCK_ITEMS.filter(item => item.vendorId === value), error: null });
-                    } else if (tableName === 'transactions' && column === 'partnerId') {
-                        resolve({ data: MOCK_TRANSACTIONS.filter(t => t.partnerId === value), error: null });
-                    }
-                    else {
-                        resolve({ data: [], error: null });
-                    }
-                }, 300);
-            });
-          },
-          // A simplified select without filters
-          async then(resolve: (result: { data: any[] | null; error: Error | null }) => void) {
-            setTimeout(() => {
-              if (tableName === 'partner_applications') {
-                resolve({ data: MOCK_PARTNER_APPLICATIONS, error: null });
-              } else if (tableName === 'partners') {
-                resolve({ data: MOCK_PARTNERS, error: null });
-              }
-              else if (tableName === 'admin_stats') {
-                const stats: AdminStats = {
-                    totalPartners: MOCK_PARTNERS.filter(p => p.status === 'active').length,
-                    pendingApplications: MOCK_PARTNER_APPLICATIONS.filter(a => a.status === 'pending').length,
-                    activeDrivers: MOCK_PARTNERS.filter(p => p.status === 'active' && p.role === Role.Driver).length,
-                    activeVendorsAndBusinesses: MOCK_PARTNERS.filter(p => p.status === 'active' && p.role !== Role.Driver).length,
-                };
-                resolve({ data: [stats], error: null });
-              }
-               else if (tableName === 'transactions') {
-                resolve({ data: MOCK_TRANSACTIONS, error: null });
-              }
-               else if (tableName === 'analytics_summary') {
-                resolve({ data: [MOCK_ANALYTICS_SUMMARY], error: null });
-              }
-               else if (tableName === 'ride_requests') {
-                // Return a random request to simulate a stream
-                const randomIndex = Math.floor(Math.random() * MOCK_RIDE_REQUESTS.length);
-                resolve({ data: [MOCK_RIDE_REQUESTS[randomIndex]], error: null });
-              }
-               else if (tableName === 'admin_messages') {
-                resolve({ data: MOCK_MESSAGES, error: null });
-              }
-              else if (tableName === 'tour_destinations') {
-                resolve({ data: MOCK_TOUR_DESTINATIONS, error: null });
-              }
-              else {
-                resolve({ data: null, error: new Error(`Table ${tableName} not found`) });
-              }
-            }, 500);
-          }
-        };
-      },
-      update: (updates: any) => {
-        return {
-          eq: (column: string, value: any) => {
-            return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
-              setTimeout(() => {
-                if (tableName === 'partner_applications' && column === 'id') {
-                  const appIndex = MOCK_PARTNER_APPLICATIONS.findIndex(app => app.id === value);
-                  if (appIndex !== -1) {
-                    MOCK_PARTNER_APPLICATIONS[appIndex] = { ...MOCK_PARTNER_APPLICATIONS[appIndex], ...updates };
-                    resolve({ data: [MOCK_PARTNER_APPLICATIONS[appIndex]], error: null });
-                  } else {
-                    resolve({ data: null, error: new Error('Application not found') });
-                  }
-                } else if (tableName === 'vendor_items' && column === 'id') {
-                  const itemIndex = MOCK_ITEMS.findIndex(item => item.id === value);
-                  if (itemIndex !== -1) {
-                    MOCK_ITEMS[itemIndex] = { ...MOCK_ITEMS[itemIndex], ...updates };
-                    resolve({ data: [MOCK_ITEMS[itemIndex]], error: null });
-                  } else {
-                    resolve({ data: null, error: new Error('Item not found') });
-                  }
-                } else if (tableName === 'partners' && column === 'id') {
-                    const partnerIndex = MOCK_PARTNERS.findIndex(p => p.id === value);
-                    if (partnerIndex !== -1) {
-                        MOCK_PARTNERS[partnerIndex] = { ...MOCK_PARTNERS[partnerIndex], ...updates };
-                        resolve({ data: [MOCK_PARTNERS[partnerIndex]], error: null });
-                    } else {
-                        resolve({ data: null, error: new Error('Partner not found') });
-                    }
-                } else if (tableName === 'admin_messages' && column === 'id') {
-                    const msgIndex = MOCK_MESSAGES.findIndex(m => m.id === value);
-                    if (msgIndex !== -1) {
-                        MOCK_MESSAGES[msgIndex] = { ...MOCK_MESSAGES[msgIndex], ...updates };
-                        resolve({ data: [MOCK_MESSAGES[msgIndex]], error: null });
-                    } else {
-                        resolve({ data: null, error: new Error('Message not found') });
-                    }
-                } else if (tableName === 'transactions' && column === 'id') {
-                    const txIndex = MOCK_TRANSACTIONS.findIndex(tx => tx.id === value);
-                    if (txIndex !== -1) {
-                        MOCK_TRANSACTIONS[txIndex] = { ...MOCK_TRANSACTIONS[txIndex], ...updates };
-                        resolve({ data: [MOCK_TRANSACTIONS[txIndex]], error: null });
-                    } else {
-                        resolve({ data: null, error: new Error('Transaction not found') });
-                    }
-                } else if (tableName === 'tour_destinations' && column === 'id') {
-                    const destIndex = MOCK_TOUR_DESTINATIONS.findIndex(d => d.id === value);
-                    if (destIndex !== -1) {
-                        MOCK_TOUR_DESTINATIONS[destIndex] = { ...MOCK_TOUR_DESTINATIONS[destIndex], ...updates };
-                        resolve({ data: [MOCK_TOUR_DESTINATIONS[destIndex]], error: null });
-                    } else {
-                        resolve({ data: null, error: new Error('Destination not found') });
-                    }
-                }
-                else {
-                  resolve({ data: null, error: new Error('Update failed') });
-                }
-              }, 500);
-            });
-          }
-        };
-      },
-      insert: (newData: any | any[]) => {
-        return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
-           setTimeout(() => {
-               if (tableName === 'admin_messages') {
-                   const dataArray = Array.isArray(newData) ? newData : [newData];
-                   const inserted = dataArray.map(d => ({
-                       ...d,
-                       id: `msg-${Date.now()}`,
-                       sentAt: new Date().toISOString(),
-                       readBy: [],
-                       senderId: 'admin-1',
-                   }));
-                   MOCK_MESSAGES.push(...inserted);
-                   resolve({ data: inserted, error: null });
-               } else if (tableName === 'vendor_items') {
-                   const dataArray = Array.isArray(newData) ? newData : [newData];
-                   const inserted = dataArray.map(d => ({
-                       ...d,
-                       id: `item-${Date.now()}-${Math.random()}`,
-                   }));
-                   MOCK_ITEMS.push(...inserted);
-                   resolve({ data: inserted, error: null });
-               } else if (tableName === 'tour_destinations') {
-                    const dataArray = Array.isArray(newData) ? newData : [newData];
-                    const inserted = dataArray.map(d => ({
-                        ...d,
-                        id: `dest-${Date.now()}-${Math.random()}`,
-                    }));
-                    MOCK_TOUR_DESTINATIONS.push(...inserted);
-                    resolve({ data: inserted, error: null });
-               }
-               else {
-                   resolve({ data: null, error: new Error('Insert failed') });
-               }
-           }, 300);
-        });
-      },
-      delete: () => {
-        return {
-          eq: (column: string, value: any) => {
-            return new Promise<{ data: any[] | null; error: Error | null }>((resolve) => {
-              setTimeout(() => {
-                if (tableName === 'vendor_items' && column === 'id') {
-                  const initialLength = MOCK_ITEMS.length;
-                  MOCK_ITEMS = MOCK_ITEMS.filter(item => item.id !== value);
-                  if (MOCK_ITEMS.length < initialLength) {
-                    resolve({ data: [{ id: value }], error: null }); // Mimic Supabase returning the deleted row
-                  } else {
-                    resolve({ data: null, error: new Error('Item not found for deletion') });
-                  }
-                } else if (tableName === 'tour_destinations' && column === 'id') {
-                    const initialLength = MOCK_TOUR_DESTINATIONS.length;
-                    MOCK_TOUR_DESTINATIONS = MOCK_TOUR_DESTINATIONS.filter(d => d.id !== value);
-                    if (MOCK_TOUR_DESTINATIONS.length < initialLength) {
-                        resolve({ data: [{id: value}], error: null });
-                    } else {
-                        resolve({ data: null, error: new Error('Destination not found for deletion') });
-                    }
-                }
-                else {
-                  resolve({ data: null, error: new Error(`Delete failed for table ${tableName}`) });
-                }
-              }, 300);
-            });
-          }
+  {
+    id: 'driver-2',
+    email: 'cardriver@indostreet.com',
+    role: Role.Driver,
+    partnerType: PartnerType.CarDriver,
+    status: 'active',
+    rating: 4.9,
+    totalEarnings: 28750000,
+    memberSince: '2021-11-20T09:00:00Z',
+    phone: '081298765432',
+    rideRatePerKm: 3800,
+    minFare: 16000,
+    rentalDetails: { isAvailableForRental: true, dailyRate: 350000, weeklyRate: 2100000 },
+    tourRates: { 'tour-1': 250000, 'tour-2': 300000 },
+    bankDetails: { bankName: 'Mandiri', accountHolderName: 'Citra Dewi', accountNumber: '0987654321' },
+    profile: {
+      name: 'Citra Dewi',
+      profilePicture: 'https://i.pravatar.cc/150?u=driver-2',
+      vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2020, licensePlate: 'D 5678 XYZ' },
+    },
+  },
+  {
+    id: 'vendor-1',
+    email: 'vendor@indostreet.com',
+    role: Role.Vendor,
+    partnerType: PartnerType.FoodVendor,
+    status: 'active',
+    rating: 4.7,
+    totalEarnings: 45200000,
+    memberSince: '2022-03-10T09:00:00Z',
+    phone: '085678901234',
+    bankDetails: { bankName: 'BRI', accountHolderName: 'Siti Aminah', accountNumber: '555666777' },
+    profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Ibu Siti', profilePicture: 'https://i.pravatar.cc/150?u=vendor-1' },
+  },
+];
+
+let mockApplications: PartnerApplication[] = [
+  { id: 'app-1', name: 'Eka Wijaya', email: 'eka.w@example.com', phone: '081122334455', status: 'pending', submittedAt: new Date().toISOString(), partnerType: PartnerType.BikeDriver, documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Motorcycle', brand: 'Yamaha', model: 'NMAX', year: 2022, licensePlate: 'B 5555 JKL' } },
+  { id: 'app-2', name: 'Rina Lestari', email: 'rina.l@example.com', phone: '082233445566', status: 'pending', submittedAt: new Date(Date.now() - 86400000).toISOString(), partnerType: PartnerType.FoodVendor, documents: { eKtp: '#', skck: '#', businessLicense: '#' } },
+  { id: 'app-3', name: 'Agus Salim', email: 'agus.s@example.com', phone: '083344556677', status: 'pending', submittedAt: new Date(Date.now() - 172800000).toISOString(), partnerType: PartnerType.CarDriver, documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Car', brand: 'Daihatsu', model: 'Xenia', year: 2019, licensePlate: 'F 9876 GHI' } },
+];
+
+let mockPartners: Partner[] = mockUsers.filter(u => u.role !== Role.Admin) as Partner[];
+
+let mockTransactions: Transaction[] = [
+    { id: 'tx-1', partnerId: 'driver-1', date: new Date(Date.now() - 100000).toISOString(), type: 'Ride', amount: 15000, status: 'completed', details: 'Kuningan to Sudirman' },
+    { id: 'tx-2', partnerId: 'vendor-1', date: new Date(Date.now() - 200000).toISOString(), type: 'Order', amount: 45000, status: 'completed', details: 'Nasi Goreng x2, Es Teh x2' },
+    { id: 'tx-3', partnerId: 'driver-2', date: new Date(Date.now() - 300000).toISOString(), type: 'Ride', amount: 42000, status: 'completed', details: 'Blok M to Kelapa Gading' },
+    { id: 'tx-4', partnerId: 'driver-1', date: new Date(Date.now() - 86400000).toISOString(), type: 'Delivery', amount: 12000, status: 'completed', details: 'Document from Thamrin to SCBD' },
+    { id: 'tx-5', partnerId: 'vendor-1', date: new Date(Date.now() - 172800000).toISOString(), type: 'Order', amount: 120000, status: 'completed', details: 'Catering Box A x 4' },
+    { id: 'live-order-1', partnerId: 'vendor-1', date: new Date().toISOString(), type: 'Order', amount: 30000, status: 'in_progress', details: 'Soto Ayam x1, Sate Ayam x1' },
+    { id: 'live-order-2', partnerId: 'vendor-1', date: new Date(Date.now() - 60000).toISOString(), type: 'Order', amount: 25000, status: 'in_progress', details: 'Gado-gado x1' },
+];
+
+let mockVendorItems: VendorItem[] = [
+    { id: 'item-1', vendorId: 'vendor-1', name: 'Nasi Goreng Spesial', price: 25000, isAvailable: true, imageUrl: 'https://via.placeholder.com/150/FFC107/000000?Text=Nasi+Goreng' },
+    { id: 'item-2', vendorId: 'vendor-1', name: 'Soto Ayam Lamongan', price: 20000, isAvailable: true, imageUrl: 'https://via.placeholder.com/150/8BC34A/000000?Text=Soto+Ayam' },
+    { id: 'item-3', vendorId: 'vendor-1', name: 'Sate Ayam (10 tusuk)', price: 30000, isAvailable: false, imageUrl: 'https://via.placeholder.com/150/E91E63/000000?Text=Sate+Ayam' },
+];
+
+const mockRideRequests: RideRequest[] = [
+    { id: 'req-1', pickupLocation: 'Grand Indonesia', destination: 'Stasiun Sudirman', fare: 12000, customerName: 'Dewi', customerRating: 4.8 },
+];
+
+let mockMessages: AdminMessage[] = [
+    { id: 'msg-1', senderId: 'admin-1', recipientId: 'all', content: 'Selamat Hari Raya! Ada bonus spesial untuk semua partner aktif bulan ini.', sentAt: new Date(Date.now() - 86400000 * 2).toISOString(), readBy: ['driver-1'] },
+    { id: 'msg-2', senderId: 'admin-1', recipientId: 'driver-2', content: 'Mohon perbarui dokumen STNK Anda sebelum akhir bulan.', sentAt: new Date().toISOString(), readBy: [] },
+];
+
+let mockTourDestinations: TourDestination[] = [
+    { id: 'tour-1', name: 'Taman Mini Indonesia Indah', category: 'Culture & Art', description: 'A miniature park showcasing Indonesian culture.' },
+    { id: 'tour-2', name: 'Ragunan Zoo', category: 'Nature & Outdoors', description: 'The largest zoo in Jakarta.' },
+    { id: 'tour-3', name: 'Monas (National Monument)', category: 'Temples & Historical Sites', description: 'The iconic monument in the center of Merdeka Square.' },
+];
+
+// Helper for simulating network delay
+const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            // Return a deep copy to prevent direct mutation of the mock database
+            resolve(JSON.parse(JSON.stringify(data)));
+        }, delay);
+    });
+};
+
+// #endregion MOCK DATABASE
+
+
+// In a real app, this would be in a .env file, not hardcoded.
+const BASE_URL = '/api/v1'; // This is kept for when we switch to the real API.
+const CONTENT_API_URL = 'http://localhost:3001/content';
+
+/**
+ * Retrieves the authentication token from session storage.
+ */
+const getToken = (): string | null => sessionStorage.getItem('authToken');
+
+/**
+ * A centralized fetch wrapper (currently unused by mock functions but kept for real implementation).
+ */
+const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
+  // ... (The original apiFetch implementation is kept here for the future)
+};
+
+// --- Authentication ---
+
+export const login = async (email: string, password: string): Promise<{ user: User; token: string }> => {
+    console.log(`Attempting mock login for: ${email}`);
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (password !== 'password') {
+                return reject(new Error('Invalid credentials. (Hint: password is "password")'));
+            }
+            const user = mockUsers.find(u => u.email === email);
+            if (!user) {
+                return reject(new Error('User not found. Please use one of the demo accounts.'));
+            }
+            const token = `mock-token-for-${user.id}-${Date.now()}`;
+            sessionStorage.setItem('authToken', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
+            console.log('Mock login successful for:', user.role);
+            resolve({ user, token });
+        }, 500);
+    });
+};
+
+
+export const logout = (): void => {
+  sessionStorage.removeItem('authToken');
+  sessionStorage.removeItem('user');
+};
+
+export const checkSession = (): User | null => {
+  const userJson = sessionStorage.getItem('user');
+  const token = getToken();
+  if (userJson && token) {
+    try {
+      return JSON.parse(userJson);
+    } catch (e) {
+      logout();
+      return null;
+    }
+  }
+  return null;
+};
+
+
+// --- Mock Admin API ---
+export const getAdminStats = (): Promise<AdminStats> => mockApiCall({
+    totalPartners: mockPartners.length,
+    pendingApplications: mockApplications.filter(a => a.status === 'pending').length,
+    activeDrivers: mockPartners.filter(p => p.role === Role.Driver && p.status === 'active').length,
+    activeVendorsAndBusinesses: mockPartners.filter(p => p.role === Role.Vendor && p.status === 'active').length,
+});
+export const getApplications = (): Promise<PartnerApplication[]> => mockApiCall(mockApplications);
+export const getPartners = (): Promise<Partner[]> => mockApiCall(mockPartners);
+export const updateApplication = (id: string, status: 'approved' | 'rejected'): Promise<PartnerApplication> => {
+    const appIndex = mockApplications.findIndex(a => a.id === id);
+    if (appIndex > -1) {
+        mockApplications[appIndex].status = status;
+        if (status === 'approved') {
+          // You could add logic here to create a new partner from the application
         }
-      },
-    };
+        return mockApiCall(mockApplications[appIndex], 200);
+    }
+    return Promise.reject(new Error("Application not found"));
+};
+export const getAnalyticsSummary = (): Promise<AnalyticsSummary> => mockApiCall({
+    partnerGrowth: { total: mockPartners.length, change: 5.2 },
+    rideAndOrderVolume: { total: mockTransactions.filter(t => t.status === 'completed').length, change: 12.5 },
+    popularServices: [{ name: PartnerType.BikeDriver, count: 1200 }, { name: PartnerType.FoodVendor, count: 850 }, { name: PartnerType.CarDriver, count: 600 }],
+    peakHours: [{ hour: '08:00', count: 300 }, { hour: '12:00', count: 500 }, { hour: '17:00', count: 700 }],
+});
+export const broadcastMessage = (content: string): Promise<AdminMessage> => {
+    const newMessage: AdminMessage = { id: `msg-${Date.now()}`, senderId: 'admin-1', recipientId: 'all', content, sentAt: new Date().toISOString(), readBy: [] };
+    mockMessages.push(newMessage);
+    return mockApiCall(newMessage, 200);
+};
+
+// --- Mock Partners API ---
+export const getPartner = (id: string): Promise<Partner> => {
+    const partner = mockPartners.find(p => p.id === id);
+    return partner ? mockApiCall(partner) : Promise.reject(new Error("Partner not found"));
+};
+export const updatePartner = (id: string, data: Partial<Partner>): Promise<Partner> => {
+    const partnerIndex = mockPartners.findIndex(p => p.id === id);
+    if (partnerIndex > -1) {
+        mockPartners[partnerIndex] = { ...mockPartners[partnerIndex], ...data };
+        // also update the main user list
+        const userIndex = mockUsers.findIndex(u => u.id === id);
+        if(userIndex > -1) {
+          mockUsers[userIndex] = { ...mockUsers[userIndex], ...data };
+        }
+        return mockApiCall(mockPartners[partnerIndex], 200);
+    }
+    return Promise.reject(new Error("Partner not found"));
+};
+
+
+// --- Mock Transactions API ---
+export const getTransactions = (): Promise<Transaction[]> => mockApiCall(mockTransactions);
+export const getTransactionsForPartner = (partnerId: string): Promise<Transaction[]> => mockApiCall(mockTransactions.filter(t => t.partnerId === partnerId));
+export const updateTransaction = (id: string, data: Partial<Transaction>): Promise<Transaction> => {
+    const txIndex = mockTransactions.findIndex(t => t.id === id);
+    if (txIndex > -1) {
+        mockTransactions[txIndex] = { ...mockTransactions[txIndex], ...data };
+        return mockApiCall(mockTransactions[txIndex], 200);
+    }
+    return Promise.reject(new Error("Transaction not found"));
+};
+
+// --- Mock Vendor Items API ---
+export const getVendorItems = (vendorId: string): Promise<VendorItem[]> => mockApiCall(mockVendorItems.filter(i => i.vendorId === vendorId));
+export const createVendorItem = (vendorId: string, data: Omit<VendorItem, 'id' | 'vendorId'>): Promise<VendorItem> => {
+    const newItem: VendorItem = { ...data, id: `item-${Date.now()}`, vendorId };
+    mockVendorItems.push(newItem);
+    return mockApiCall(newItem, 200);
+};
+export const updateVendorItem = (itemId: string, data: Partial<VendorItem>): Promise<VendorItem> => {
+    const itemIndex = mockVendorItems.findIndex(i => i.id === itemId);
+    if (itemIndex > -1) {
+        mockVendorItems[itemIndex] = { ...mockVendorItems[itemIndex], ...data };
+        return mockApiCall(mockVendorItems[itemIndex], 200);
+    }
+    return Promise.reject(new Error("Item not found"));
+};
+export const deleteVendorItem = (itemId: string): Promise<void> => {
+    mockVendorItems = mockVendorItems.filter(i => i.id !== itemId);
+    return mockApiCall(undefined, 200);
+};
+
+// --- Mock Drivers API ---
+export const getRideRequests = (): Promise<RideRequest[]> => mockApiCall(mockRideRequests);
+
+// --- Mock Messages API ---
+export const getMessages = (): Promise<AdminMessage[]> => mockApiCall(mockMessages);
+export const getMessagesForPartner = (partnerId: string): Promise<AdminMessage[]> => mockApiCall(mockMessages.filter(m => m.recipientId === partnerId || m.recipientId === 'all'));
+export const sendMessage = (recipientId: string, content: string): Promise<AdminMessage> => {
+    const newMessage: AdminMessage = { id: `msg-${Date.now()}`, senderId: 'admin-1', recipientId, content, sentAt: new Date().toISOString(), readBy: [] };
+    mockMessages.push(newMessage);
+    return mockApiCall(newMessage, 200);
+};
+export const updateMessage = (messageId: string, data: Partial<AdminMessage>): Promise<AdminMessage> => {
+     const msgIndex = mockMessages.findIndex(m => m.id === messageId);
+    if (msgIndex > -1) {
+        mockMessages[msgIndex] = { ...mockMessages[msgIndex], ...data };
+        return mockApiCall(mockMessages[msgIndex], 200);
+    }
+    return Promise.reject(new Error("Message not found"));
+};
+
+// --- Mock Tours API ---
+export const getTourDestinations = (): Promise<TourDestination[]> => mockApiCall(mockTourDestinations);
+export const createTourDestination = (data: Omit<TourDestination, 'id'>): Promise<TourDestination> => {
+    const newDest: TourDestination = { ...data, id: `tour-${Date.now()}` };
+    mockTourDestinations.push(newDest);
+    return mockApiCall(newDest, 200);
+};
+export const updateTourDestination = (id: string, data: Partial<TourDestination>): Promise<TourDestination> => {
+    const destIndex = mockTourDestinations.findIndex(d => d.id === id);
+    if (destIndex > -1) {
+        mockTourDestinations[destIndex] = { ...mockTourDestinations[destIndex], ...data };
+        return mockApiCall(mockTourDestinations[destIndex], 200);
+    }
+    return Promise.reject(new Error("Destination not found"));
+};
+export const deleteTourDestination = (id: string): Promise<void> => {
+    mockTourDestinations = mockTourDestinations.filter(d => d.id !== id);
+    return mockApiCall(undefined, 200);
+};
+
+// --- LIVE CMS API ---
+export const getContentOverrides = async (): Promise<ContentOverrides> => {
+  try {
+    const response = await fetch(CONTENT_API_URL);
+    if (!response.ok) {
+      console.error("Failed to fetch content from central API. Using empty defaults.");
+      return { text: {}, numbers: {}, assets: {} };
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Network error fetching content from central API. Is the server running?", error);
+    return { text: {}, numbers: {}, assets: {} };
   }
 };
 
+export const updateContentOverrides = async (newOverrides: ContentOverrides): Promise<ContentOverrides> => {
+  const response = await fetch(CONTENT_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // In a real app, you'd add an admin auth token here
+    },
+    body: JSON.stringify(newOverrides),
+  });
 
-export const supabase = mockSupabaseClient;
-export { MOCK_USERS, MOCK_PARTNERS };
+  if (!response.ok) {
+      throw new Error("Failed to update content in central API");
+  }
+  return response.json();
+};

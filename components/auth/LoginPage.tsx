@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { User } from '../../types';
+import { Editable } from '../shared/Editable';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@indostreet.com');
+  const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,24 +18,32 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
-    const { data, error } = await supabase.auth.signIn({ email, password });
-
-    if (error) {
-      setError(error.message);
-    } else if (data.user) {
-      onLogin(data.user);
-    } else {
-      setError('An unknown error occurred.');
+    try {
+      // In a real app, you'd get the user from the API response
+      // For now, we simulate this based on the new API service layer
+      const { user } = await api.login(email, password);
+      if (user) {
+        onLogin(user);
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unknown error occurred.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">IndoStreet Partner Portal</h1>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            <Editable editId="login-title" type="text" defaultValue="IndoStreet Partner Portal" />
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
+            <Editable editId="login-subtitle" type="text" defaultValue="Sign in to your account" />
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -68,7 +77,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
           <div>
             <button
@@ -76,17 +85,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : <Editable editId="login-button" type="text" defaultValue="Sign in" as="span" />}
             </button>
           </div>
         </form>
          <div className="text-xs text-gray-500 text-center space-y-1">
-          <p>Admin: admin@indostreet.com</p>
-          <p>Driver (Bike): driver@indostreet.com</p>
-          <p>Driver (Car): cardriver@indostreet.com</p>
-          <p>Driver (Lorry): lorrydriver@indostreet.com</p>
-          <p>Vendor: vendor@indostreet.com</p>
-          <p>Password: password</p>
+          <p className="font-semibold">For Demo (use 'password' for all):</p>
+          <p>admin@indostreet.com</p>
+          <p>driver@indostreet.com (Bike)</p>
+          <p>cardriver@indostreet.com (Car)</p>
+          <p>vendor@indostreet.com (Food)</p>
         </div>
       </div>
     </div>

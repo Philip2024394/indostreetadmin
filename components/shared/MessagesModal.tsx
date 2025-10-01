@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, AdminMessage } from '../../types';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { XIcon } from './Icons';
 
 interface MessagesModalProps {
@@ -14,14 +15,19 @@ const MessagesModal: React.FC<MessagesModalProps> = ({ user, onClose }) => {
 
   const fetchMessages = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from('admin_messages').select('*');
-    if (data) {
-        const myMessages = data
-            .filter(m => m.recipientId === user.id || m.recipientId === 'all')
-            .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
-        setMessages(myMessages);
+    try {
+        const data = await api.getMessages();
+        if (data) {
+            const myMessages = data
+                .filter(m => m.recipientId === user.id || m.recipientId === 'all')
+                .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+            setMessages(myMessages);
+        }
+    } catch (error) {
+        console.error("Failed to fetch messages:", error);
+    } finally {
+        setLoading(false);
     }
-    setLoading(false);
   }, [user.id]);
 
   useEffect(() => {

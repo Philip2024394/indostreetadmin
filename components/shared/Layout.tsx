@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { User, Role, AdminMessage } from '../../types';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import MessagesModal from './MessagesModal';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon } from './Icons';
+import ToggleSwitch from './ToggleSwitch';
+import { useContent } from '../../contexts/ContentContext';
+import { Editable } from './Editable';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent';
 
 interface LayoutProps {
   user: User;
   onLogout: () => void;
   children: React.ReactNode;
   title: string;
-  onSwitchRole: (role: Role) => void;
   adminView?: AdminView;
   onAdminViewChange?: (view: AdminView) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwitchRole, adminView, onAdminViewChange }) => {
+const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminView, onAdminViewChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState<AdminMessage[]>([]);
   const [isMessagesModalOpen, setIsMessagesModalOpen] = useState(false);
+  const { isEditMode, setIsEditMode } = useContent();
   
   const navLinkClasses = "flex items-center px-4 py-2 text-gray-300 rounded-md transition-colors duration-200 hover:bg-gray-700 w-full text-left";
   const activeNavLinkClasses = "bg-gray-700 text-white font-semibold";
@@ -28,11 +31,15 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
     if (user.role === Role.Admin) return; // No notifications for admin
 
     const fetchMessages = async () => {
-        const { data } = await supabase.from('admin_messages').select();
-        if (data) {
-            const myMessages = data.filter(m => m.recipientId === user.id || m.recipientId === 'all');
-            const myUnread = myMessages.filter(m => !m.readBy.includes(user.id));
-            setUnreadMessages(myUnread);
+        try {
+            const data = await api.getMessages();
+            if (data) {
+                const myMessages = data.filter(m => m.recipientId === user.id || m.recipientId === 'all');
+                const myUnread = myMessages.filter(m => !m.readBy.includes(user.id));
+                setUnreadMessages(myUnread);
+            }
+        } catch (error) {
+            console.error("Failed to fetch messages:", error);
         }
     };
 
@@ -45,12 +52,16 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
       setIsMessagesModalOpen(true);
   };
   
-  const handleCloseMessages = () => {
-    // Mark messages as read by updating the backend
-    unreadMessages.forEach(msg => {
-        const newReadBy = [...msg.readBy, user.id];
-        supabase.from('admin_messages').update({ readBy: newReadBy }).eq('id', msg.id);
-    });
+  const handleCloseMessages = async () => {
+    try {
+        // Mark messages as read by updating the backend
+        await Promise.all(unreadMessages.map(msg => {
+            const newReadBy = [...msg.readBy, user.id];
+            return api.updateMessage(msg.id, { readBy: newReadBy });
+        }));
+    } catch (error) {
+        console.error("Failed to mark messages as read:", error);
+    }
     setUnreadMessages([]); // Optimistically clear
     setIsMessagesModalOpen(false);
   };
@@ -59,23 +70,27 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
     <>
         <button onClick={() => onAdminViewChange?.('applications')} className={`${navLinkClasses} ${adminView === 'applications' ? activeNavLinkClasses : ''}`}>
           <DocumentTextIcon className="w-5 h-5 mr-3" />
-          Applications
+          <Editable editId="layout-nav-applications" type="text" defaultValue="Applications" as="span" />
         </button>
          <button onClick={() => onAdminViewChange?.('partners')} className={`${navLinkClasses} ${adminView === 'partners' ? activeNavLinkClasses : ''}`}>
           <UserGroupIcon className="w-5 h-5 mr-3" />
-          Partners
+          <Editable editId="layout-nav-partners" type="text" defaultValue="Partners" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('financials')} className={`${navLinkClasses} ${adminView === 'financials' ? activeNavLinkClasses : ''}`}>
           <DollarSignIcon className="w-5 h-5 mr-3" />
-          Financials
+          <Editable editId="layout-nav-financials" type="text" defaultValue="Financials" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('analytics')} className={`${navLinkClasses} ${adminView === 'analytics' ? activeNavLinkClasses : ''}`}>
           <ChartBarIcon className="w-5 h-5 mr-3" />
-          Analytics
+          <Editable editId="layout-nav-analytics" type="text" defaultValue="Analytics" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('tours')} className={`${navLinkClasses} ${adminView === 'tours' ? activeNavLinkClasses : ''}`}>
           <LandmarkIcon className="w-5 h-5 mr-3" />
-          Tours
+          <Editable editId="layout-nav-tours" type="text" defaultValue="Tours" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('siteContent')} className={`${navLinkClasses} ${adminView === 'siteContent' ? activeNavLinkClasses : ''}`}>
+          <ClipboardListIcon className="w-5 h-5 mr-3" />
+          <Editable editId="layout-nav-site-content" type="text" defaultValue="Site Content" as="span" />
         </button>
     </>
   );
@@ -91,7 +106,9 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out z-30 w-64 bg-gray-800 text-white flex flex-col`}>
         <div className="flex items-center justify-center h-20 border-b border-gray-700">
-          <h1 className="text-2xl font-bold">IndoStreet</h1>
+          <h1 className="text-2xl font-bold">
+            <Editable editId="layout-app-title" type="text" defaultValue="IndoStreet" as="span" />
+          </h1>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
           {user.role === Role.Admin ? <AdminNav /> : <DefaultNav />}
@@ -112,6 +129,11 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, onSwit
             </svg>
           </button>
           <div className="flex items-center space-x-4">
+            {user.role === Role.Admin && (
+              <div className="border-r pr-4">
+                 <ToggleSwitch enabled={isEditMode} onChange={setIsEditMode} enabledText="Edit Mode" disabledText="Edit Mode" />
+              </div>
+            )}
             {user.role !== Role.Admin && (
                 <button onClick={handleOpenMessages} className="relative text-gray-500 hover:text-gray-700">
                     <BellIcon className="w-6 h-6" />

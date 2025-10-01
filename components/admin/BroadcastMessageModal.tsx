@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { XIcon, PaperAirplaneIcon } from '../shared/Icons';
 
 interface BroadcastMessageModalProps {
@@ -16,21 +17,18 @@ const BroadcastMessageModal: React.FC<BroadcastMessageModalProps> = ({ onClose }
     if (message.trim() === '' || isSending) return;
 
     setIsSending(true);
-    const { error } = await supabase.from('admin_messages').insert({
-        recipientId: 'all',
-        content: message,
-    });
-
-    if (error) {
-        alert('Failed to send broadcast message.');
-        console.error(error);
-    } else {
+    try {
+        await api.broadcastMessage(message);
         setIsSent(true);
         setTimeout(() => {
             onClose();
         }, 1500); // Close modal after 1.5s
+    } catch (error) {
+        alert('Failed to send broadcast message.');
+        console.error(error);
+    } finally {
+        setIsSending(false);
     }
-    setIsSending(false);
   };
 
   return (

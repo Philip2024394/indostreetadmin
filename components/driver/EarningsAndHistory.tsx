@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Transaction, Partner } from '../../types';
-import { supabase, MOCK_PARTNERS } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { DollarSignIcon, TrendingUpIcon } from '../shared/Icons';
 
 interface EarningsAndHistoryProps {
@@ -14,16 +15,19 @@ const EarningsAndHistory: React.FC<EarningsAndHistoryProps> = ({ user }) => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    // In a real app, you'd fetch the partner by user.id, but for mock data we find it
-    const currentPartner = MOCK_PARTNERS.find(p => p.id === user.id) || null;
-    setPartner(currentPartner);
-
-    const { data } = await supabase.from('transactions').select('*').eq('partnerId', user.id);
-    if (data) {
-      const sortedData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setTransactions(sortedData);
+    try {
+        const [partnerData, transactionsData] = await Promise.all([
+            api.getPartner(user.id),
+            api.getTransactionsForPartner(user.id)
+        ]);
+        setPartner(partnerData);
+        const sortedData = transactionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setTransactions(sortedData);
+    } catch (error) {
+        console.error("Failed to fetch earnings and history:", error);
+    } finally {
+        setLoading(false);
     }
-    setLoading(false);
   }, [user.id]);
 
   useEffect(() => {

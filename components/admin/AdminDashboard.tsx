@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase } from '../../services/supabase';
+import * as api from '../../services/supabase';
 import { User, PartnerApplication, AdminStats, Role, PartnerType, Partner } from '../../types';
 import Layout from '../shared/Layout';
 import StatCard from './StatCard';
@@ -9,6 +9,8 @@ import FinancialsPage from './FinancialsPage';
 import AnalyticsPage from './AnalyticsPage';
 import BroadcastMessageModal from './BroadcastMessageModal';
 import TourManagementPage from './TourManagementPage';
+import SiteContentPage from './SiteContentPage';
+import { Editable } from '../shared/Editable';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon
@@ -17,10 +19,9 @@ import {
 interface AdminDashboardProps {
   user: User;
   onLogout: () => void;
-  onSwitchRole: (role: Role) => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -34,7 +35,7 @@ const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
 };
 
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitchRole }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [applications, setApplications] = useState<PartnerApplication[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -49,16 +50,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [statsRes, appsRes, partnersRes] = await Promise.all([
-      supabase.from('admin_stats').select(),
-      supabase.from('partner_applications').select(),
-      supabase.from('partners').select(),
-    ]);
-
-    if (statsRes.data) setStats(statsRes.data[0]);
-    if (appsRes.data) setApplications(appsRes.data);
-    if (partnersRes.data) setPartners(partnersRes.data);
-    setLoading(false);
+    try {
+        const [statsRes, appsRes, partnersRes] = await Promise.all([
+            api.getAdminStats(),
+            api.getApplications(),
+            api.getPartners(),
+        ]);
+        setStats(statsRes);
+        setApplications(appsRes);
+        setPartners(partnersRes);
+    } catch (error) {
+        console.error("Failed to fetch admin data:", error);
+        // Here you might want to set an error state to show in the UI
+    } finally {
+        setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -67,10 +73,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
 
   const handleUpdateStatus = async (id: string, status: 'approved' | 'rejected') => {
     setActionLoading(true);
-    await supabase.from('partner_applications').update({ status }).eq('id', id);
-    await fetchData(); 
-    setSelectedApp(null);
-    setActionLoading(false);
+    try {
+        await api.updateApplication(id, status);
+        await fetchData(); 
+    } catch (error) {
+        console.error(`Failed to update application ${id}:`, error);
+        // Show an error message to the user
+    } finally {
+        setSelectedApp(null);
+        setActionLoading(false);
+    }
   };
   
   const handleViewChange = (newView: AdminView) => {
@@ -107,6 +119,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
         case 'financials': return 'Financial Overview';
         case 'analytics': return 'Business Analytics';
         case 'tours': return 'Tour Destination Management';
+        case 'siteContent': return 'Site Content Management';
         default: return 'Admin Dashboard';
     }
   };
@@ -122,6 +135,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
             return <AnalyticsPage />;
         case 'tours':
             return <TourManagementPage />;
+        case 'siteContent':
+            return <SiteContentPage />;
         case 'applications':
         case 'partners':
         default:
@@ -129,10 +144,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
                  <>
                   {/* Stats Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <StatCard title="Total Partners" value={stats?.totalPartners ?? '...'} icon={<UserGroupIcon className="w-6 h-6"/>} />
-                    <StatCard title="Pending Applications" value={stats?.pendingApplications ?? '...'} icon={<DocumentTextIcon className="w-6 h-6"/>} />
-                    <StatCard title="Active Drivers" value={stats?.activeDrivers ?? '...'} icon={<CheckCircleIcon className="w-6 h-6"/>} />
-                    <StatCard title="Vendors & Businesses" value={stats?.activeVendorsAndBusinesses ?? '...'} icon={<StoreIcon className="w-6 h-6"/>} />
+                    <StatCard 
+                        title={<Editable editId="stat-total-partners-title" type="text" defaultValue="Total Partners" />} 
+                        value={stats?.totalPartners ?? '...'} 
+                        icon={<Editable editId="stat-total-partners-icon" type="asset" defaultValue={<UserGroupIcon className="w-6 h-6"/>} />} 
+                    />
+                    <StatCard 
+                        title={<Editable editId="stat-pending-apps-title" type="text" defaultValue="Pending Applications" />} 
+                        value={stats?.pendingApplications ?? '...'} 
+                        icon={<Editable editId="stat-pending-apps-icon" type="asset" defaultValue={<DocumentTextIcon className="w-6 h-6"/>} />} 
+                    />
+                    <StatCard 
+                        title={<Editable editId="stat-active-drivers-title" type="text" defaultValue="Active Drivers" />} 
+                        value={stats?.activeDrivers ?? '...'} 
+                        icon={<Editable editId="stat-active-drivers-icon" type="asset" defaultValue={<CheckCircleIcon className="w-6 h-6"/>} />} 
+                    />
+                    <StatCard 
+                        title={<Editable editId="stat-active-vendors-title" type="text" defaultValue="Vendors & Businesses" />} 
+                        value={stats?.activeVendorsAndBusinesses ?? '...'} 
+                        icon={<Editable editId="stat-active-vendors-icon" type="asset" defaultValue={<StoreIcon className="w-6 h-6"/>} />} 
+                    />
                   </div>
 
                   {/* Main Content Area */}
@@ -277,7 +308,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onSwitc
       user={user} 
       onLogout={onLogout} 
       title={getTitle()}
-      onSwitchRole={onSwitchRole}
       adminView={view}
       onAdminViewChange={handleViewChange}
     >
