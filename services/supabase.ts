@@ -15,6 +15,8 @@ import {
   ContentOverrides,
   RenewalSubmission,
   PaymentMethod,
+  Vehicle,
+  Zone,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -175,6 +177,81 @@ let mockRenewalSubmissions: RenewalSubmission[] = [
         paymentMethod: 'Bank Transfer',
         receiptImage: 'iVBORw0KGgoAAAANSUhEUgAAAPoAAAC+CAYAAAD/K0OdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACVSURBVHhe7cEBDQAAAMKg909tDwcFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfg2V4gABG1s0JAAAAABJRU5ErkJggg==', // placeholder receipt image
         status: 'pending',
+    }
+];
+
+let mockVehicles: Vehicle[] = [
+    {
+      id: "taxi_bike_1",
+      type: "Bike",
+      serviceType: "ride",
+      name: "Yamaha NMAX",
+      driver: "Dewi",
+      driverImage: "https://i.pravatar.cc/150?u=dewi",
+      driverRating: 4.9,
+      plate: "DK 2222 DDD",
+      pricePerKm: 2500,
+      pricePerKmParcel: 3500,
+      pricePerDay: 250000,
+      bankDetails: {
+        bankName: "BNI",
+        accountHolder: "Dewi",
+        accountNumber: "3344556677"
+      },
+      isAvailable: true,
+      modelCc: "155cc",
+      color: "Matte Black",
+      registrationYear: 2023,
+      zone: Zone.Zone1,
+      whatsapp: "6281234567895"
+    },
+    {
+      id: "taxi_bike_2",
+      type: "Bike",
+      serviceType: "ride",
+      name: "Honda Vario",
+      driver: "Agung",
+      driverImage: "https://i.pravatar.cc/150?u=agung",
+      driverRating: 4.7,
+      plate: "B 1234 EFG",
+      pricePerKm: 2800,
+      pricePerKmParcel: 3800,
+      pricePerDay: undefined,
+      bankDetails: {
+        bankName: "BCA",
+        accountHolder: "Agung Perkasa",
+        accountNumber: "9876543210"
+      },
+      isAvailable: false,
+      modelCc: "150cc",
+      color: "Red",
+      registrationYear: 2022,
+      zone: Zone.Zone2,
+      whatsapp: "6287654321098"
+    },
+     {
+      id: "taxi_bike_3",
+      type: "Bike",
+      serviceType: "ride",
+      name: "Suzuki Address",
+      driver: "Putu",
+      driverImage: "https://i.pravatar.cc/150?u=putu",
+      driverRating: 4.8,
+      plate: "L 5555 XYZ",
+      pricePerKm: 2200,
+      pricePerKmParcel: 2500,
+      pricePerDay: 180000,
+      bankDetails: {
+        bankName: "Mandiri",
+        accountHolder: "I Putu Gede",
+        accountNumber: "1122334455"
+      },
+      isAvailable: true,
+      modelCc: "113cc",
+      color: "White",
+      registrationYear: 2021,
+      zone: Zone.Zone3,
+      whatsapp: "6285555666777"
     }
 ];
 
@@ -413,4 +490,27 @@ export const updateRenewalSubmission = (id: string, data: Partial<RenewalSubmiss
         return mockApiCall(mockRenewalSubmissions[subIndex], 200);
     }
     return Promise.reject(new Error("Renewal submission not found"));
+};
+
+// --- Mock Bike Fleet API ---
+export const getVehicles = (): Promise<Vehicle[]> => mockApiCall(mockVehicles);
+
+export const createVehicle = (data: Omit<Vehicle, 'id'>): Promise<Vehicle> => {
+    const newVehicle: Vehicle = { ...data, id: `taxi_bike_${Date.now()}` };
+    mockVehicles.push(newVehicle);
+    return mockApiCall(newVehicle, 200);
+};
+
+export const updateVehicle = (id: string, data: Partial<Omit<Vehicle, 'id'>>): Promise<Vehicle> => {
+    const vehicleIndex = mockVehicles.findIndex(v => v.id === id);
+    if (vehicleIndex > -1) {
+        mockVehicles[vehicleIndex] = { ...mockVehicles[vehicleIndex], ...data };
+        return mockApiCall(mockVehicles[vehicleIndex], 200);
+    }
+    return Promise.reject(new Error("Vehicle not found"));
+};
+
+export const deleteVehicle = (id: string): Promise<void> => {
+    mockVehicles = mockVehicles.filter(v => v.id !== id);
+    return mockApiCall(undefined, 200);
 };

@@ -11,6 +11,7 @@ import BroadcastMessageModal from './BroadcastMessageModal';
 import TourManagementPage from './TourManagementPage';
 import SiteContentPage from './SiteContentPage';
 import RenewalManagementPage from './RenewalManagementPage';
+import BikeFleetManagement from './BikeFleetManagement';
 import { Editable } from '../shared/Editable';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
@@ -23,7 +24,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -118,6 +119,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     switch(view) {
         case 'applications': return 'Application Management';
         case 'partners': return 'Partner Directory';
+        case 'bikeFleet': return 'Bike Fleet Management';
         case 'renewals': return 'Membership Renewals';
         case 'financials': return 'Financial Overview';
         case 'analytics': return 'Business Analytics';
@@ -132,6 +134,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         return <PartnerDetails partner={selectedPartner} onBack={() => setSelectedPartner(null)} />;
     }
     switch (view) {
+        case 'bikeFleet':
+            return <BikeFleetManagement />;
         case 'renewals':
             return <RenewalManagementPage onPartnerSelect={setSelectedPartner}/>;
         case 'financials':

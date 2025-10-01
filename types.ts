@@ -176,3 +176,35 @@ export interface RenewalSubmission {
   amountPaid: number;
   approvedAt?: string; // ISO date string
 }
+
+// --- New types for Bike Fleet Management ---
+export enum Zone {
+  Zone1 = 'Zone 1: Sumatra, Java (non-Jakarta), Bali',
+  Zone2 = 'Zone 2: Greater Jakarta (Jabodetabek)',
+  Zone3 = 'Zone 3: Kalimantan, Sulawesi, NTT, Maluku, Papua',
+}
+
+export interface Vehicle {
+  id: string;
+  type: 'Bike';
+  serviceType: 'ride';
+  driver: string;
+  driverImage: string; // URL
+  driverRating: number;
+  name: string; // Bike model name
+  plate: string;
+  isAvailable: boolean;
+  zone: Zone;
+  pricePerKm: number;
+  pricePerKmParcel: number;
+  whatsapp?: string;
+  modelCc?: string;
+  color?: string;
+  registrationYear?: number;
+  pricePerDay?: number;
+  bankDetails: {
+    bankName: string;
+    accountHolder: string;
+    accountNumber: string;
+  };
+}
