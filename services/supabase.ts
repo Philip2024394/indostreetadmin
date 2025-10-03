@@ -21,6 +21,8 @@ import {
   Room,
   VehicleType,
   Member,
+  Prospect,
+  AgentApplication,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -42,6 +44,12 @@ let mockUsers: (User | Partner)[] = [
     profile: { name: 'Admin IndoStreet', profilePicture: 'https://i.pravatar.cc/150?u=admin-1' },
   },
   {
+    id: 'agent-1',
+    email: 'agent@indostreet.com',
+    role: Role.Agent,
+    profile: { name: 'Joko Widodo', profilePicture: 'https://i.pravatar.cc/150?u=agent-1' },
+  },
+  {
     id: 'driver-1',
     email: 'driver@indostreet.com',
     role: Role.Driver,
@@ -60,6 +68,7 @@ let mockUsers: (User | Partner)[] = [
       profilePicture: 'https://i.pravatar.cc/150?u=driver-1',
       vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2021, licensePlate: 'B 1234 ABC' },
     },
+    agentId: 'agent-1',
   },
   {
     id: 'driver-2',
@@ -96,6 +105,7 @@ let mockUsers: (User | Partner)[] = [
     activationExpiry: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Expired 2 days ago
     bankDetails: { bankName: 'BRI', accountHolderName: 'Siti Aminah', accountNumber: '555666777' },
     profile: { name: 'Siti Aminah', shopName: 'Warung Nasi Ibu Siti', profilePicture: 'https://i.pravatar.cc/150?u=vendor-1' },
+    agentId: 'agent-1',
   },
   {
     id: 'massage-therapist-1',
@@ -240,7 +250,7 @@ let mockApplications: PartnerApplication[] = [
   { id: 'app-3', name: 'Agus Salim', email: 'agus.s@example.com', phone: '083344556677', status: 'pending', submittedAt: new Date(Date.now() - 172800000).toISOString(), partnerType: PartnerType.CarDriver, documents: { eKtp: '#', sim: '#', stnk: '#', skck: '#' }, vehicle: { type: 'Car', brand: 'Daihatsu', model: 'Xenia', year: 2019, licensePlate: 'F 9876 GHI' } },
 ];
 
-let mockPartners: Partner[] = mockUsers.filter(u => u.role !== Role.Admin) as Partner[];
+let mockPartners: Partner[] = mockUsers.filter(u => u.role !== Role.Admin && u.role !== Role.Agent) as Partner[];
 
 let mockTransactions: Transaction[] = [
     { id: 'tx-1', partnerId: 'driver-1', date: new Date(Date.now() - 100000).toISOString(), type: 'Ride', amount: 15000, status: 'completed', details: 'Kuningan to Sudirman' },
@@ -402,7 +412,7 @@ let mockVehicles: Vehicle[] = [
       color: "White",
       registrationYear: 2021,
       zone: Zone.Zone3,
-      whatsapp: "6285555666777"
+      whatsapp: "628555666777"
     },
     {
       id: "jeep_1",
@@ -488,6 +498,74 @@ let mockMembers: Member[] = [
   { id: 'member-4', whatsappNumber: '6289955554444', name: 'Dian Eka', lastKnownLocation: 'Canggu, Bali', createdAt: '2023-07-20T18:00:00Z', status: 'warned' },
 ];
 
+let mockProspects: Prospect[] = [
+  {
+    id: 'prospect-1',
+    agentId: 'agent-1',
+    name: 'Warung Makan Sedap',
+    email: 'warung.sedap@example.com',
+    phone: '081299887766',
+    address: 'Kuta',
+    street: 'Jl. Legian No. 123',
+    partnerType: PartnerType.FoodVendor,
+    meetingNotes: 'Initial meeting went well. Interested in the 6-month package. Needs a follow-up call to discuss the onboarding process.',
+    meetingDateTime: new Date().toISOString(),
+    callbackDateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'prospect',
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'prospect-2',
+    agentId: 'agent-1',
+    name: 'Putu Transport',
+    email: 'putu.transport@example.com',
+    phone: '085511223344',
+    address: 'Seminyak',
+    street: 'Jl. Kayu Aya No. 55',
+    partnerType: PartnerType.CarDriver,
+    meetingNotes: 'Agreed to join. Has all documents ready. Switched to active.',
+    meetingDateTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending_approval',
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'prospect-3',
+    agentId: 'agent-1',
+    name: 'Bali Healing Massage',
+    email: 'healing.massage@example.com',
+    phone: '087755667788',
+    address: 'Ubud',
+    street: 'Jl. Hanoman No. 9',
+    partnerType: PartnerType.MassageTherapist,
+    meetingNotes: 'Considering options. Call back next week.',
+    meetingDateTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    callbackDateTime: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+    status: 'prospect',
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  }
+];
+
+let mockAgentApplications: AgentApplication[] = [
+  {
+    id: 'agent-app-1',
+    name: 'Prabowo Subianto',
+    email: 'prabowo.newagent@example.com',
+    nik: '3201234567890001',
+    age: 32,
+    whatsapp: '6281234567890',
+    address: 'Jl. Kertanegara No. 4, Jakarta',
+    lastJob: 'Marketing at GoJek',
+    transport: 'own',
+    equipment: ['laptop', 'phone'],
+    shirtSize: 'L',
+    policeRecord: false,
+    idCardImage: tinyBase64Image,
+    profilePhotoImage: tinyBase64Image,
+    status: 'pending',
+    submittedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
 // Helper for simulating network delay
 const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
     return new Promise(resolve => {
@@ -566,9 +644,15 @@ export const getAdminStats = (): Promise<AdminStats> => mockApiCall({
     activeDrivers: mockPartners.filter(p => p.role === Role.Driver && p.status === 'active').length,
     activeVendorsAndBusinesses: mockPartners.filter(p => (p.role === Role.Vendor || p.role === Role.LodgingPartner) && p.status === 'active').length,
     pendingRenewals: mockRenewalSubmissions.filter(s => s.status === 'pending').length,
+    pendingAgentSignups: mockProspects.filter(p => p.status === 'pending_approval').length,
+    pendingAgentApplications: mockAgentApplications.filter(a => a.status === 'pending').length,
 });
 export const getApplications = (): Promise<PartnerApplication[]> => mockApiCall(mockApplications);
 export const getPartners = (): Promise<Partner[]> => mockApiCall(mockPartners);
+export const getAgents = (): Promise<User[]> => mockApiCall(mockUsers.filter(u => u.role === Role.Agent));
+export const getAllProspects = (): Promise<Prospect[]> => mockApiCall(mockProspects);
+
+
 export const updateApplication = (id: string, status: 'approved' | 'rejected'): Promise<PartnerApplication> => {
     const appIndex = mockApplications.findIndex(a => a.id === id);
     if (appIndex > -1) {
@@ -791,4 +875,94 @@ export const updateMember = (id: string, data: Partial<Member>): Promise<Member>
         return mockApiCall(mockMembers[memberIndex], 200);
     }
     return Promise.reject(new Error("Member not found"));
+};
+
+// --- Mock Agent API ---
+export const getProspectsForAgent = (agentId: string): Promise<Prospect[]> => mockApiCall(mockProspects.filter(p => p.agentId === agentId));
+export const getPartnersForAgent = (agentId: string): Promise<Partner[]> => mockApiCall(mockPartners.filter(p => p.agentId === agentId));
+
+
+export const createProspect = (agentId: string, data: Omit<Prospect, 'id' | 'agentId' | 'createdAt' | 'status'>): Promise<Prospect> => {
+    const newProspect: Prospect = { 
+        ...data, 
+        id: `prospect-${Date.now()}`, 
+        agentId,
+        createdAt: new Date().toISOString(),
+        status: 'prospect'
+    };
+    mockProspects.push(newProspect);
+    return mockApiCall(newProspect);
+};
+
+export const updateProspect = (id: string, data: Partial<Prospect>): Promise<Prospect> => {
+    const prospectIndex = mockProspects.findIndex(p => p.id === id);
+    if (prospectIndex > -1) {
+        const originalProspect = mockProspects[prospectIndex];
+        const updatedProspect = { ...originalProspect, ...data };
+        
+        // If status is changed to 'pending_approval', create an application for the admin
+        if (data.status === 'pending_approval' && originalProspect.status === 'prospect') {
+            const newApplication: PartnerApplication = {
+                id: `app-${Date.now()}`,
+                prospectId: id,
+                name: updatedProspect.name,
+                email: updatedProspect.email,
+                phone: updatedProspect.phone,
+                status: 'pending',
+                submittedAt: new Date().toISOString(),
+                partnerType: updatedProspect.partnerType,
+                documents: { eKtp: '#', skck: '#' }, // Placeholder docs
+            };
+            mockApplications.push(newApplication);
+            console.log('Created new application for admin from prospect:', newApplication.name);
+        } else if (data.status === 'prospect' && originalProspect.status === 'pending_approval') {
+            // If status is reverted, remove the application
+            const appIndex = mockApplications.findIndex(app => app.prospectId === id);
+            if (appIndex > -1) {
+                mockApplications.splice(appIndex, 1);
+                console.log('Removed application for prospect:', originalProspect.name);
+            }
+        }
+        
+        mockProspects[prospectIndex] = updatedProspect;
+        return mockApiCall(updatedProspect, 200);
+    }
+    return Promise.reject(new Error("Prospect not found"));
+};
+
+// --- New Agent Signup API ---
+export const getAgentApplications = (): Promise<AgentApplication[]> => mockApiCall(mockAgentApplications);
+
+export const updateAgentApplicationStatus = (id: string, status: 'approved' | 'rejected'): Promise<AgentApplication> => {
+  const appIndex = mockAgentApplications.findIndex(a => a.id === id);
+  if (appIndex > -1) {
+      mockAgentApplications[appIndex].status = status;
+      if (status === 'approved') {
+          const approvedApp = mockAgentApplications[appIndex];
+          const newAgent: User = {
+              id: `agent-${Date.now()}`,
+              email: approvedApp.email,
+              role: Role.Agent,
+              profile: { 
+                name: approvedApp.name, 
+                profilePicture: approvedApp.profilePhotoImage || 'https://i.pravatar.cc/150?u=new-agent' 
+              },
+          };
+          mockUsers.push(newAgent);
+          console.log('New agent created:', newAgent.email);
+      }
+      return mockApiCall(mockAgentApplications[appIndex]);
+  }
+  return Promise.reject(new Error("Agent application not found"));
+};
+
+export const submitAgentApplication = (data: Omit<AgentApplication, 'id' | 'status' | 'submittedAt'>): Promise<AgentApplication> => {
+    const newApp: AgentApplication = {
+        ...data,
+        id: `agent-app-${Date.now()}`,
+        status: 'pending',
+        submittedAt: new Date().toISOString(),
+    };
+    mockAgentApplications.push(newApp);
+    return mockApiCall(newApp);
 };

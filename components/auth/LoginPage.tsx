@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import * as api from '../../services/supabase';
 import { User } from '../../types';
 import { Editable } from '../shared/Editable';
+import AgentSignupPage from './AgentSignupPage';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('admin@indostreet.com');
+  const [email, setEmail] = useState('agent@indostreet.com');
   const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +21,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      // In a real app, you'd get the user from the API response
-      // For now, we simulate this based on the new API service layer
       const { user } = await api.login(email, password);
       if (user) {
         onLogin(user);
@@ -33,6 +33,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       setLoading(false);
     }
   };
+  
+  if (showSignup) {
+    return <AgentSignupPage onBackToLogin={() => setShowSignup(false)} />;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -50,6 +54,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <p className="font-semibold text-center text-blue-800 mb-2">Demo Accounts (password: "password")</p>
           <ul className="space-y-1">
             <li><strong>Admin:</strong> admin@indostreet.com</li>
+            <li><strong>Agent:</strong> agent@indostreet.com</li>
             <li><strong>Bike Driver:</strong> driver@indostreet.com</li>
             <li><strong>Car Driver:</strong> cardriver@indostreet.com</li>
             <li><strong>Jeep Tour Operator:</strong> jeep@indostreet.com</li>
@@ -105,6 +110,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </button>
           </div>
         </form>
+         <div className="text-center text-sm">
+            <button onClick={() => setShowSignup(true)} className="font-medium text-blue-600 hover:text-blue-500">
+                Register as an Agent
+            </button>
+        </div>
       </div>
     </div>
   );

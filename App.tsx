@@ -7,6 +7,7 @@ import VendorDashboard from './components/vendor/VendorDashboard';
 import MassageDashboard from './components/massage/MassageDashboard';
 import LodgingDashboard from './components/lodging/LodgingDashboard';
 import JeepDashboard from './components/jeep/JeepDashboard';
+import AgentDashboard from './components/agent/AgentDashboard';
 import * as api from './services/supabase';
 import { ContentProvider } from './contexts/ContentContext';
 
@@ -52,6 +53,8 @@ const App: React.FC = () => {
     switch (user.role) {
       case Role.Admin:
         return <AdminDashboard user={user} onLogout={handleLogout} />;
+      case Role.Agent:
+        return <AgentDashboard user={user} onLogout={handleLogout} />;
       case Role.Driver:
         if (user.partnerType === PartnerType.JeepTourOperator) {
             return <JeepDashboard user={user} onLogout={handleLogout} />;

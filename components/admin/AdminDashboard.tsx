@@ -14,11 +14,13 @@ import RenewalManagementPage from './RenewalManagementPage';
 import FleetManagement from './BikeFleetManagement';
 import MassageManagementPage from './MassageManagementPage';
 import MemberManagementPage from './MemberManagementPage';
+import AgentManagementPage from './AgentManagementPage';
+import AgentApplicationManagementPage from './AgentApplicationManagementPage';
 import { Editable } from '../shared/Editable';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
-  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon
+  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon, IdCardIcon
 } from '../shared/Icons';
 
 interface AdminDashboardProps {
@@ -26,7 +28,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
+type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'agentApplications';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -124,8 +126,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
   const getTitle = () => {
     if (selectedPartner) return 'Partner Details';
     switch(view) {
-        case 'applications': return 'Application Management';
+        case 'applications': return 'Partner Application Management';
+        case 'agentApplications': return 'Agent Application Management';
         case 'partners': return 'Partner Directory';
+        case 'agents': return 'Agent Management';
         case 'members': return 'Member Management';
         case 'fleet': return 'Fleet Management';
         case 'massage': return 'Massage & Wellness Management';
@@ -143,6 +147,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         return <PartnerDetails partner={selectedPartner} onBack={() => setSelectedPartner(null)} />;
     }
     switch (view) {
+        case 'agentApplications':
+            return <AgentApplicationManagementPage />;
         case 'fleet':
             return <FleetManagement />;
         case 'massage':
@@ -159,22 +165,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <SiteContentPage />;
         case 'members':
             return <MemberManagementPage />;
+        case 'agents':
+            return <AgentManagementPage />;
         case 'applications':
         case 'partners':
         default:
             return (
                  <>
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
                     <StatCard 
                         title={<Editable editId="stat-total-partners-title" type="text" defaultValue="Total Partners" />} 
                         value={stats?.totalPartners ?? '...'} 
                         icon={<Editable editId="stat-total-partners-icon" type="asset" defaultValue={<UserGroupIcon className="w-6 h-6"/>} />} 
                     />
                     <StatCard 
-                        title={<Editable editId="stat-pending-apps-title" type="text" defaultValue="Pending Applications" />} 
+                        title={<Editable editId="stat-pending-apps-title" type="text" defaultValue="Pending Partner Apps" />} 
                         value={stats?.pendingApplications ?? '...'} 
                         icon={<Editable editId="stat-pending-apps-icon" type="asset" defaultValue={<DocumentTextIcon className="w-6 h-6"/>} />} 
+                    />
+                     <StatCard 
+                        title={<Editable editId="stat-pending-agent-apps-title" type="text" defaultValue="Pending Agent Apps" />} 
+                        value={stats?.pendingAgentApplications ?? '...'} 
+                        icon={<Editable editId="stat-pending-agent-apps-icon" type="asset" defaultValue={<IdCardIcon className="w-6 h-6"/>} />} 
+                    />
+                    <StatCard 
+                        title={<Editable editId="stat-pending-agent-signups-title" type="text" defaultValue="Agent Partner Signups" />} 
+                        value={stats?.pendingAgentSignups ?? '...'} 
+                        icon={<Editable editId="stat-pending-agent-signups-icon" type="asset" defaultValue={<BriefcaseIcon className="w-6 h-6"/>} />} 
                     />
                      <StatCard 
                         title={<Editable editId="stat-pending-renewals-title" type="text" defaultValue="Pending Renewals" />} 

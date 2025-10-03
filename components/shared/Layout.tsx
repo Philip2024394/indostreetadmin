@@ -5,9 +5,11 @@ import MessagesModal from './MessagesModal';
 import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon } from './Icons';
+// Fix: Add CheckCircleIcon to imports
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'agents' | 'agentApplications';
+type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
   user: User;
@@ -16,9 +18,11 @@ interface LayoutProps {
   title: string;
   adminView?: AdminView;
   onAdminViewChange?: (view: AdminView) => void;
+  agentView?: AgentView;
+  onAgentViewChange?: (view: AgentView) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminView, onAdminViewChange }) => {
+const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminView, onAdminViewChange, agentView, onAgentViewChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState<AdminMessage[]>([]);
   const [isMessagesModalOpen, setIsMessagesModalOpen] = useState(false);
@@ -28,7 +32,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
   const activeNavLinkClasses = "bg-gray-700 text-white font-semibold";
 
   useEffect(() => {
-    if (user.role === Role.Admin) return; // No notifications for admin
+    if (user.role === Role.Admin || user.role === Role.Agent) return; // No notifications for admin/agent
 
     const fetchMessages = async () => {
         try {
@@ -70,11 +74,19 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
     <>
         <button onClick={() => onAdminViewChange?.('applications')} className={`${navLinkClasses} ${adminView === 'applications' ? activeNavLinkClasses : ''}`}>
           <DocumentTextIcon className="w-5 h-5 mr-3" />
-          <Editable editId="layout-nav-applications" type="text" defaultValue="Applications" as="span" />
+          <Editable editId="layout-nav-applications" type="text" defaultValue="Partner Applications" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('agentApplications')} className={`${navLinkClasses} ${adminView === 'agentApplications' ? activeNavLinkClasses : ''}`}>
+            <IdCardIcon className="w-5 h-5 mr-3" />
+            <Editable editId="layout-nav-agent-applications" type="text" defaultValue="Agent Applications" as="span" />
         </button>
          <button onClick={() => onAdminViewChange?.('partners')} className={`${navLinkClasses} ${adminView === 'partners' ? activeNavLinkClasses : ''}`}>
           <UserGroupIcon className="w-5 h-5 mr-3" />
           <Editable editId="layout-nav-partners" type="text" defaultValue="Partners" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('agents')} className={`${navLinkClasses} ${adminView === 'agents' ? activeNavLinkClasses : ''}`}>
+          <BriefcaseIcon className="w-5 h-5 mr-3" />
+          <Editable editId="layout-nav-agents" type="text" defaultValue="Agents" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('members')} className={`${navLinkClasses} ${adminView === 'members' ? activeNavLinkClasses : ''}`}>
           <DevicePhoneMobileIcon className="w-5 h-5 mr-3" />
@@ -111,6 +123,23 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
     </>
   );
 
+  const AgentNav = () => (
+    <>
+        <button onClick={() => onAgentViewChange?.('prospects')} className={`${navLinkClasses} ${agentView === 'prospects' ? activeNavLinkClasses : ''}`}>
+          <DocumentTextIcon className="w-5 h-5 mr-3" /> Prospect Management
+        </button>
+        <button onClick={() => onAgentViewChange?.('my-partners')} className={`${navLinkClasses} ${agentView === 'my-partners' ? activeNavLinkClasses : ''}`}>
+          <CheckCircleIcon className="w-5 h-5 mr-3" /> My Partners
+        </button>
+        <button onClick={() => onAgentViewChange?.('renewals')} className={`${navLinkClasses} ${agentView === 'renewals' ? activeNavLinkClasses : ''}`}>
+          <CalendarIcon className="w-5 h-5 mr-3" /> Renewal Follow-ups
+        </button>
+        <button onClick={() => onAgentViewChange?.('pricing')} className={`${navLinkClasses} ${agentView === 'pricing' ? activeNavLinkClasses : ''}`}>
+          <DollarSignIcon className="w-5 h-5 mr-3" /> Pricing & Commission
+        </button>
+    </>
+);
+
   const DefaultNav = () => (
      <button type="button" className={`${navLinkClasses} ${activeNavLinkClasses}`}>
         Dashboard
@@ -127,7 +156,9 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
           </h1>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {user.role === Role.Admin ? <AdminNav /> : <DefaultNav />}
+          {user.role === Role.Admin ? <AdminNav /> :
+           user.role === Role.Agent ? <AgentNav /> :
+           <DefaultNav />}
         </nav>
         <div className="p-4 border-t border-gray-700 mt-auto">
           <p className="text-sm text-gray-400">Signed in as</p>
@@ -150,7 +181,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
                  <ToggleSwitch enabled={isEditMode} onChange={setIsEditMode} enabledText="Edit Mode" disabledText="Edit Mode" />
               </div>
             )}
-            {user.role !== Role.Admin && (
+            {user.role !== Role.Admin && user.role !== Role.Agent && (
                 <button onClick={handleOpenMessages} className="relative text-gray-500 hover:text-gray-700">
                     <BellIcon className="w-6 h-6" />
                     {unreadMessages.length > 0 && (

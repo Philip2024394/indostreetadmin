@@ -3,6 +3,7 @@ export enum Role {
   Driver = 'driver',
   Vendor = 'vendor',
   LodgingPartner = 'lodging',
+  Agent = 'agent',
 }
 
 export enum PartnerType {
@@ -152,6 +153,7 @@ export interface Partner extends User {
   airportPickup?: boolean;
   loyaltyRewardEnabled?: boolean;
   hotelVillaAmenities?: HotelVillaAmenities;
+  agentId?: string; // New field to link partner to an agent
 }
 
 export interface PartnerApplication {
@@ -176,6 +178,7 @@ export interface PartnerApplication {
     year: number;
     licensePlate: string;
   };
+  prospectId?: string;
 }
 
 export interface VendorItem {
@@ -203,6 +206,8 @@ export interface AdminStats {
   activeDrivers: number;
   activeVendorsAndBusinesses: number;
   pendingRenewals: number;
+  pendingAgentSignups: number;
+  pendingAgentApplications: number;
 }
 
 export interface AnalyticsSummary {
@@ -326,4 +331,40 @@ export interface Member {
   lastKnownLocation: string;
   createdAt: string; // ISO Date string
   status: 'active' | 'suspended' | 'warned';
+}
+
+// --- New types for Agent Management ---
+export interface Prospect {
+  id: string;
+  agentId: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  street: string;
+  partnerType: PartnerType;
+  meetingNotes: string;
+  meetingDateTime: string; // ISO Date string
+  callbackDateTime?: string; // ISO Date string
+  status: 'prospect' | 'agreed_to_join' | 'pending_approval' | 'active_partner';
+  createdAt: string; // ISO Date string
+}
+
+export interface AgentApplication {
+  id: string;
+  name: string;
+  email: string;
+  nik: string; // ID personal number
+  age: number;
+  whatsapp: string;
+  address: string;
+  lastJob: string;
+  transport: 'own' | 'borrowed';
+  equipment: ('laptop' | 'phone')[];
+  shirtSize: 'S' | 'M' | 'L' | 'XL' | 'XXL';
+  policeRecord: boolean;
+  idCardImage: string; // base64
+  profilePhotoImage: string; // base64
+  status: 'pending' | 'approved' | 'rejected';
+  submittedAt: string; // ISO Date string
 }
