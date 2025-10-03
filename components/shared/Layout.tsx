@@ -5,9 +5,9 @@ import MessagesModal from './MessagesModal';
 import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet' | 'massage';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
 
 interface LayoutProps {
   user: User;
@@ -76,9 +76,9 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
           <UserGroupIcon className="w-5 h-5 mr-3" />
           <Editable editId="layout-nav-partners" type="text" defaultValue="Partners" as="span" />
         </button>
-        <button onClick={() => onAdminViewChange?.('bikeFleet')} className={`${navLinkClasses} ${adminView === 'bikeFleet' ? activeNavLinkClasses : ''}`}>
-          <MotorcycleIcon className="w-5 h-5 mr-3" />
-          <Editable editId="layout-nav-bike-fleet" type="text" defaultValue="Bike Fleet" as="span" />
+        <button onClick={() => onAdminViewChange?.('fleet')} className={`${navLinkClasses} ${adminView === 'fleet' ? activeNavLinkClasses : ''}`}>
+          <RealCarIcon className="w-5 h-5 mr-3" />
+          <Editable editId="layout-nav-fleet" type="text" defaultValue="Fleet Management" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('massage')} className={`${navLinkClasses} ${adminView === 'massage' ? activeNavLinkClasses : ''}`}>
             <SparklesIcon className="w-5 h-5 mr-3" />

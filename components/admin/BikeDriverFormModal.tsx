@@ -1,22 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Vehicle, Zone } from '../../types';
-import { XIcon } from '../shared/Icons';
+import React, { useState, useEffect } from 'react';
+import { Vehicle, Zone, VehicleType, TourPackage, TourDestination } from '../../types';
+import * as api from '../../services/supabase';
+import { XIcon, PlusCircleIcon, TrashIcon } from '../shared/Icons';
 import ToggleSwitch from '../shared/ToggleSwitch';
 
-interface BikeDriverFormModalProps {
+interface VehicleFormModalProps {
   vehicle: Vehicle | null;
   onClose: () => void;
   onSave: (data: Omit<Vehicle, 'id'>, id?: string) => void;
 }
 
-const minPrices: Record<Zone, number> = {
-    [Zone.Zone1]: 1850,
-    [Zone.Zone2]: 2600,
-    [Zone.Zone3]: 2100,
-};
-
 const defaultFormData: Omit<Vehicle, 'id'> = {
-    type: 'Bike',
+    type: VehicleType.Bike,
     serviceType: 'ride',
     driver: '',
     driverImage: '',
@@ -25,8 +20,8 @@ const defaultFormData: Omit<Vehicle, 'id'> = {
     plate: '',
     isAvailable: true,
     zone: Zone.Zone1,
-    pricePerKm: minPrices[Zone.Zone1],
-    pricePerKmParcel: minPrices[Zone.Zone1],
+    pricePerKm: 0,
+    pricePerKmParcel: 0,
     whatsapp: '',
     modelCc: '',
     color: '',
@@ -37,12 +32,16 @@ const defaultFormData: Omit<Vehicle, 'id'> = {
         accountHolder: '',
         accountNumber: '',
     },
+    seats: undefined,
+    tourPackages: [],
+    associatedDestinationID: '',
+    operatingHours: '',
 };
 
-const BikeDriverFormModal: React.FC<BikeDriverFormModalProps> = ({ vehicle, onClose, onSave }) => {
+const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, onSave }) => {
     const [formData, setFormData] = useState<Omit<Vehicle, 'id'>>(defaultFormData);
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    
+    const [destinations, setDestinations] = useState<TourDestination[]>([]);
+
     useEffect(() => {
         if (vehicle) {
             setFormData({
@@ -55,38 +54,21 @@ const BikeDriverFormModal: React.FC<BikeDriverFormModalProps> = ({ vehicle, onCl
         }
     }, [vehicle]);
 
-    const isFormValid = useMemo(() => {
-        const requiredFields: (keyof Omit<Vehicle, 'id'>)[] = ['driver', 'driverImage', 'driverRating', 'name', 'plate', 'zone', 'pricePerKm', 'pricePerKmParcel'];
-        
-        for (const field of requiredFields) {
-            if (!formData[field as keyof typeof formData]) return false;
-        }
-
-        if (!formData.bankDetails.bankName || !formData.bankDetails.accountHolder || !formData.bankDetails.accountNumber) {
-            return false;
-        }
-        
-        return Object.keys(validationErrors).length === 0;
-    }, [formData, validationErrors]);
-
     useEffect(() => {
-        const minPrice = minPrices[formData.zone];
-        const newErrors: Record<string, string> = {};
-
-        if (formData.pricePerKm < minPrice) {
-            newErrors.pricePerKm = `Must be at least Rp ${minPrice.toLocaleString()}`;
+        if (formData.type === VehicleType.Jeep) {
+            api.getTourDestinations().then(setDestinations);
         }
-
-        if (formData.pricePerKmParcel < minPrice) {
-            newErrors.pricePerKmParcel = `Must be at least Rp ${minPrice.toLocaleString()}`;
-        }
-        
-        setValidationErrors(newErrors);
-    }, [formData.zone, formData.pricePerKm, formData.pricePerKmParcel]);
+    }, [formData.type]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const newState = { ...prev, [name]: value };
+            if (name === 'type') {
+                newState.serviceType = value === VehicleType.Bike ? 'ride' : 'tour';
+            }
+            return newState;
+        });
     };
 
     const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,131 +80,137 @@ const BikeDriverFormModal: React.FC<BikeDriverFormModalProps> = ({ vehicle, onCl
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            bankDetails: {
-                ...prev.bankDetails,
-                [name]: value,
-            }
+            bankDetails: { ...prev.bankDetails, [name]: value }
         }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isFormValid) return;
-        const dataToSave = { ...formData, pricePerDay: formData.pricePerDay || undefined };
-        onSave(dataToSave, vehicle?.id);
+        onSave(formData, vehicle?.id);
     };
 
-    const renderInput = (name: string, label: string, type = 'text', required = false, isNumeric = false, optionalProps = {}) => (
-        <div>
-            <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
-            <input
-                type={type}
-                id={name}
-                name={name}
-                value={formData[name as keyof typeof formData] as any}
-                onChange={isNumeric ? handleNumberChange : handleChange}
-                required={required}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                {...optionalProps}
-            />
-        </div>
-    );
-    
-    const renderPriceInput = (name: 'pricePerKm' | 'pricePerKmParcel', label: string) => (
-         <div>
-            <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label} *</label>
-            <input
-                type="number"
-                id={name}
-                name={name}
-                value={formData[name]}
-                onChange={handleNumberChange}
-                required
-                className={`mt-1 block w-full border ${validationErrors[name] ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-            />
-            {validationErrors[name] && <p className="mt-1 text-xs text-red-600">{validationErrors[name]}</p>}
-        </div>
-    );
+    const handlePackageChange = (id: string, field: keyof TourPackage, value: string | number | string[]) => {
+        setFormData(prev => ({
+            ...prev,
+            tourPackages: (prev.tourPackages || []).map(p => p.id === id ? { ...p, [field]: value } : p)
+        }));
+    };
+
+    const addPackage = () => {
+        const newPackage: TourPackage = { id: `new-${Date.now()}`, name: '', description: '', price: 0, duration: '', includes: [] };
+        setFormData(prev => ({ ...prev, tourPackages: [...(prev.tourPackages || []), newPackage] }));
+    };
+
+    const removePackage = (id: string) => {
+        setFormData(prev => ({...prev, tourPackages: (prev.tourPackages || []).filter(p => p.id !== id)}));
+    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-gray-800">{vehicle ? 'Edit Bike Driver' : 'Add New Bike Driver'}</h3>
+                    <h3 className="text-xl font-semibold text-gray-800">{vehicle ? 'Edit Vehicle' : 'Add New Vehicle'}</h3>
                     <button onClick={onClose} className="p-1 rounded-full text-gray-500 hover:bg-gray-200">
                         <XIcon className="w-6 h-6" />
                     </button>
                 </div>
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {/* Driver Details */}
-                    <fieldset className="border p-4 rounded-md">
-                        <legend className="px-2 font-semibold text-gray-700">Driver Details</legend>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {renderInput('driver', 'Driver Full Name', 'text', true)}
-                            {renderInput('driverImage', 'Driver Image URL', 'url', true)}
-                            {renderInput('driverRating', 'Driver Rating', 'number', true, true, { min: "0", max: "5", step: "0.1" })}
-                            {renderInput('whatsapp', 'WhatsApp Number', 'tel')}
-                        </div>
-                    </fieldset>
-                    
-                    {/* Vehicle Details */}
-                     <fieldset className="border p-4 rounded-md">
-                        <legend className="px-2 font-semibold text-gray-700">Vehicle Details</legend>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           {renderInput('name', 'Bike Model Name', 'text', true)}
-                           {renderInput('plate', 'License Plate', 'text', true)}
-                           {renderInput('modelCc', 'Engine Size (e.g., 155cc)')}
-                           {renderInput('color', 'Color')}
-                           {renderInput('registrationYear', 'Registration Year', 'number', false, true, { min: "1990", max: new Date().getFullYear() })}
-                        </div>
-                    </fieldset>
-                    
-                     {/* Pricing & Service */}
-                     <fieldset className="border p-4 rounded-md">
-                        <legend className="px-2 font-semibold text-gray-700">Pricing & Service</legend>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <div>
-                                <label htmlFor="zone" className="block text-sm font-medium text-gray-700">Operating Zone *</label>
-                                <select id="zone" name="zone" value={formData.zone} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    {Object.values(Zone).map(z => <option key={z} value={z}>{z}</option>)}
-                                </select>
-                            </div>
-                            <div></div> {/* Spacer */}
-                            {renderPriceInput('pricePerKm', 'Price/km (Ride)')}
-                            {renderPriceInput('pricePerKmParcel', 'Price/km (Parcel)')}
-                            {renderInput('pricePerDay', 'Daily Tour Price (Optional)', 'number', false, true)}
-                        </div>
-                    </fieldset>
-                    
-                    {/* Bank Info */}
-                     <fieldset className="border p-4 rounded-md">
-                        <legend className="px-2 font-semibold text-gray-700">Bank Information</legend>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                           <div>
-                                <label htmlFor="bankName" className="block text-sm font-medium text-gray-700">Bank Name *</label>
-                                <input type="text" id="bankName" name="bankName" value={formData.bankDetails.bankName} onChange={handleBankChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm" />
-                            </div>
-                            <div>
-                                <label htmlFor="accountHolder" className="block text-sm font-medium text-gray-700">Account Holder *</label>
-                                <input type="text" id="accountHolder" name="accountHolder" value={formData.bankDetails.accountHolder} onChange={handleBankChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm" />
-                            </div>
-                            <div>
-                                <label htmlFor="accountNumber" className="block text-sm font-medium text-gray-700">Account Number *</label>
-                                <input type="text" id="accountNumber" name="accountNumber" value={formData.bankDetails.accountNumber} onChange={handleBankChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm" />
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    {/* Status */}
-                    <div className="border p-4 rounded-md">
-                        <ToggleSwitch enabled={formData.isAvailable} onChange={enabled => setFormData(prev => ({...prev, isAvailable: enabled}))} enabledText="Driver is Available" disabledText="Driver is Busy" />
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Vehicle Type *</label>
+                        <select name="type" value={formData.type} onChange={handleChange} disabled={!!vehicle} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 disabled:bg-gray-100">
+                            {Object.values(VehicleType).map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
                     </div>
 
+                    <fieldset className="border p-4 rounded-md">
+                        <legend className="px-2 font-semibold text-gray-700">Driver & Vehicle Details</legend>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InputField name="driver" label="Driver Full Name" value={formData.driver} onChange={handleChange} required />
+                            <InputField name="driverImage" label="Driver Image URL" value={formData.driverImage} onChange={handleChange} type="url" required />
+                            <InputField name="whatsapp" label="WhatsApp Number" value={formData.whatsapp || ''} onChange={handleChange} />
+                            <InputField name="name" label="Vehicle Model Name" value={formData.name} onChange={handleChange} required />
+                            <InputField name="plate" label="License Plate" value={formData.plate} onChange={handleChange} required />
+                            <InputField name="color" label="Color" value={formData.color || ''} onChange={handleChange} />
+                            <InputField name="registrationYear" label="Registration Year" value={formData.registrationYear || ''} onChange={handleNumberChange} type="number" />
+                            {formData.type === VehicleType.Bike && <InputField name="modelCc" label="Engine Size (cc)" value={formData.modelCc || ''} onChange={handleChange} />}
+                            {formData.type === VehicleType.Jeep && <InputField name="seats" label="Max. Passengers" value={formData.seats || ''} onChange={handleNumberChange} type="number" />}
+                        </div>
+                    </fieldset>
+
+                    {formData.type === VehicleType.Bike && (
+                        <fieldset className="border p-4 rounded-md">
+                            <legend className="px-2 font-semibold text-gray-700">Bike Pricing</legend>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Operating Zone *</label>
+                                    <select name="zone" value={formData.zone} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                        {Object.values(Zone).map(z => <option key={z} value={z}>{z}</option>)}
+                                    </select>
+                                </div>
+                                <InputField name="pricePerKm" label="Price/km (Ride)" value={formData.pricePerKm || ''} onChange={handleNumberChange} type="number" required />
+                                <InputField name="pricePerKmParcel" label="Price/km (Parcel)" value={formData.pricePerKmParcel || ''} onChange={handleNumberChange} type="number" required />
+                                <InputField name="pricePerDay" label="Daily Tour/Rental Price" value={formData.pricePerDay || ''} onChange={handleNumberChange} type="number" />
+                            </div>
+                        </fieldset>
+                    )}
+
+                    {formData.type === VehicleType.Jeep && (
+                         <fieldset className="border p-4 rounded-md">
+                            <legend className="px-2 font-semibold text-gray-700">Jeep Tour Details</legend>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <InputField name="operatingHours" label="Operating Hours" value={formData.operatingHours || ''} onChange={handleChange} placeholder="e.g., 5:00 AM - 5:00 PM"/>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Associated Destination</label>
+                                    <select name="associatedDestinationID" value={formData.associatedDestinationID} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                        <option value="">None</option>
+                                        {destinations.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <h4 className="text-md font-semibold text-gray-800 mb-2">Tour Packages</h4>
+                                <div className="space-y-4">
+                                    {(formData.tourPackages || []).map((pkg, index) => (
+                                        <div key={pkg.id} className="p-3 border rounded-md bg-gray-50 relative">
+                                            <button type="button" onClick={() => removePackage(pkg.id)} className="absolute top-2 right-2 p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                                                {/* FIX: Added the required 'name' prop to the InputField components to resolve TypeScript errors. */}
+                                                <InputField name={`pkg_name_${pkg.id}`} label="Package Name" value={pkg.name} onChange={(e) => handlePackageChange(pkg.id, 'name', e.target.value)} />
+                                                <InputField name={`pkg_duration_${pkg.id}`} label="Duration" value={pkg.duration} onChange={(e) => handlePackageChange(pkg.id, 'duration', e.target.value)} placeholder="e.g., 2-3 Hours"/>
+                                                <InputField name={`pkg_price_${pkg.id}`} label="Price (Rp)" type="number" value={pkg.price} onChange={(e) => handlePackageChange(pkg.id, 'price', Number(e.target.value))} />
+                                                <InputField name={`pkg_includes_${pkg.id}`} label="Includes (comma-separated)" value={pkg.includes.join(', ')} onChange={(e) => handlePackageChange(pkg.id, 'includes', e.target.value.split(',').map(s => s.trim()))} />
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-xs font-medium text-gray-700">Description</label>
+                                                    <textarea value={pkg.description} onChange={(e) => handlePackageChange(pkg.id, 'description', e.target.value)} rows={2} className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button type="button" onClick={addPackage} className="mt-2 flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                                    <PlusCircleIcon className="w-5 h-5 mr-1" /> Add Package
+                                </button>
+                            </div>
+                        </fieldset>
+                    )}
+                    
+                    <fieldset className="border p-4 rounded-md">
+                        <legend className="px-2 font-semibold text-gray-700">Bank Information</legend>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                           <InputField name="bankName" label="Bank Name" value={formData.bankDetails.bankName} onChange={handleBankChange} required />
+                           <InputField name="accountHolder" label="Account Holder" value={formData.bankDetails.accountHolder} onChange={handleBankChange} required />
+                           <InputField name="accountNumber" label="Account Number" value={formData.bankDetails.accountNumber} onChange={handleBankChange} required />
+                        </div>
+                    </fieldset>
+
+                    <div className="border p-4 rounded-md">
+                        <ToggleSwitch enabled={formData.isAvailable} onChange={enabled => setFormData(prev => ({...prev, isAvailable: enabled}))} enabledText="Vehicle is Available" disabledText="Vehicle is Unavailable" />
+                    </div>
                 </form>
                 <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2 flex-shrink-0">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" formNoValidate onClick={handleSubmit} disabled={!isFormValid} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed">
-                        Save Driver
+                    <button type="submit" formNoValidate onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Save Vehicle
                     </button>
                 </div>
             </div>
@@ -230,4 +218,15 @@ const BikeDriverFormModal: React.FC<BikeDriverFormModalProps> = ({ vehicle, onCl
     );
 };
 
-export default BikeDriverFormModal;
+const InputField: React.FC<{name: string, label: string, value: string | number, onChange: (e: any) => void, type?: string, required?: boolean, placeholder?: string}> = 
+({ name, label, value, onChange, type = 'text', required = false, placeholder }) => (
+    <div>
+        <label htmlFor={name} className="block text-xs font-medium text-gray-700">{label}{required && ' *'}</label>
+        <input
+            type={type} id={name} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+    </div>
+);
+
+export default VehicleFormModal;

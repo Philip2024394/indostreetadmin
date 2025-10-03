@@ -11,13 +11,13 @@ import BroadcastMessageModal from './BroadcastMessageModal';
 import TourManagementPage from './TourManagementPage';
 import SiteContentPage from './SiteContentPage';
 import RenewalManagementPage from './RenewalManagementPage';
-import BikeFleetManagement from './BikeFleetManagement';
+import FleetManagement from './BikeFleetManagement';
 import MassageManagementPage from './MassageManagementPage';
 import { Editable } from '../shared/Editable';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
-  BanknotesIcon, SparklesIcon, LandmarkIcon
+  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon
 } from '../shared/Icons';
 
 interface AdminDashboardProps {
@@ -25,7 +25,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'bikeFleet' | 'massage';
+type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -40,6 +40,7 @@ const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.MassagePlace]: { icon: <SparklesIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.Hotel]: { icon: <LandmarkIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.Villa]: { icon: <LandmarkIcon className="w-5 h-5 mr-2" /> },
+  [PartnerType.JeepTourOperator]: { icon: <RealCarIcon className="w-5 h-5 mr-2" /> },
 };
 
 
@@ -124,7 +125,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     switch(view) {
         case 'applications': return 'Application Management';
         case 'partners': return 'Partner Directory';
-        case 'bikeFleet': return 'Bike Fleet Management';
+        case 'fleet': return 'Fleet Management';
         case 'massage': return 'Massage & Wellness Management';
         case 'renewals': return 'Membership Renewals';
         case 'financials': return 'Financial Overview';
@@ -140,8 +141,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         return <PartnerDetails partner={selectedPartner} onBack={() => setSelectedPartner(null)} />;
     }
     switch (view) {
-        case 'bikeFleet':
-            return <BikeFleetManagement />;
+        case 'fleet':
+            return <FleetManagement />;
         case 'massage':
             return <MassageManagementPage onPartnerSelect={setSelectedPartner} />;
         case 'renewals':

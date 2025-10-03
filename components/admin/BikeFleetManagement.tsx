@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import * as api from '../../services/supabase';
-import { Vehicle, Zone } from '../../types';
-import BikeDriverFormModal from './BikeDriverFormModal';
-import { PlusCircleIcon, PencilIcon, TrashIcon, SearchIcon } from '../shared/Icons';
+import { Vehicle, Zone, VehicleType } from '../../types';
+import VehicleFormModal from './BikeDriverFormModal';
+import { PlusCircleIcon, PencilIcon, TrashIcon, SearchIcon, MotorcycleIcon, RealCarIcon } from '../shared/Icons';
 import ToggleSwitch from '../shared/ToggleSwitch';
 
-const BikeFleetManagement: React.FC = () => {
+const FleetManagement: React.FC = () => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [zoneFilter, setZoneFilter] = useState<Zone | 'all'>('all');
+    const [typeFilter, setTypeFilter] = useState<VehicleType | 'all'>('all');
     const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'busy'>('all');
 
     const fetchData = useCallback(async () => {
@@ -42,7 +42,7 @@ const BikeFleetManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this driver?')) {
+        if (window.confirm('Are you sure you want to delete this vehicle and driver profile?')) {
             try {
                 await api.deleteVehicle(id);
                 fetchData();
@@ -63,18 +63,16 @@ const BikeFleetManagement: React.FC = () => {
             setIsFormOpen(false);
         } catch (error) {
             console.error("Failed to save vehicle:", error);
-            // In a real app, show an error to the user in the modal
         }
     };
     
     const handleStatusToggle = async (vehicle: Vehicle, isAvailable: boolean) => {
-        // Optimistic update
         setVehicles(prev => prev.map(v => v.id === vehicle.id ? {...v, isAvailable} : v));
         try {
             await api.updateVehicle(vehicle.id, { isAvailable });
         } catch(e) {
             console.error("Failed to update status", e);
-            fetchData(); // revert
+            fetchData();
         }
     };
 
@@ -84,15 +82,15 @@ const BikeFleetManagement: React.FC = () => {
                 v.driver.toLowerCase().includes(searchTerm.toLowerCase()) || 
                 v.plate.toLowerCase().includes(searchTerm.toLowerCase());
             
-            const zoneMatch = zoneFilter === 'all' || v.zone === zoneFilter;
+            const typeMatch = typeFilter === 'all' || v.type === typeFilter;
 
             const statusMatch = statusFilter === 'all' || 
                 (statusFilter === 'available' && v.isAvailable) || 
                 (statusFilter === 'busy' && !v.isAvailable);
 
-            return searchMatch && zoneMatch && statusMatch;
+            return searchMatch && typeMatch && statusMatch;
         });
-    }, [vehicles, searchTerm, zoneFilter, statusFilter]);
+    }, [vehicles, searchTerm, typeFilter, statusFilter]);
 
     return (
         <>
@@ -100,15 +98,15 @@ const BikeFleetManagement: React.FC = () => {
                 <div className="p-4 sm:p-6 border-b">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-800">Bike Driver Fleet</h3>
-                            <p className="text-sm text-gray-500 mt-1">Manage all registered bike drivers for ride and parcel services.</p>
+                            <h3 className="text-xl font-semibold text-gray-800">Fleet Management</h3>
+                            <p className="text-sm text-gray-500 mt-1">Manage all registered vehicles and drivers for various services.</p>
                         </div>
                         <button 
                             onClick={handleAddNew}
                             className="mt-4 sm:mt-0 flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             <PlusCircleIcon className="w-5 h-5 mr-2" />
-                            Add New Bike Driver
+                            Add New Vehicle
                         </button>
                     </div>
                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -124,9 +122,9 @@ const BikeFleetManagement: React.FC = () => {
                               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md sm:text-sm"
                             />
                         </div>
-                        <select value={zoneFilter} onChange={e => setZoneFilter(e.target.value as (Zone | 'all'))} className="border border-gray-300 rounded-md sm:text-sm py-2">
-                            <option value="all">All Zones</option>
-                            {Object.values(Zone).map(z => <option key={z} value={z}>{z}</option>)}
+                        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)} className="border border-gray-300 rounded-md sm:text-sm py-2">
+                            <option value="all">All Vehicle Types</option>
+                            {Object.values(VehicleType).map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} className="border border-gray-300 rounded-md sm:text-sm py-2">
                              <option value="all">All Statuses</option>
@@ -140,11 +138,9 @@ const BikeFleetManagement: React.FC = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Driver</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Vehicle</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Zone</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price/km (Ride)</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Price/km (Parcel)</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Driver / Vehicle</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Type</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Service</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     <th className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
                                 </tr>
@@ -157,14 +153,17 @@ const BikeFleetManagement: React.FC = () => {
                                                 <img className="h-10 w-10 rounded-full" src={v.driverImage} alt={v.driver} />
                                                 <div className="ml-4">
                                                     <div className="text-sm font-medium text-gray-900">{v.driver}</div>
-                                                    <div className="text-sm text-gray-500">{v.plate}</div>
+                                                    <div className="text-sm text-gray-500">{v.name} ({v.plate})</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">{v.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">{v.zone}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rp {v.pricePerKm.toLocaleString('id-ID')}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell">Rp {v.pricePerKmParcel.toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                                            <span className="flex items-center">
+                                                {v.type === VehicleType.Bike ? <MotorcycleIcon className="w-5 h-5 mr-2 text-gray-500" /> : <RealCarIcon className="w-5 h-5 mr-2 text-gray-500" />}
+                                                {v.type}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize hidden lg:table-cell">{v.serviceType}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             <ToggleSwitch enabled={v.isAvailable} onChange={(enabled) => handleStatusToggle(v, enabled)} />
                                         </td>
@@ -174,7 +173,7 @@ const BikeFleetManagement: React.FC = () => {
                                         </td>
                                     </tr>
                                 )) : (
-                                    <tr><td colSpan={7} className="text-center py-10 px-6 text-gray-500">No bike drivers found.</td></tr>
+                                    <tr><td colSpan={7} className="text-center py-10 px-6 text-gray-500">No vehicles found.</td></tr>
                                 )}
                              </tbody>
                         </table>
@@ -182,7 +181,7 @@ const BikeFleetManagement: React.FC = () => {
                 </div>
             </div>
             {isFormOpen && (
-                <BikeDriverFormModal 
+                <VehicleFormModal 
                     vehicle={editingVehicle}
                     onClose={() => setIsFormOpen(false)}
                     onSave={handleSave}
@@ -192,4 +191,4 @@ const BikeFleetManagement: React.FC = () => {
     );
 };
 
-export default BikeFleetManagement;
+export default FleetManagement;

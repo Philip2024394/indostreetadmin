@@ -18,6 +18,7 @@ export enum PartnerType {
   MassagePlace = 'Massage Place',
   Hotel = 'Hotel',
   Villa = 'Villa',
+  JeepTourOperator = 'Jeep Tour Operator',
 }
 
 export interface UserProfile {
@@ -272,27 +273,47 @@ export enum Zone {
   Zone3 = 'Zone 3: Kalimantan, Sulawesi, NTT, Maluku, Papua',
 }
 
+export enum VehicleType {
+  Bike = 'Bike',
+  Jeep = 'Jeep',
+}
+
+export interface TourPackage {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: string;
+  includes: string[];
+}
+
 export interface Vehicle {
   id: string;
-  type: 'Bike';
-  serviceType: 'ride';
+  partnerId?: string; // Link to Partner
+  type: VehicleType;
+  serviceType: 'ride' | 'tour';
   driver: string;
   driverImage: string; // URL
   driverRating: number;
-  name: string; // Bike model name
+  name: string; // Model name (e.g., "Honda Vario", "Willys Jeep")
   plate: string;
   isAvailable: boolean;
-  zone: Zone;
-  pricePerKm: number;
-  pricePerKmParcel: number;
+  zone?: Zone; // Optional, might not apply to Jeeps
+  pricePerKm?: number; // Optional, for ride-hailing
+  pricePerKmParcel?: number; // Optional, for ride-hailing
   whatsapp?: string;
-  modelCc?: string;
+  modelCc?: string; // Optional, for bikes
   color?: string;
   registrationYear?: number;
-  pricePerDay?: number;
+  pricePerDay?: number; // Keep for simple rentals, but tours are preferred for Jeeps
   bankDetails: {
     bankName: string;
     accountHolder: string;
     accountNumber: string;
   };
+  // New fields for Jeeps
+  seats?: number; // Max passengers
+  tourPackages?: TourPackage[];
+  associatedDestinationID?: string;
+  operatingHours?: string;
 }

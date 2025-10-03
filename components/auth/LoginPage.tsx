@@ -52,6 +52,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <li><strong>Admin:</strong> admin@indostreet.com</li>
             <li><strong>Bike Driver:</strong> driver@indostreet.com</li>
             <li><strong>Car Driver:</strong> cardriver@indostreet.com</li>
+            <li><strong>Jeep Tour Operator:</strong> jeep@indostreet.com</li>
             <li><strong>Food Vendor:</strong> vendor@indostreet.com</li>
             <li><strong>Therapist:</strong> therapist@indostreet.com</li>
             <li><strong>Spa/Salon:</strong> spa@indostreet.com</li>

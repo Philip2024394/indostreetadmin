@@ -19,6 +19,7 @@ import {
   Vehicle,
   Zone,
   Room,
+  VehicleType,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -212,7 +213,24 @@ let mockUsers: (User | Partner)[] = [
       parking: true,
       petFriendly: true,
     },
-  }
+  },
+  {
+    id: 'jeep-driver-1',
+    email: 'jeep@indostreet.com',
+    role: Role.Driver,
+    partnerType: PartnerType.JeepTourOperator,
+    status: 'active',
+    rating: 4.9,
+    totalEarnings: 35000000,
+    memberSince: '2023-05-10T09:00:00Z',
+    phone: '081234567891',
+    activationExpiry: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+    bankDetails: { bankName: 'BCA', accountHolderName: 'I Wayan Koster', accountNumber: '1111222233' },
+    profile: {
+      name: 'I Wayan Koster',
+      profilePicture: 'https://i.pravatar.cc/150?u=jeep-driver-1',
+    },
+  },
 ];
 
 let mockApplications: PartnerApplication[] = [
@@ -256,6 +274,7 @@ let mockTourDestinations: TourDestination[] = [
     { id: 'tour-1', name: 'Taman Mini Indonesia Indah', category: 'Culture & Art', description: 'A miniature park showcasing Indonesian culture.' },
     { id: 'tour-2', name: 'Ragunan Zoo', category: 'Nature & Outdoors', description: 'The largest zoo in Jakarta.' },
     { id: 'tour-3', name: 'Monas (National Monument)', category: 'Temples & Historical Sites', description: 'The iconic monument in the center of Merdeka Square.' },
+    { id: 'tour-merapi', name: 'Mount Merapi Jeep Tour', category: 'Nature & Outdoors', description: 'An adventurous off-road tour on the slopes of an active volcano.' },
 ];
 
 let mockContentOverrides: ContentOverrides = { 
@@ -283,6 +302,7 @@ const defaultPrices: Record<string, { '3': number, '6': number, '12': number }> 
     [PartnerType.MassagePlace]: { '3': 220000, '6': 400000, '12': 750000 },
     [PartnerType.Hotel]: { '3': 500000, '6': 950000, '12': 1800000 },
     [PartnerType.Villa]: { '3': 600000, '6': 1100000, '12': 2000000 },
+    [PartnerType.JeepTourOperator]: { '3': 250000, '6': 480000, '12': 900000 },
 };
 
 Object.values(PartnerType).forEach(type => {
@@ -313,7 +333,7 @@ let mockRenewalSubmissions: RenewalSubmission[] = [
 let mockVehicles: Vehicle[] = [
     {
       id: "taxi_bike_1",
-      type: "Bike",
+      type: VehicleType.Bike,
       serviceType: "ride",
       name: "Yamaha NMAX",
       driver: "Dewi",
@@ -337,7 +357,7 @@ let mockVehicles: Vehicle[] = [
     },
     {
       id: "taxi_bike_2",
-      type: "Bike",
+      type: VehicleType.Bike,
       serviceType: "ride",
       name: "Honda Vario",
       driver: "Agung",
@@ -361,7 +381,7 @@ let mockVehicles: Vehicle[] = [
     },
      {
       id: "taxi_bike_3",
-      type: "Bike",
+      type: VehicleType.Bike,
       serviceType: "ride",
       name: "Suzuki Address",
       driver: "Putu",
@@ -382,6 +402,33 @@ let mockVehicles: Vehicle[] = [
       registrationYear: 2021,
       zone: Zone.Zone3,
       whatsapp: "6285555666777"
+    },
+    {
+      id: "jeep_1",
+      partnerId: "jeep-driver-1",
+      type: VehicleType.Jeep,
+      serviceType: "tour",
+      name: "Willys Jeep 'The Volcano'",
+      driver: "I Wayan Koster",
+      driverImage: "https://i.pravatar.cc/150?u=jeep-driver-1",
+      driverRating: 4.9,
+      plate: "DK 4321 JEEP",
+      isAvailable: true,
+      seats: 4,
+      operatingHours: "5:00 AM - 5:00 PM",
+      associatedDestinationID: 'tour-merapi',
+      color: "Army Green",
+      registrationYear: 1985,
+      whatsapp: "6281234567891",
+      bankDetails: {
+        bankName: "BCA",
+        accountHolder: "I Wayan Koster",
+        accountNumber: "1111222233"
+      },
+      tourPackages: [
+        { id: 'pkg-1', name: "Sunrise Tour", description: "Catch the stunning sunrise over the volcano.", price: 550000, duration: "3-4 Hours", includes: ["Driver", "Fuel", "Safety Gear"] },
+        { id: 'pkg-2', name: "Short Lava Tour", description: "Visit key eruption sites and the Alien Stone.", price: 450000, duration: "2-3 Hours", includes: ["Driver", "Fuel", "Entry Tickets"] }
+      ]
     }
 ];
 
