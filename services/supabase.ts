@@ -20,6 +20,7 @@ import {
   Zone,
   Room,
   VehicleType,
+  Member,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -480,6 +481,13 @@ let mockRooms: Room[] = [
     },
 ];
 
+let mockMembers: Member[] = [
+  { id: 'member-1', whatsappNumber: '6281234567890', name: 'Alex Chandra', lastKnownLocation: 'Kuta, Bali', createdAt: '2023-05-10T10:00:00Z', status: 'active' },
+  { id: 'member-2', whatsappNumber: '6287712345678', name: 'Bunga Citra', lastKnownLocation: 'Seminyak, Bali', createdAt: '2023-06-15T14:30:00Z', status: 'active' },
+  { id: 'member-3', whatsappNumber: '6285598765432', name: 'Charlie Dharma', lastKnownLocation: 'Ubud, Bali', createdAt: '2023-07-01T09:15:00Z', status: 'suspended' },
+  { id: 'member-4', whatsappNumber: '6289955554444', name: 'Dian Eka', lastKnownLocation: 'Canggu, Bali', createdAt: '2023-07-20T18:00:00Z', status: 'warned' },
+];
+
 // Helper for simulating network delay
 const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
     return new Promise(resolve => {
@@ -771,4 +779,16 @@ export const updateRoom = (roomId: string, data: Partial<Omit<Room, 'id'>>): Pro
 export const deleteRoom = (roomId: string): Promise<void> => {
     mockRooms = mockRooms.filter(r => r.id !== roomId);
     return mockApiCall(undefined);
+};
+
+// --- Mock Member (End-User) API ---
+export const getMembers = (): Promise<Member[]> => mockApiCall(mockMembers);
+
+export const updateMember = (id: string, data: Partial<Member>): Promise<Member> => {
+    const memberIndex = mockMembers.findIndex(m => m.id === id);
+    if (memberIndex > -1) {
+        mockMembers[memberIndex] = { ...mockMembers[memberIndex], ...data };
+        return mockApiCall(mockMembers[memberIndex], 200);
+    }
+    return Promise.reject(new Error("Member not found"));
 };

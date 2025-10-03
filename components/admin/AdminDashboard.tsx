@@ -13,6 +13,7 @@ import SiteContentPage from './SiteContentPage';
 import RenewalManagementPage from './RenewalManagementPage';
 import FleetManagement from './BikeFleetManagement';
 import MassageManagementPage from './MassageManagementPage';
+import MemberManagementPage from './MemberManagementPage';
 import { Editable } from '../shared/Editable';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
@@ -25,7 +26,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -125,6 +126,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     switch(view) {
         case 'applications': return 'Application Management';
         case 'partners': return 'Partner Directory';
+        case 'members': return 'Member Management';
         case 'fleet': return 'Fleet Management';
         case 'massage': return 'Massage & Wellness Management';
         case 'renewals': return 'Membership Renewals';
@@ -155,6 +157,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <TourManagementPage />;
         case 'siteContent':
             return <SiteContentPage />;
+        case 'members':
+            return <MemberManagementPage />;
         case 'applications':
         case 'partners':
         default:

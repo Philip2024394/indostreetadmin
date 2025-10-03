@@ -5,9 +5,9 @@ import MessagesModal from './MessagesModal';
 import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage';
 
 interface LayoutProps {
   user: User;
@@ -75,6 +75,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
          <button onClick={() => onAdminViewChange?.('partners')} className={`${navLinkClasses} ${adminView === 'partners' ? activeNavLinkClasses : ''}`}>
           <UserGroupIcon className="w-5 h-5 mr-3" />
           <Editable editId="layout-nav-partners" type="text" defaultValue="Partners" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('members')} className={`${navLinkClasses} ${adminView === 'members' ? activeNavLinkClasses : ''}`}>
+          <DevicePhoneMobileIcon className="w-5 h-5 mr-3" />
+          <Editable editId="layout-nav-members" type="text" defaultValue="Members" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('fleet')} className={`${navLinkClasses} ${adminView === 'fleet' ? activeNavLinkClasses : ''}`}>
           <RealCarIcon className="w-5 h-5 mr-3" />

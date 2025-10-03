@@ -317,3 +317,13 @@ export interface Vehicle {
   associatedDestinationID?: string;
   operatingHours?: string;
 }
+
+// --- New type for end-user management ---
+export interface Member {
+  id: string;
+  whatsappNumber: string;
+  name?: string;
+  lastKnownLocation: string;
+  createdAt: string; // ISO Date string
+  status: 'active' | 'suspended' | 'warned';
+}
