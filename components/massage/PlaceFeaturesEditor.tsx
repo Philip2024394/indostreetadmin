@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Partner } from '../../types';
+import { Partner, GalleryPhoto } from '../../types';
 import { XIcon } from '../shared/Icons';
 import { blobToBase64 } from '../shared/Editable';
 
@@ -9,7 +9,7 @@ interface PlaceFeaturesEditorProps {
 }
 
 const PlaceFeaturesEditor: React.FC<PlaceFeaturesEditorProps> = ({ partner, onUpdate }) => {
-    const [galleryImages, setGalleryImages] = useState(partner.galleryImages || []);
+    const [galleryImages, setGalleryImages] = useState<GalleryPhoto[]>(partner.galleryImages || []);
     const [amenities, setAmenities] = useState(partner.amenities || {});
     const [businessHours, setBusinessHours] = useState(partner.businessHours || '');
     const [saving, setSaving] = useState(false);
@@ -21,14 +21,17 @@ const PlaceFeaturesEditor: React.FC<PlaceFeaturesEditorProps> = ({ partner, onUp
         }
         const file = e.target.files?.[0];
         if (file) {
-            const base64 = await blobToBase64(file);
-            const dataUrl = `data:${file.type};base64,${base64}`;
-            setGalleryImages(prev => [...prev, dataUrl]);
+            const dataUrl = `data:${file.type};base64,${await blobToBase64(file)}`;
+            setGalleryImages(prev => [...prev, { id: `new-${Date.now()}`, url: dataUrl, name: '' }]);
         }
     };
     
-    const handleRemoveImage = (imageToRemove: string) => {
-        setGalleryImages(galleryImages.filter(img => img !== imageToRemove));
+    const handleRemoveImage = (idToRemove: string) => {
+        setGalleryImages(galleryImages.filter(img => img.id !== idToRemove));
+    };
+
+    const handleCaptionChange = (id: string, caption: string) => {
+        setGalleryImages(prev => prev.map(photo => photo.id === id ? { ...photo, name: caption } : photo));
     };
 
     const handleAmenityChange = (amenity: keyof NonNullable<Partner['amenities']>, checked: boolean) => {
@@ -60,25 +63,35 @@ const PlaceFeaturesEditor: React.FC<PlaceFeaturesEditorProps> = ({ partner, onUp
                 {/* Photo Gallery */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Photo Gallery (up to 3 images)</label>
-                    <div className="mt-2 grid grid-cols-3 gap-4">
-                        {galleryImages.map((img, index) => (
-                            <div key={index} className="relative group">
-                                <img src={img} alt={`Gallery ${index+1}`} className="w-full h-24 object-cover rounded-md" />
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {galleryImages.map((photo) => (
+                            <div key={photo.id} className="relative group border rounded-md p-2 space-y-2">
+                                <img src={photo.url} alt={photo.name} className="w-full h-24 object-cover rounded-md" />
+                                 <input
+                                    type="text"
+                                    placeholder="Add a caption..."
+                                    value={photo.name}
+                                    onChange={(e) => handleCaptionChange(photo.id, e.target.value)}
+                                    className="w-full border border-gray-300 rounded-md p-1 text-xs"
+                                />
                                 <button
-                                    onClick={() => handleRemoveImage(img)}
+                                    onClick={() => handleRemoveImage(photo.id)}
                                     className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <XIcon className="w-4 h-4" />
                                 </button>
                             </div>
                         ))}
+                         {galleryImages.length < 3 && (
+                            <label htmlFor="gallery-upload" className="cursor-pointer flex items-center justify-center w-full min-h-[148px] bg-gray-50 border-2 border-dashed border-gray-300 rounded-md hover:border-blue-500">
+                                <div className="text-center">
+                                    <svg className="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                    <span className="mt-1 block text-sm text-gray-600">Add Photo</span>
+                                </div>
+                                <input id="gallery-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                            </label>
+                         )}
                     </div>
-                     {galleryImages.length < 3 && (
-                        <label htmlFor="gallery-upload" className="mt-2 inline-block cursor-pointer text-sm text-blue-600 hover:text-blue-800 font-medium">
-                            + Add Photo
-                            <input id="gallery-upload" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                        </label>
-                     )}
                 </div>
 
                 {/* Amenities */}

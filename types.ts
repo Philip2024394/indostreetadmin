@@ -102,6 +102,19 @@ export interface Room {
   };
 }
 
+// --- New types for Massage Partners ---
+export interface MassagePrice {
+  id: string;
+  duration: number; // in minutes
+  price: number; // in IDR
+}
+
+export interface GalleryPhoto {
+  id: string;
+  url: string; // base64 or URL
+  name: string; // caption
+}
+
 
 export interface Partner extends User {
   partnerType: PartnerType;
@@ -128,12 +141,8 @@ export interface Partner extends User {
   bio?: string; // Also used for Lodging Tagline
   massageStatus?: 'online' | 'busy' | 'offline';
   massageServices?: string[];
-  massagePricing?: {
-    '60min'?: number;
-    '90min'?: number;
-    '120min'?: number;
-  };
-  galleryImages?: string[]; // array of base64 strings or URLs, for massage places
+  massagePricing?: MassagePrice[];
+  galleryImages?: GalleryPhoto[]; // for massage places
   amenities?: {
     sauna?: boolean;
     jacuzzi?: boolean;

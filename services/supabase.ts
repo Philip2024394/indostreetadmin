@@ -23,6 +23,8 @@ import {
   Member,
   Prospect,
   AgentApplication,
+  MassagePrice,
+  GalleryPhoto,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -123,7 +125,11 @@ let mockUsers: (User | Partner)[] = [
     bio: 'Certified massage therapist with 5 years of experience specializing in traditional Balinese and deep tissue massage. I bring a professional and relaxing experience to your home.',
     massageStatus: 'online',
     massageServices: ['Balinese Massage', 'Deep Tissue', 'Reflexology'],
-    massagePricing: { '60min': 150000, '90min': 220000, '120min': 280000 },
+    massagePricing: [
+      { id: 'price-1', duration: 60, price: 150000 },
+      { id: 'price-2', duration: 90, price: 220000 },
+      { id: 'price-3', duration: 120, price: 280000 },
+    ],
   },
   {
     id: 'massage-place-1',
@@ -139,10 +145,20 @@ let mockUsers: (User | Partner)[] = [
     bankDetails: { bankName: 'Mandiri', accountHolderName: 'PT Sejahtera Spa', accountNumber: '444555666' },
     profile: { name: 'Serenity Spa', shopName: 'Serenity Spa Jakarta', profilePicture: 'https://i.pravatar.cc/150?u=spa-1', headerPicture: 'https://via.placeholder.com/600x200/BAE6FD/0C4A6E?Text=Your+Oasis+of+Calm' },
     bio: 'A luxurious day spa in the heart of Jakarta. We offer a wide range of wellness treatments, from traditional massages to modern spa packages. Visit us to escape the hustle and bustle.',
+    address: 'Jakarta Selatan',
+    street: 'Jl. Senopati No. 50',
     massageStatus: 'online',
     massageServices: ['Swedish Massage', 'Aromatherapy', 'Hot Stone', 'Body Scrub'],
-    massagePricing: { '60min': 250000, '90min': 350000, '120min': 450000 },
-    galleryImages: ['https://via.placeholder.com/400x300/E0F2FE/083344?Text=Treatment+Room', 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Lobby', 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Sauna'],
+    massagePricing: [
+      { id: 'price-4', duration: 60, price: 250000 },
+      { id: 'price-5', duration: 90, price: 350000 },
+      { id: 'price-6', duration: 120, price: 450000 },
+    ],
+    galleryImages: [
+        { id: 'gal-1', url: 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Treatment+Room', name: 'Comfortable Treatment Room' },
+        { id: 'gal-2', url: 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Lobby', name: 'Welcoming Lobby' },
+        { id: 'gal-3', url: 'https://via.placeholder.com/400x300/E0F2FE/083344?Text=Sauna', name: 'Relaxing Sauna' },
+    ],
     amenities: { sauna: true, jacuzzi: true, salon: false, nailArt: false, steamRoom: true },
     businessHours: '10:00 AM - 9:00 PM Daily',
   },

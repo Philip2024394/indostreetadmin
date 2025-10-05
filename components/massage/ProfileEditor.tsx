@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Partner } from '../../types';
+import { Partner, PartnerType } from '../../types';
 import { blobToBase64 } from '../shared/Editable';
 
 interface ProfileEditorProps {
@@ -10,6 +10,8 @@ interface ProfileEditorProps {
 const ProfileEditor: React.FC<ProfileEditorProps> = ({ partner, onUpdate }) => {
     const [bio, setBio] = useState(partner.bio || '');
     const [phone, setPhone] = useState(partner.phone || '');
+    const [address, setAddress] = useState(partner.address || '');
+    const [street, setStreet] = useState(partner.street || '');
     const [saving, setSaving] = useState(false);
     
     // In a real app, this would be a URL from a file upload service. For this demo, we'll use base64.
@@ -31,7 +33,7 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ partner, onUpdate }) => {
     
     const handleSave = async () => {
         setSaving(true);
-        await onUpdate({
+        const dataToUpdate: Partial<Partner> = {
             bio,
             phone,
             profile: {
@@ -39,7 +41,14 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ partner, onUpdate }) => {
                 profilePicture,
                 headerPicture
             }
-        });
+        };
+
+        if (partner.partnerType === PartnerType.MassagePlace) {
+            dataToUpdate.address = address;
+            dataToUpdate.street = street;
+        }
+
+        await onUpdate(dataToUpdate);
         setSaving(false);
     };
 
@@ -100,6 +109,36 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ partner, onUpdate }) => {
                         />
                     </div>
                 </div>
+
+                {/* Address for Massage Places */}
+                {partner.partnerType === PartnerType.MassagePlace && (
+                    <>
+                        <div>
+                            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Area / City</label>
+                            <input
+                                type="text"
+                                id="address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm"
+                                placeholder="e.g., Jakarta Selatan"
+                            />
+                        </div>
+                         <div>
+                            <label htmlFor="street" className="block text-sm font-medium text-gray-700">Street Address</label>
+                            <input
+                                type="text"
+                                id="street"
+                                value={street}
+                                onChange={(e) => setStreet(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm"
+                                placeholder="e.g., Jl. Senopati No. 50"
+                            />
+                        </div>
+                    </>
+                )}
+
+
                 {/* Save Button */}
                 <button
                     onClick={handleSave}

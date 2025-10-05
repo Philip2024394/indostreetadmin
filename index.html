@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IndoStreet Partner Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // This placeholder is replaced by the build process with your actual Google Maps API key.
+      const GOOGLE_MAPS_API_KEY = "__GOOGLE_MAPS_API_KEY__";
+      if (GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== "__GOOGLE_MAPS_API_KEY__") {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    </script>
   <script type="importmap">
 {
   "imports": {

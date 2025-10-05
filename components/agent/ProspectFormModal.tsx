@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import { Prospect, PartnerType } from '../../types';
 import { XIcon } from '../shared/Icons';
+
+declare global {
+    interface Window {
+        google: any;
+    }
+}
 
 interface ProspectFormModalProps {
   prospect: Prospect | null;
@@ -20,6 +26,8 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
         meetingDateTime: new Date().toISOString().slice(0, 16),
         callbackDateTime: '',
     });
+    
+    const streetInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (prospect) {
@@ -36,6 +44,32 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
             });
         }
     }, [prospect]);
+
+    useEffect(() => {
+        if (!window.google || !streetInputRef.current) return;
+
+        const autocomplete = new window.google.maps.places.Autocomplete(streetInputRef.current, {
+            componentRestrictions: { country: "id" },
+            fields: ["address_components", "geometry", "name"],
+        });
+
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.address_components) return;
+
+            const components = place.address_components;
+            const streetNumber = components.find((c: any) => c.types.includes('street_number'))?.long_name || '';
+            const route = components.find((c: any) => c.types.includes('route'))?.long_name || '';
+            const city = components.find((c: any) => c.types.includes('locality'))?.long_name ||
+                         components.find((c: any) => c.types.includes('administrative_area_level_2'))?.long_name || '';
+            
+            setFormData(prev => ({
+                ...prev,
+                street: `${streetNumber} ${route}`.trim(),
+                address: city,
+            }));
+        });
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -59,7 +93,7 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
                         <InputField label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} required />
                         <InputField label="Email Address" name="email" value={formData.email} onChange={handleChange} type="email" required />
                         <InputField label="City/Region" name="address" value={formData.address} onChange={handleChange} required />
-                        <InputField label="Street Address" name="street" value={formData.street} onChange={handleChange} required />
+                        <InputField label="Street Address" name="street" value={formData.street} onChange={handleChange} required ref={streetInputRef} />
                         <div>
                             <label htmlFor="partnerType" className="block text-sm font-medium text-gray-700">Business Type</label>
                             <select id="partnerType" name="partnerType" value={formData.partnerType} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
@@ -85,12 +119,12 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
     );
 };
 
-const InputField: React.FC<{ label: string, name: string, value: string, onChange: (e: any) => void, type?: string, required?: boolean }> = 
-({ label, name, value, onChange, type = 'text', required = false }) => (
+const InputField = forwardRef<HTMLInputElement, { label: string, name: string, value: string, onChange: (e: any) => void, type?: string, required?: boolean }>(
+    ({ label, name, value, onChange, type = 'text', required = false }, ref) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
-        <input type={type} id={name} name={name} value={value} onChange={onChange} required={required} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+        <input ref={ref} type={type} id={name} name={name} value={value} onChange={onChange} required={required} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
     </div>
-);
+));
 
 export default ProspectFormModal;

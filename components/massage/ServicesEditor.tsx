@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Partner } from '../../types';
-import { XIcon } from '../shared/Icons';
+import { Partner, MassagePrice } from '../../types';
+import { XIcon, PlusCircleIcon, TrashIcon } from '../shared/Icons';
 
 interface ServicesEditorProps {
     partner: Partner;
@@ -10,11 +10,7 @@ interface ServicesEditorProps {
 const ServicesEditor: React.FC<ServicesEditorProps> = ({ partner, onUpdate }) => {
     const [services, setServices] = useState(partner.massageServices || []);
     const [newService, setNewService] = useState('');
-    const [pricing, setPricing] = useState({
-        '60min': partner.massagePricing?.['60min'] || 0,
-        '90min': partner.massagePricing?.['90min'] || 0,
-        '120min': partner.massagePricing?.['120min'] || 0,
-    });
+    const [pricing, setPricing] = useState<MassagePrice[]>(partner.massagePricing || []);
     const [saving, setSaving] = useState(false);
     
     const handleAddService = () => {
@@ -28,8 +24,19 @@ const ServicesEditor: React.FC<ServicesEditorProps> = ({ partner, onUpdate }) =>
         setServices(services.filter(s => s !== serviceToRemove));
     };
     
-    const handlePricingChange = (duration: '60min' | '90min' | '120min', value: string) => {
-        setPricing(prev => ({ ...prev, [duration]: Number(value) }));
+    const handlePricingChange = (id: string, field: 'duration' | 'price', value: string) => {
+        const numericValue = parseInt(value, 10);
+        if (!isNaN(numericValue)) {
+            setPricing(prev => prev.map(p => p.id === id ? { ...p, [field]: numericValue } : p));
+        }
+    };
+
+    const addPriceTier = () => {
+        setPricing(prev => [...prev, { id: `new-${Date.now()}`, duration: 60, price: 0 }]);
+    };
+
+    const removePriceTier = (id: string) => {
+        setPricing(prev => prev.filter(p => p.id !== id));
     };
 
     const handleSave = async () => {
@@ -75,22 +82,37 @@ const ServicesEditor: React.FC<ServicesEditorProps> = ({ partner, onUpdate }) =>
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Pricing Tiers</label>
                     <div className="mt-2 space-y-3">
-                        {(['60min', '90min', '120min'] as const).map(duration => {
-                            const label = `${duration.replace('min', '')} min`;
-                            return (
-                                <div key={duration}>
-                                    <label htmlFor={`price-${duration}`} className="block text-xs font-medium text-gray-500">Price for {label} (Rp)</label>
+                        {pricing.map(tier => (
+                            <div key={tier.id} className="flex items-center space-x-2 p-2 border rounded-md bg-gray-50/50">
+                                <div className="flex-1">
+                                    <label className="block text-xs font-medium text-gray-500">Duration (min)</label>
                                     <input
                                         type="number"
-                                        id={`price-${duration}`}
-                                        value={pricing[duration]}
-                                        onChange={(e) => handlePricingChange(duration, e.target.value)}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm"
+                                        value={tier.duration}
+                                        onChange={(e) => handlePricingChange(tier.id, 'duration', e.target.value)}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 sm:text-sm"
                                         min="0"
                                     />
                                 </div>
-                            );
-                        })}
+                                 <div className="flex-1">
+                                    <label className="block text-xs font-medium text-gray-500">Price (Rp)</label>
+                                    <input
+                                        type="number"
+                                        value={tier.price}
+                                        onChange={(e) => handlePricingChange(tier.id, 'price', e.target.value)}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 sm:text-sm"
+                                        min="0"
+                                    />
+                                </div>
+                                <button onClick={() => removePriceTier(tier.id)} className="p-2 text-gray-400 hover:text-red-600 self-end mb-1">
+                                    <TrashIcon className="w-5 h-5"/>
+                                </button>
+                            </div>
+                        ))}
+                         <button onClick={addPriceTier} className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 mt-2">
+                            <PlusCircleIcon className="w-5 h-5 mr-1" />
+                            Add Price Tier
+                        </button>
                     </div>
                 </div>
 

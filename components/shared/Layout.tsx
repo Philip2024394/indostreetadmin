@@ -149,10 +149,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out z-30 w-64 bg-gray-800 text-white flex flex-col`}>
-        <div className="flex items-center justify-center h-20 border-b border-gray-700">
+      <div className={`fixed inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out z-30 w-64 bg-black text-white flex flex-col`}>
+        <div className="flex items-center justify-center h-20 border-b border-gray-800">
           <h1 className="text-2xl font-bold">
-            <Editable editId="layout-app-title" type="text" defaultValue="IndoStreet" as="span" />
+            <span className="text-white">Indo</span><span className="text-orange-500">Street</span>
           </h1>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -160,7 +160,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
            user.role === Role.Agent ? <AgentNav /> :
            <DefaultNav />}
         </nav>
-        <div className="p-4 border-t border-gray-700 mt-auto">
+        <div className="p-4 border-t border-gray-800 mt-auto">
           <p className="text-sm text-gray-400">Signed in as</p>
           <p className="font-semibold">{user.profile.name || user.email}</p>
         </div>

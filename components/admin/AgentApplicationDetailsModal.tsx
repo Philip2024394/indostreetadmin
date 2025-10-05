@@ -49,7 +49,7 @@ const AgentApplicationDetailsModal: React.FC<AgentApplicationDetailsModalProps> 
                 <DetailSection title="Background">
                     <DetailItem label="Previous Job" value={application.lastJob} />
                     <DetailItem label="Transport" value={application.transport} />
-                    <DetailItem label="Equipment" value={application.equipment.join(', ')} />
+                    <DetailItem label="Equipment" value={application.equipment ? application.equipment.join(', ') : 'None'} />
                     <DetailItem label="Shirt Size" value={application.shirtSize} />
                     <DetailItem label="Police Record" value={application.policeRecord ? 'Yes' : 'No'} />
                 </DetailSection>
