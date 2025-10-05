@@ -137,7 +137,7 @@ const LocationControl: React.FC<LocationControlProps> = ({ partner, onUpdate }) 
                 <button
                     onClick={handleUseMyLocation}
                     disabled={loading}
-                    className="w-full inline-flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400"
+                    className="w-full inline-flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300"
                 >
                     {loading ? 'Getting location...' : 'Use My Phone Location'}
                 </button>
