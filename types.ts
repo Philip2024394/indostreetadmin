@@ -20,6 +20,7 @@ export enum PartnerType {
   Hotel = 'Hotel',
   Villa = 'Villa',
   JeepTourOperator = 'Jeep Tour Operator',
+  BusRental = 'Bus Rental',
 }
 
 export interface UserProfile {
@@ -288,6 +289,7 @@ export interface TourDestination {
   name: string;
   category: 'Temples & Historical Sites' | 'Nature & Outdoors' | 'Culture & Art';
   description: string;
+  imageUrl?: string;
 }
 
 export interface ContentOverrides {
@@ -323,6 +325,9 @@ export enum Zone {
 export enum VehicleType {
   Bike = 'Bike',
   Jeep = 'Jeep',
+  Car = 'Car',
+  Bus = 'Bus',
+  Lorry = 'Lorry',
 }
 
 export interface TourPackage {
@@ -363,6 +368,10 @@ export interface Vehicle {
   tourPackages?: TourPackage[];
   associatedDestinationID?: string;
   operatingHours?: string;
+
+  // New fields for Sales
+  listingType?: 'rent' | 'sale' | 'both';
+  salePrice?: number;
 }
 
 // --- New type for end-user management ---

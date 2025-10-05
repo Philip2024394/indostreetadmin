@@ -27,6 +27,8 @@ const defaultFormData: Omit<Vehicle, 'id'> = {
     color: '',
     registrationYear: new Date().getFullYear(),
     pricePerDay: 0,
+    listingType: 'rent',
+    salePrice: 0,
     bankDetails: {
         bankName: '',
         accountHolder: '',
@@ -48,6 +50,8 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                 ...defaultFormData,
                 ...vehicle,
                 pricePerDay: vehicle.pricePerDay ?? 0,
+                salePrice: vehicle.salePrice ?? 0,
+                listingType: vehicle.listingType ?? 'rent',
             });
         } else {
             setFormData(defaultFormData);
@@ -126,14 +130,36 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                         <legend className="px-2 font-semibold text-gray-700">Driver & Vehicle Details</legend>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField name="driver" label="Driver Full Name" value={formData.driver} onChange={handleChange} required />
-                            <InputField name="driverImage" label="Driver Image URL" value={formData.driverImage} onChange={handleChange} type="url" required />
+                            <InputField name="driverImage" label="Vehicle Image URL" value={formData.driverImage} onChange={handleChange} type="url" required />
                             <InputField name="whatsapp" label="WhatsApp Number" value={formData.whatsapp || ''} onChange={handleChange} />
                             <InputField name="name" label="Vehicle Model Name" value={formData.name} onChange={handleChange} required />
                             <InputField name="plate" label="License Plate" value={formData.plate} onChange={handleChange} required />
                             <InputField name="color" label="Color" value={formData.color || ''} onChange={handleChange} />
                             <InputField name="registrationYear" label="Registration Year" value={formData.registrationYear || ''} onChange={handleNumberChange} type="number" />
                             {formData.type === VehicleType.Bike && <InputField name="modelCc" label="Engine Size (cc)" value={formData.modelCc || ''} onChange={handleChange} />}
-                            {formData.type === VehicleType.Jeep && <InputField name="seats" label="Max. Passengers" value={formData.seats || ''} onChange={handleNumberChange} type="number" />}
+                            {(formData.type === VehicleType.Jeep || formData.type === VehicleType.Bus) && <InputField name="seats" label="Max. Passengers" value={formData.seats || ''} onChange={handleNumberChange} type="number" />}
+                        </div>
+                    </fieldset>
+
+                     <fieldset className="border p-4 rounded-md">
+                        <legend className="px-2 font-semibold text-gray-700">Listing Details</legend>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Listing Type *</label>
+                                <select name="listingType" value={formData.listingType} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                    <option value="rent">For Rent</option>
+                                    <option value="sale">For Sale</option>
+                                    <option value="both">Rent & Sale</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            {(formData.listingType === 'rent' || formData.listingType === 'both') && (
+                                <InputField name="pricePerDay" label="Rental Price per Day (Rp)" value={formData.pricePerDay || ''} onChange={handleNumberChange} type="number" />
+                            )}
+                            {(formData.listingType === 'sale' || formData.listingType === 'both') && (
+                                <InputField name="salePrice" label="Sale Price (Rp)" value={formData.salePrice || ''} onChange={handleNumberChange} type="number" />
+                            )}
                         </div>
                     </fieldset>
 
@@ -149,7 +175,6 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                                 </div>
                                 <InputField name="pricePerKm" label="Price/km (Ride)" value={formData.pricePerKm || ''} onChange={handleNumberChange} type="number" required />
                                 <InputField name="pricePerKmParcel" label="Price/km (Parcel)" value={formData.pricePerKmParcel || ''} onChange={handleNumberChange} type="number" required />
-                                <InputField name="pricePerDay" label="Daily Tour/Rental Price" value={formData.pricePerDay || ''} onChange={handleNumberChange} type="number" />
                             </div>
                         </fieldset>
                     )}

@@ -47,6 +47,8 @@ const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.Hotel]: { icon: <LandmarkIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.Villa]: { icon: <LandmarkIcon className="w-5 h-5 mr-2" /> },
   [PartnerType.JeepTourOperator]: { icon: <RealCarIcon className="w-5 h-5 mr-2" /> },
+  // Fix: Add missing BusRental partner type to resolve TypeScript error.
+  [PartnerType.BusRental]: { icon: <RealCarIcon className="w-5 h-5 mr-2" /> },
 };
 
 

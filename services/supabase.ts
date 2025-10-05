@@ -41,8 +41,6 @@ if (!supabaseUrl || !supabaseKey) {
   supabaseInitializationError = "Supabase URL and Anon Key are required. Make sure to set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.";
   console.error(supabaseInitializationError);
 
-  // Create a minimal mock client to prevent the app from crashing on load.
-  // This allows the app to render the login page where the error can be displayed.
   supabase = {
     auth: {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
@@ -62,64 +60,68 @@ if (!supabaseUrl || !supabaseKey) {
 
 export { supabase };
 
+// --- Mock Data for Authentication ---
+const createMockPartner = (id: string, email: string, partnerType: PartnerType, role: Role, overrides: Partial<Partner> = {}): Partner => ({
+    id, email, partnerType, role,
+    status: 'active',
+    rating: 4.5,
+    totalEarnings: 1500000,
+    memberSince: new Date().toISOString(),
+    phone: '628123456789',
+    activationExpiry: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(),
+    profile: {
+      name: overrides.profile?.name || `${partnerType} User`,
+      shopName: overrides.profile?.shopName,
+      profilePicture: 'https://i.pravatar.cc/150?u=' + email,
+    },
+    ...overrides
+});
+
+const mockUsers: Record<string, User> = {
+  'admin@indostreet.com': { id: 'uuid-admin', email: 'admin@indostreet.com', role: Role.Admin, profile: { name: 'Admin User' } },
+  'agent@indostreet.com': { id: 'uuid-agent', email: 'agent@indostreet.com', role: Role.Agent, profile: { name: 'Agent Smith' } },
+  'driver@indostreet.com': createMockPartner('uuid-driver-bike', 'driver@indostreet.com', PartnerType.BikeDriver, Role.Driver),
+  'cardriver@indostreet.com': createMockPartner('uuid-driver-car', 'cardriver@indostreet.com', PartnerType.CarDriver, Role.Driver, {profile: {name: "Car Driver Budi"}}),
+  'lorrydriver@indostreet.com': createMockPartner('uuid-driver-lorry', 'lorrydriver@indostreet.com', PartnerType.LorryDriver, Role.Driver),
+  'jeep@indostreet.com': createMockPartner('uuid-driver-jeep', 'jeep@indostreet.com', PartnerType.JeepTourOperator, Role.Driver),
+  'vendor@indostreet.com': createMockPartner('uuid-vendor-food', 'vendor@indostreet.com', PartnerType.FoodVendor, Role.Vendor, { profile: { shopName: "Soto Ayam Pak Man" } }),
+  'shop@indostreet.com': createMockPartner('uuid-vendor-shop', 'shop@indostreet.com', PartnerType.StreetShop, Role.Vendor, { profile: { shopName: "Warung Modern" } }),
+  'business@indostreet.com': createMockPartner('uuid-vendor-biz', 'business@indostreet.com', PartnerType.LocalBusiness, Role.Vendor, { profile: { shopName: "Bali Crafts" } }),
+  'carrental@indostreet.com': createMockPartner('uuid-vendor-carrental', 'carrental@indostreet.com', PartnerType.CarRental, Role.Vendor, { profile: { shopName: "Bali Car Hire" } }),
+  'bikerental@indostreet.com': createMockPartner('uuid-vendor-bikerental', 'bikerental@indostreet.com', PartnerType.BikeRental, Role.Vendor, { profile: { shopName: "Scooter Rentals" } }),
+  'busrental@indostreet.com': createMockPartner('uuid-vendor-busrental', 'busrental@indostreet.com', PartnerType.BusRental, Role.Vendor, { profile: { shopName: "Island Bus Tours" } }),
+  'therapist@indostreet.com': createMockPartner('uuid-vendor-therapist', 'therapist@indostreet.com', PartnerType.MassageTherapist, Role.Vendor, { profile: { name: "Ayu Wellness" } }),
+  'spa@indostreet.com': createMockPartner('uuid-vendor-spa', 'spa@indostreet.com', PartnerType.MassagePlace, Role.Vendor, { profile: { shopName: "Ubud Zen Spa" } }),
+  'hotel@indostreet.com': createMockPartner('uuid-lodging-hotel', 'hotel@indostreet.com', PartnerType.Hotel, Role.LodgingPartner, { profile: { name: "Grand Bali Hotel" } }),
+  'villa@indostreet.com': createMockPartner('uuid-lodging-villa', 'villa@indostreet.com', PartnerType.Villa, Role.LodgingPartner, { profile: { name: "Canggu Private Villa" } }),
+};
+
 
 // --- Authentication ---
 
 export const login = async (email: string, password: string): Promise<{ user: User; token: string }> => {
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-    });
-
-    if (authError || !authData.user) {
-        throw new Error(authError?.message || 'Login failed. Please check your credentials.');
+    console.warn("Using MOCK login. All data fetching is still live from Supabase.");
+    if (password !== 'password') {
+        throw new Error('Invalid login credentials.');
     }
-    
-    // In our data model, Admins/Agents are in a `users` table, and others are in a `partners` table.
-    // We'll try fetching from partners first.
-    const { data: partnerData, error: partnerError } = await supabase
-        .from('partners')
-        .select('*')
-        .eq('id', authData.user.id)
-        .single();
-
-    if (partnerData && !partnerError) {
-        return { user: partnerData as User, token: authData.session.access_token };
+    const user = mockUsers[email];
+    if (user) {
+        localStorage.setItem('mockUser', JSON.stringify(user));
+        return { user, token: 'mock-token-for-' + email };
     }
-
-    // If not found in partners, check the users table.
-    const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authData.user.id)
-        .single();
-    
-    if (userData && !userError) {
-        return { user: userData as User, token: authData.session.access_token };
-    }
-    
-    // If profile is not found in either table, something is wrong.
-    throw new Error(partnerError?.message || userError?.message || 'Login succeeded but could not find user profile.');
+    throw new Error('Invalid login credentials.');
 };
 
-
 export const logout = async (): Promise<void> => {
+  localStorage.removeItem('mockUser');
   await supabase.auth.signOut();
 };
 
 export const checkSession = async (): Promise<User | null> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return null;
-
-    // Try fetching from partners first, then users
-    const { data: partnerData } = await supabase.from('partners').select('*').eq('id', session.user.id).single();
-    if (partnerData) return partnerData as Partner;
-    
-    const { data: userData } = await supabase.from('users').select('*').eq('id', session.user.id).single();
-    if (userData) return userData as User;
-
-    // If no profile found, the auth session is likely for a deleted user. Sign out.
-    await supabase.auth.signOut();
+    const mockUserJson = localStorage.getItem('mockUser');
+    if (mockUserJson) {
+        return JSON.parse(mockUserJson) as User;
+    }
     return null;
 };
 
@@ -185,72 +187,328 @@ export const updatePartner = async (id: string, data: Partial<Partner>): Promise
 };
 
 // ===================================================================================
-// STUBBED OUT API FUNCTIONS - These need to be converted to use Supabase
+// IMPLEMENTED API FUNCTIONS
 // ===================================================================================
 
-// FIX: Accept any arguments for stubbed functions to prevent "Expected 0 arguments, but got 1" errors.
-const notImplemented = (functionName: string) => (...args: any[]) => {
-    console.warn(`${functionName} is not implemented with Supabase yet. Returning empty data.`);
-    return Promise.resolve([]);
+export const getAgents = async (): Promise<User[]> => {
+    const { data, error } = await supabase.from('users').select('*').eq('role', Role.Agent);
+    if (error) throw error;
+    return (data as User[]) || [];
 };
 
-const notImplementedObj = (functionName: string) => (...args: any[]) => {
-    console.warn(`${functionName} is not implemented with Supabase yet. Returning empty data.`);
-    return Promise.resolve({});
+export const getAllProspects = async (): Promise<Prospect[]> => {
+    const { data, error } = await supabase.from('prospects').select('*');
+    if (error) throw error;
+    return data || [];
 };
 
-const notImplementedVoid = (functionName: string) => (...args: any[]) => {
-    console.warn(`${functionName} is not implemented with Supabase yet.`);
-    return Promise.resolve();
+// Mocked as it would require complex aggregation or a DB function (RPC)
+export const getAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
+    console.warn(`getAnalyticsSummary is not implemented with Supabase yet. Returning mock data.`);
+    return Promise.resolve({
+        partnerGrowth: { total: 125, change: 12.5 },
+        rideAndOrderVolume: { total: 15230, change: -2.1 },
+        popularServices: [
+            { name: PartnerType.BikeDriver, count: 7200 },
+            { name: PartnerType.FoodVendor, count: 4500 },
+            { name: PartnerType.CarDriver, count: 2100 },
+            { name: PartnerType.MassageTherapist, count: 950 },
+        ],
+        peakHours: [
+            { hour: '08:00 AM', count: 900 },
+            { hour: '12:00 PM', count: 1200 },
+            { hour: '06:00 PM', count: 1100 },
+            { hour: '07:00 PM', count: 1050 },
+        ],
+    });
 };
 
-export const getAgents = notImplemented('getAgents');
-export const getAllProspects = notImplemented('getAllProspects');
-export const getAnalyticsSummary = notImplementedObj('getAnalyticsSummary') as () => Promise<AnalyticsSummary>;
-// FIX: Use 'as unknown as' for type casting to resolve complex conversion errors.
-export const broadcastMessage = notImplementedObj('broadcastMessage') as unknown as (content: string) => Promise<AdminMessage>;
-export const getTransactions = notImplemented('getTransactions');
-export const getTransactionsForPartner = notImplemented('getTransactionsForPartner');
-export const updateTransaction = notImplementedObj('updateTransaction') as unknown as (id: string, data: Partial<Transaction>) => Promise<Transaction>;
-export const getAllVendorItems = notImplemented('getAllVendorItems');
-export const getVendorItems = notImplemented('getVendorItems');
-export const createVendorItem = notImplementedObj('createVendorItem') as unknown as (vendorId: string, data: Omit<VendorItem, 'id' | 'vendorId'>) => Promise<VendorItem>;
-export const updateVendorItem = notImplementedObj('updateVendorItem') as unknown as (itemId: string, data: Partial<VendorItem>) => Promise<VendorItem>;
-export const deleteVendorItem = notImplementedVoid('deleteVendorItem');
-export const getRideRequests = notImplemented('getRideRequests');
-export const getFeedbackForPartner = notImplemented('getFeedbackForPartner');
-export const getPayoutsForPartner = notImplemented('getPayoutsForPartner');
-export const getMessages = notImplemented('getMessages');
-export const getMessagesForPartner = notImplemented('getMessagesForPartner');
-export const sendMessage = notImplementedObj('sendMessage') as unknown as (recipientId: string, content: string) => Promise<AdminMessage>;
-export const updateMessage = notImplementedObj('updateMessage') as unknown as (messageId: string, data: Partial<AdminMessage>) => Promise<AdminMessage>;
-export const getTourDestinations = notImplemented('getTourDestinations');
-export const createTourDestination = notImplementedObj('createTourDestination') as unknown as (data: Omit<TourDestination, 'id'>) => Promise<TourDestination>;
-export const updateTourDestination = notImplementedObj('updateTourDestination') as unknown as (id: string, data: Partial<TourDestination>) => Promise<TourDestination>;
-export const deleteTourDestination = notImplementedVoid('deleteTourDestination');
-export const getContentOverrides = notImplementedObj('getContentOverrides') as () => Promise<ContentOverrides>;
-export const updateContentOverrides = notImplementedObj('updateContentOverrides') as unknown as (newOverrides: ContentOverrides) => Promise<ContentOverrides>;
-export const getRenewalSubmissions = notImplemented('getRenewalSubmissions');
-export const createRenewalSubmission = notImplementedObj('createRenewalSubmission') as unknown as (data: Omit<RenewalSubmission, 'id' | 'submittedAt' | 'status'>) => Promise<RenewalSubmission>;
-export const updateRenewalSubmission = notImplementedObj('updateRenewalSubmission') as unknown as (id: string, data: Partial<RenewalSubmission>) => Promise<RenewalSubmission>;
-export const getVehicles = notImplemented('getVehicles');
-export const createVehicle = notImplementedObj('createVehicle') as unknown as (data: Omit<Vehicle, 'id'>) => Promise<Vehicle>;
-export const updateVehicle = notImplementedObj('updateVehicle') as unknown as (id: string, data: Partial<Omit<Vehicle, 'id'>>) => Promise<Vehicle>;
-export const deleteVehicle = notImplementedVoid('deleteVehicle');
-export const getRoomsForProperty = notImplemented('getRoomsForProperty');
-export const createRoom = notImplementedObj('createRoom') as unknown as (vendorId: string, data: Omit<Room, 'id' | 'vendorId'>) => Promise<Room>;
-export const updateRoom = notImplementedObj('updateRoom') as unknown as (roomId: string, data: Partial<Omit<Room, 'id'>>) => Promise<Room>;
-export const deleteRoom = notImplementedVoid('deleteRoom');
-export const getMembers = notImplemented('getMembers');
-export const updateMember = notImplementedObj('updateMember') as unknown as (id: string, data: Partial<Member>) => Promise<Member>;
-export const getProspectsForAgent = notImplemented('getProspectsForAgent');
-export const getPartnersForAgent = notImplemented('getPartnersForAgent');
-export const createProspect = notImplementedObj('createProspect') as unknown as (agentId: string, data: Omit<Prospect, 'id' | 'agentId' | 'createdAt' | 'status'>) => Promise<Prospect>;
-export const updateProspect = notImplementedObj('updateProspect') as unknown as (id: string, data: Partial<Prospect>) => Promise<Prospect>;
-export const getAgentApplications = notImplemented('getAgentApplications');
-export const updateAgentApplicationStatus = notImplementedObj('updateAgentApplicationStatus') as unknown as (id: string, status: 'approved' | 'rejected') => Promise<AgentApplication>;
-export const submitAgentApplication = notImplementedObj('submitAgentApplication') as unknown as (data: Omit<AgentApplication, 'id' | 'status' | 'submittedAt'>) => Promise<AgentApplication>;
-export const getMassageTypes = notImplemented('getMassageTypes');
-export const createMassageType = notImplementedObj('createMassageType') as unknown as (data: Omit<MassageType, 'id'>) => Promise<MassageType>;
-export const updateMassageType = notImplementedObj('updateMassageType') as unknown as (id: string, data: Partial<Omit<MassageType, 'id'>>) => Promise<MassageType>;
-export const deleteMassageType = notImplementedVoid('deleteMassageType');
+export const broadcastMessage = async (content: string): Promise<AdminMessage> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated to broadcast message.");
+
+    const { data, error } = await supabase.from('messages').insert({ senderId: user.id, recipientId: 'all', content, readBy: [] }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getTransactions = async (): Promise<Transaction[]> => {
+    const { data, error } = await supabase.from('transactions').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const getTransactionsForPartner = async (partnerId: string): Promise<Transaction[]> => {
+    const { data, error } = await supabase.from('transactions').select('*').eq('partnerId', partnerId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const updateTransaction = async (id: string, updateData: Partial<Transaction>): Promise<Transaction> => {
+    const { data, error } = await supabase.from('transactions').update(updateData).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getAllVendorItems = async (): Promise<VendorItem[]> => {
+    const { data, error } = await supabase.from('vendor_items').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const getVendorItems = async (vendorId: string): Promise<VendorItem[]> => {
+    const { data, error } = await supabase.from('vendor_items').select('*').eq('vendorId', vendorId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const createVendorItem = async (vendorId: string, itemData: Omit<VendorItem, 'id' | 'vendorId'>): Promise<VendorItem> => {
+    const { data, error } = await supabase.from('vendor_items').insert({ ...itemData, vendorId }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateVendorItem = async (itemId: string, itemData: Partial<VendorItem>): Promise<VendorItem> => {
+    const { data, error } = await supabase.from('vendor_items').update(itemData).eq('id', itemId).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const deleteVendorItem = async (itemId: string): Promise<void> => {
+    const { error } = await supabase.from('vendor_items').delete().eq('id', itemId);
+    if (error) throw error;
+};
+
+// Mocked as this is usually a real-time feature (e.g., using Supabase Realtime)
+export const getRideRequests = async (): Promise<RideRequest[]> => {
+    console.warn(`getRideRequests is not implemented with Supabase yet. Returning mock data.`);
+    const mockRequest: RideRequest = {
+        id: `ride-${Date.now()}`,
+        pickupLocation: 'Grand Indonesia, Jakarta',
+        destination: 'Blok M Square, Jakarta',
+        fare: 45000,
+        customerName: 'Budi S.',
+        customerRating: 4.8,
+    };
+    // Randomly return a request to simulate real-world conditions
+    return Promise.resolve(Math.random() > 0.6 ? [mockRequest] : []);
+};
+
+
+export const getFeedbackForPartner = async (partnerId: string): Promise<Feedback[]> => {
+    const { data, error } = await supabase.from('feedback').select('*').eq('partnerId', partnerId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const getPayoutsForPartner = async (partnerId: string): Promise<Payout[]> => {
+    const { data, error } = await supabase.from('payouts').select('*').eq('partnerId', partnerId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const getMessages = async (): Promise<AdminMessage[]> => {
+    const { data, error } = await supabase.from('messages').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const getMessagesForPartner = async (partnerId: string): Promise<AdminMessage[]> => {
+    const { data, error } = await supabase.from('messages').select('*').or(`recipientId.eq.${partnerId},recipientId.eq.all`);
+    if (error) throw error;
+    return data || [];
+};
+
+export const sendMessage = async (recipientId: string, content: string): Promise<AdminMessage> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated to send message.");
+
+    const { data, error } = await supabase.from('messages').insert({ senderId: user.id, recipientId, content, readBy: [] }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateMessage = async (messageId: string, updateData: Partial<AdminMessage>): Promise<AdminMessage> => {
+    const { data, error } = await supabase.from('messages').update(updateData).eq('id', messageId).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getTourDestinations = async (): Promise<TourDestination[]> => {
+    const { data, error } = await supabase.from('tour_destinations').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const createTourDestination = async (destinationData: Omit<TourDestination, 'id'>): Promise<TourDestination> => {
+    const { data, error } = await supabase.from('tour_destinations').insert(destinationData).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateTourDestination = async (id: string, destinationData: Partial<TourDestination>): Promise<TourDestination> => {
+    const { data, error } = await supabase.from('tour_destinations').update(destinationData).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const deleteTourDestination = async (id: string): Promise<void> => {
+    const { error } = await supabase.from('tour_destinations').delete().eq('id', id);
+    if (error) throw error;
+};
+
+export const getContentOverrides = async (): Promise<ContentOverrides> => {
+    // Assuming a single row with id=1 for site-wide content
+    const { data, error } = await supabase.from('content_overrides').select('*').eq('id', 1).maybeSingle();
+    if (error) throw error;
+    return data || { text: {}, numbers: {}, assets: {} };
+};
+
+export const updateContentOverrides = async (newOverrides: ContentOverrides): Promise<ContentOverrides> => {
+    // Upsert the single row with id=1
+    const { data, error } = await supabase.from('content_overrides').upsert({ id: 1, ...newOverrides }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getRenewalSubmissions = async (): Promise<RenewalSubmission[]> => {
+    const { data, error } = await supabase.from('renewal_submissions').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const createRenewalSubmission = async (submissionData: Omit<RenewalSubmission, 'id' | 'submittedAt' | 'status'>): Promise<RenewalSubmission> => {
+    const { data, error } = await supabase.from('renewal_submissions').insert(submissionData).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateRenewalSubmission = async (id: string, submissionData: Partial<RenewalSubmission>): Promise<RenewalSubmission> => {
+    const { data, error } = await supabase.from('renewal_submissions').update(submissionData).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getVehicles = async (): Promise<Vehicle[]> => {
+    const { data, error } = await supabase.from('vehicles').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const createVehicle = async (vehicleData: Omit<Vehicle, 'id'>): Promise<Vehicle> => {
+    const { data, error } = await supabase.from('vehicles').insert(vehicleData).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateVehicle = async (id: string, vehicleData: Partial<Omit<Vehicle, 'id'>>): Promise<Vehicle> => {
+    const { data, error } = await supabase.from('vehicles').update(vehicleData).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const deleteVehicle = async (id: string): Promise<void> => {
+    const { error } = await supabase.from('vehicles').delete().eq('id', id);
+    if (error) throw error;
+};
+
+export const getRoomsForProperty = async (vendorId: string): Promise<Room[]> => {
+    const { data, error } = await supabase.from('rooms').select('*').eq('vendorId', vendorId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const createRoom = async (vendorId: string, roomData: Omit<Room, 'id' | 'vendorId'>): Promise<Room> => {
+    const { data, error } = await supabase.from('rooms').insert({ ...roomData, vendorId }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateRoom = async (roomId: string, roomData: Partial<Omit<Room, 'id'>>): Promise<Room> => {
+    const { data, error } = await supabase.from('rooms').update(roomData).eq('id', roomId).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const deleteRoom = async (roomId: string): Promise<void> => {
+    const { error } = await supabase.from('rooms').delete().eq('id', roomId);
+    if (error) throw error;
+};
+
+export const getMembers = async (): Promise<Member[]> => {
+    const { data, error } = await supabase.from('members').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const updateMember = async (id: string, memberData: Partial<Member>): Promise<Member> => {
+    const { data, error } = await supabase.from('members').update(memberData).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getProspectsForAgent = async (agentId: string): Promise<Prospect[]> => {
+    const { data, error } = await supabase.from('prospects').select('*').eq('agentId', agentId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const getPartnersForAgent = async (agentId: string): Promise<Partner[]> => {
+    const { data, error } = await supabase.from('partners').select('*').eq('agentId', agentId);
+    if (error) throw error;
+    return data || [];
+};
+
+export const createProspect = async (agentId: string, prospectData: Omit<Prospect, 'id' | 'agentId' | 'createdAt' | 'status'>): Promise<Prospect> => {
+    const { data, error } = await supabase.from('prospects').insert({ ...prospectData, agentId, status: 'prospect' }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const updateProspect = async (id: string, prospectData: Partial<Prospect>): Promise<Prospect> => {
+    const { data, error } = await supabase.from('prospects').update(prospectData).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getAgentApplications = async (): Promise<AgentApplication[]> => {
+    const { data, error } = await supabase.from('agent_applications').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const updateAgentApplicationStatus = async (id: string, status: 'approved' | 'rejected'): Promise<AgentApplication> => {
+    const { data, error } = await supabase.from('agent_applications').update({ status }).eq('id', id).select().single();
+    if (error) throw error;
+    // In a real app, you would have a trigger/function to create a user and agent profile on approval.
+    return data;
+};
+
+export const submitAgentApplication = async (applicationData: Omit<AgentApplication, 'id' | 'status' | 'submittedAt'>): Promise<AgentApplication> => {
+    const { data, error } = await supabase.from('agent_applications').insert(applicationData).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getMassageTypes = async (): Promise<MassageType[]> => {
+    const { data, error } = await supabase.from('massage_types').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const createMassageType = async (data: Omit<MassageType, 'id'>): Promise<MassageType> => {
+    const { data: result, error } = await supabase.from('massage_types').insert(data).select().single();
+    if (error) throw error;
+    return result;
+};
+
+export const updateMassageType = async (id: string, data: Partial<Omit<MassageType, 'id'>>): Promise<MassageType> => {
+    const { data: result, error } = await supabase.from('massage_types').update(data).eq('id', id).select().single();
+    if (error) throw error;
+    return result;
+};
+
+export const deleteMassageType = async (id: string): Promise<void> => {
+    const { error } = await supabase.from('massage_types').delete().eq('id', id);
+    if (error) throw error;
+};

@@ -8,6 +8,7 @@ import MassageDashboard from './components/massage/MassageDashboard';
 import LodgingDashboard from './components/lodging/LodgingDashboard';
 import JeepDashboard from './components/jeep/JeepDashboard';
 import AgentDashboard from './components/agent/AgentDashboard';
+import BusDashboard from './components/bus/BusDashboard';
 import * as api from './services/supabase';
 import { ContentProvider } from './contexts/ContentContext';
 
@@ -76,6 +77,9 @@ const App: React.FC = () => {
         const isMassagePartner = user.partnerType === PartnerType.MassageTherapist || user.partnerType === PartnerType.MassagePlace;
         if (isMassagePartner) {
             return <MassageDashboard user={user} onLogout={handleLogout} />;
+        }
+        if (user.partnerType === PartnerType.BusRental) {
+            return <BusDashboard user={user} onLogout={handleLogout} />;
         }
         return <VendorDashboard user={user} onLogout={handleLogout} />;
       case Role.LodgingPartner:

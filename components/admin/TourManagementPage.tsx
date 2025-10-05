@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import * as api from '../../services/supabase';
 import { TourDestination } from '../../types';
@@ -86,9 +87,15 @@ const TourManagementPage: React.FC = () => {
 
                 <div className="divide-y divide-gray-200">
                     {destinations.length > 0 ? destinations.map(dest => (
-                        <div key={dest.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
-                            <div className="flex items-center space-x-4">
-                                <LandmarkIcon className="w-8 h-8 text-gray-400" />
+                        <div key={dest.id} className="p-4 flex items-start justify-between hover:bg-gray-50">
+                            <div className="flex items-start space-x-4">
+                                {dest.imageUrl ? (
+                                    <img src={dest.imageUrl} alt={dest.name} className="w-24 h-16 object-cover rounded-md bg-gray-200 flex-shrink-0" />
+                                ) : (
+                                    <div className="w-24 h-16 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                        <LandmarkIcon className="w-8 h-8 text-gray-400" />
+                                    </div>
+                                )}
                                 <div>
                                     <p className="font-semibold text-gray-800">{dest.name}</p>
                                     <p className="text-sm text-gray-600">{dest.category}</p>
