@@ -17,6 +17,7 @@ import MemberManagementPage from './MemberManagementPage';
 import AgentManagementPage from './AgentManagementPage';
 import AgentApplicationManagementPage from './AgentApplicationManagementPage';
 import { Editable } from '../shared/Editable';
+import MassagePartnerDetails from './MassagePartnerDetails';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
@@ -102,6 +103,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     setView(newView);
   }
 
+  const handleBackAndRefresh = () => {
+    setSelectedPartner(null);
+    fetchData();
+  };
+
   const filteredApplications = applications.filter(app => app.partnerType === activeAppTab && app.status === 'pending');
   
   const filteredPartners = useMemo(() => {
@@ -144,7 +150,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
 
   const renderContent = () => {
     if (selectedPartner) {
-        return <PartnerDetails partner={selectedPartner} onBack={() => setSelectedPartner(null)} />;
+        const isMassagePartner = selectedPartner.partnerType === PartnerType.MassageTherapist || selectedPartner.partnerType === PartnerType.MassagePlace;
+        if (isMassagePartner) {
+            return <MassagePartnerDetails partner={selectedPartner} onBack={handleBackAndRefresh} />;
+        }
+        return <PartnerDetails partner={selectedPartner} onBack={handleBackAndRefresh} />;
     }
     switch (view) {
         case 'agentApplications':

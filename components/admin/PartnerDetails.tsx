@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Partner, Transaction, AdminMessage } from '../../types';
 import * as api from '../../services/supabase';
@@ -155,7 +156,8 @@ const PartnerDetails: React.FC<PartnerDetailsProps> = ({ partner, onBack }) => {
 
     useEffect(() => {
         fetchTransactions();
-    }, [fetchTransactions]);
+        setCurrentPartner(partner);
+    }, [partner, fetchTransactions]);
 
     const handlePartnerUpdate = async (updatedData: Partial<Partner>) => {
         try {
