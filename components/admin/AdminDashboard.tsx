@@ -366,8 +366,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
       user={user} 
       onLogout={onLogout} 
       title={getTitle()}
-      adminView={view}
-      onAdminViewChange={handleViewChange}
+      currentView={view}
+      onViewChange={handleViewChange as (view: string) => void}
     >
       {renderContent()}
       <ApplicationDetailsModal 

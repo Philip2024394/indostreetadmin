@@ -11,6 +11,9 @@ import PlaceFeaturesEditor from './PlaceFeaturesEditor';
 import MassageMainPage from './MassageMainPage';
 import PrivateInfoEditor from './PrivateInfoEditor';
 import PartnerTOSPage from './directory/PartnerTOSPage';
+import LocationControl from './LocationControl';
+import { SparklesIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon } from '../shared/Icons';
+
 
 interface MassageDashboardProps {
   user: User;
@@ -54,6 +57,14 @@ const MassageDashboard: React.FC<MassageDashboardProps> = ({ user, onLogout }) =
 
   const title = partner?.profile?.shopName || partner?.profile?.name || 'Massage & Wellness Dashboard';
 
+  const navItems = [
+    { view: 'dashboard', label: 'My Status', icon: <SparklesIcon className="w-5 h-5 mr-3" /> },
+    { view: 'profile', label: 'Profile & Services', icon: <UserCircleIcon className="w-5 h-5 mr-3" /> },
+    { view: 'info', label: 'Massage Info & TOS', icon: <InformationCircleIcon className="w-5 h-5 mr-3" /> },
+    { view: 'private-info', label: 'Private Information', icon: <LockClosedIcon className="w-5 h-5 mr-3" /> }
+  ];
+
+
   const renderDashboardContent = () => {
     if (loading) {
         return <div className="text-center p-10">Loading your profile...</div>;
@@ -91,44 +102,27 @@ const MassageDashboard: React.FC<MassageDashboardProps> = ({ user, onLogout }) =
         );
     }
 
-    // Default view is 'dashboard' which is now just the status control
-    return <StatusControl partner={partner} onUpdate={handleUpdatePartner} />;
+    // Default view is 'dashboard'
+    return (
+      <div className="space-y-6">
+          <StatusControl partner={partner} onUpdate={handleUpdatePartner} />
+          <LocationControl partner={partner} onUpdate={handleUpdatePartner} />
+      </div>
+    );
   };
   
   return (
-    <Layout user={user} onLogout={onLogout} title={title}>
+    <Layout 
+        user={user} 
+        onLogout={onLogout} 
+        title={title}
+        navItems={navItems}
+        currentView={view}
+        onViewChange={setView as (view: string) => void}
+    >
        <div className="mb-6">
           <MembershipExpiryNotification partner={partner} onRenew={() => setIsRenewalModalOpen(true)} />
        </div>
-
-        <div className="mb-6 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-6 overflow-x-auto">
-                <button
-                    onClick={() => setView('dashboard')}
-                    className={`${view === 'dashboard' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
-                >
-                    My Status
-                </button>
-                <button
-                    onClick={() => setView('profile')}
-                    className={`${view === 'profile' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
-                >
-                    Profile & Services
-                </button>
-                <button
-                    onClick={() => setView('info')}
-                    className={`${view === 'info' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
-                >
-                    Massage Info & TOS
-                </button>
-                 <button
-                    onClick={() => setView('private-info')}
-                    className={`${view === 'private-info' || view === 'partner-tos' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
-                >
-                    Private Information
-                </button>
-            </nav>
-        </div>
 
         {renderDashboardContent()}
 

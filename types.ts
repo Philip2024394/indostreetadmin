@@ -152,6 +152,11 @@ export interface Partner extends User {
   };
   otherAmenities?: string;
   businessHours?: string;
+  location?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
 
   // --- New Lodging Partner Fields ---
   description?: string; // Detailed property description

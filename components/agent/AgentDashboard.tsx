@@ -45,8 +45,8 @@ const AgentDashboard: React.FC<AgentDashboardProps> = ({ user, onLogout }) => {
       user={user}
       onLogout={onLogout}
       title={getTitle()}
-      agentView={view}
-      onAgentViewChange={setView}
+      currentView={view}
+      onViewChange={setView as (view: string) => void}
     >
       {renderContent()}
     </Layout>

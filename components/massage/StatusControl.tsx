@@ -31,8 +31,8 @@ const StatusControl: React.FC<StatusControlProps> = ({ partner, onUpdate }) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Your Status</h3>
-            <p className="text-sm text-gray-500 mb-4">Set your availability to appear in customer searches.</p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <p className="text-sm text-gray-500 mb-6">Set your availability to appear in customer searches.</p>
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
                 {(['online', 'busy', 'offline'] as const).map((status) => {
                     const config = statusConfig[status];
                     const isActive = currentStatus === status;
@@ -40,7 +40,7 @@ const StatusControl: React.FC<StatusControlProps> = ({ partner, onUpdate }) => {
                         <button
                             key={status}
                             onClick={() => handleStatusChange(status)}
-                            className={`flex-1 py-3 px-4 rounded-lg text-white font-bold text-center transition-all duration-200 focus:outline-none ${config.color} ${config.hover} ${isActive ? `ring-4 ${config.ring} ring-offset-2` : ''}`}
+                            className={`py-6 px-2 rounded-lg text-white font-bold text-center transition-all duration-200 focus:outline-none ${config.color} ${config.hover} ${isActive ? `ring-4 ${config.ring} ring-offset-2` : ''}`}
                         >
                             {config.text}
                         </button>

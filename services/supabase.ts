@@ -133,6 +133,11 @@ let mockUsers: (User | Partner)[] = [
     bio: 'Certified massage therapist with 5 years of experience specializing in traditional Balinese and deep tissue massage. I bring a professional and relaxing experience to your home.',
     massageStatus: 'online',
     massageServices: ['Balinese Massage', 'Deep Tissue Massage', 'Reflexology'],
+    location: {
+      lat: -8.6524,
+      lng: 115.1385,
+      address: 'Canggu, Kuta Utara, Badung Regency, Bali, Indonesia'
+    },
     massagePricing: [
       { id: 'price-1', duration: 60, price: 150000 },
       { id: 'price-2', duration: 90, price: 220000 },
@@ -156,6 +161,11 @@ let mockUsers: (User | Partner)[] = [
     address: 'Jakarta Selatan',
     street: 'Jl. Senopati No. 50',
     massageStatus: 'online',
+    location: {
+      lat: -6.236,
+      lng: 106.800,
+      address: 'Jl. Senopati No. 50, Jakarta Selatan'
+    },
     massageServices: ['Swedish Massage', 'Aromatherapy Massage', 'Hot Stone Massage', 'Cupping Therapy'],
     massagePricing: [
       { id: 'price-4', duration: 60, price: 250000 },
