@@ -27,6 +27,8 @@ import {
   GalleryPhoto,
   MassageType,
   MassageTypeCategory,
+  Feedback,
+  Payout,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -73,6 +75,8 @@ let mockUsers: (User | Partner)[] = [
       vehicle: { type: 'Motorcycle', brand: 'Honda', model: 'Vario 150', year: 2021, licensePlate: 'B 1234 ABC' },
     },
     agentId: 'agent-1',
+    acceptanceRate: 95,
+    cancellationRate: 2,
   },
   {
     id: 'driver-2',
@@ -95,6 +99,8 @@ let mockUsers: (User | Partner)[] = [
       profilePicture: 'https://i.pravatar.cc/150?u=driver-2',
       vehicle: { type: 'Car', brand: 'Toyota', model: 'Avanza', year: 2020, licensePlate: 'D 5678 XYZ' },
     },
+    acceptanceRate: 98,
+    cancellationRate: 1,
   },
   {
     id: 'vendor-1',
@@ -271,10 +277,10 @@ let mockApplications: PartnerApplication[] = [
 let mockPartners: Partner[] = mockUsers.filter(u => u.role !== Role.Admin && u.role !== Role.Agent) as Partner[];
 
 let mockTransactions: Transaction[] = [
-    { id: 'tx-1', partnerId: 'driver-1', date: new Date(Date.now() - 100000).toISOString(), type: 'Ride', amount: 15000, status: 'completed', details: 'Kuningan to Sudirman' },
+    { id: 'tx-1', partnerId: 'driver-1', date: new Date(Date.now() - 100000).toISOString(), type: 'Ride', amount: 15000, status: 'completed', details: 'Kuningan to Sudirman', breakdown: { baseFare: 18750, platformFee: -3750, tip: 0, bonus: 0 } },
     { id: 'tx-2', partnerId: 'vendor-1', date: new Date(Date.now() - 200000).toISOString(), type: 'Order', amount: 45000, status: 'completed', details: 'Nasi Goreng x2, Es Teh x2' },
-    { id: 'tx-3', partnerId: 'driver-2', date: new Date(Date.now() - 300000).toISOString(), type: 'Ride', amount: 42000, status: 'completed', details: 'Blok M to Kelapa Gading' },
-    { id: 'tx-4', partnerId: 'driver-1', date: new Date(Date.now() - 86400000).toISOString(), type: 'Delivery', amount: 12000, status: 'completed', details: 'Document from Thamrin to SCBD' },
+    { id: 'tx-3', partnerId: 'driver-2', date: new Date(Date.now() - 300000).toISOString(), type: 'Ride', amount: 42000, status: 'completed', details: 'Blok M to Kelapa Gading', breakdown: { baseFare: 50000, tip: 2500, platformFee: -10500, bonus: 0 } },
+    { id: 'tx-4', partnerId: 'driver-1', date: new Date(Date.now() - 86400000).toISOString(), type: 'Delivery', amount: 12000, status: 'completed', details: 'Document from Thamrin to SCBD', breakdown: { baseFare: 15000, platformFee: -3000, tip: 0, bonus: 0 } },
     { id: 'tx-5', partnerId: 'vendor-1', date: new Date(Date.now() - 172800000).toISOString(), type: 'Order', amount: 120000, status: 'completed', details: 'Catering Box A x 4' },
     { id: 'tx-6', partnerId: 'massage-therapist-1', date: new Date(Date.now() - 2 * 86400000).toISOString(), type: 'Wellness', amount: 220000, status: 'completed', details: '90-min Deep Tissue Massage' },
     { id: 'tx-7', partnerId: 'massage-place-1', date: new Date(Date.now() - 3 * 86400000).toISOString(), type: 'Wellness', amount: 450000, status: 'completed', details: '120-min Aromatherapy Session' },
@@ -608,6 +614,19 @@ let mockMassageTypes: MassageType[] = [
     },
 ];
 
+let mockFeedback: Feedback[] = [
+    { id: 'fb-1', rating: 5, comment: 'Very friendly and safe driver!', date: new Date(Date.now() - 86400000).toISOString() },
+    { id: 'fb-2', rating: 4, comment: 'Good trip, but the car could be cleaner.', date: new Date(Date.now() - 2 * 86400000).toISOString() },
+    { id: 'fb-3', rating: 5, comment: 'Fast and efficient. Great service.', date: new Date(Date.now() - 3 * 86400000).toISOString() },
+    { id: 'fb-4', rating: 5, date: new Date(Date.now() - 4 * 86400000).toISOString() },
+];
+
+let mockPayouts: Payout[] = [
+    { id: 'po-1', date: new Date(Date.now() - 7 * 86400000).toISOString(), amount: 1540000, status: 'completed', bankName: 'BCA', accountNumberLast4: '7890' },
+    { id: 'po-2', date: new Date(Date.now() - 14 * 86400000).toISOString(), amount: 1380000, status: 'completed', bankName: 'BCA', accountNumberLast4: '7890' },
+];
+
+
 // Helper for simulating network delay
 const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
     return new Promise(resolve => {
@@ -781,6 +800,9 @@ export const deleteVendorItem = (itemId: string): Promise<void> => {
 
 // --- Mock Drivers API ---
 export const getRideRequests = (): Promise<RideRequest[]> => mockApiCall(mockRideRequests);
+export const getFeedbackForPartner = (partnerId: string): Promise<Feedback[]> => mockApiCall(mockFeedback);
+export const getPayoutsForPartner = (partnerId: string): Promise<Payout[]> => mockApiCall(mockPayouts.map(p => ({...p, accountNumberLast4: (mockPartners.find(pa => pa.id === partnerId)?.bankDetails?.accountNumber || '0000').slice(-4)})));
+
 
 // --- Mock Messages API ---
 export const getMessages = (): Promise<AdminMessage[]> => mockApiCall(mockMessages);

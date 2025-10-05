@@ -163,6 +163,10 @@ export interface Partner extends User {
   loyaltyRewardEnabled?: boolean;
   hotelVillaAmenities?: HotelVillaAmenities;
   agentId?: string; // New field to link partner to an agent
+
+  // --- New Driver Performance Fields ---
+  acceptanceRate?: number; // percentage
+  cancellationRate?: number; // percentage
 }
 
 export interface PartnerApplication {
@@ -207,6 +211,12 @@ export interface Transaction {
   amount: number;
   status: 'completed' | 'cancelled' | 'in_progress';
   details: string; // e.g., "Trip from A to B" or "Nasi Goreng x2"
+  breakdown?: {
+    baseFare: number;
+    tip?: number;
+    bonus?: number;
+    platformFee: number;
+  };
 }
 
 export interface AdminStats {
@@ -390,4 +400,21 @@ export interface MassageType {
   description: string;
   imageUrl: string;
   category: MassageTypeCategory;
+}
+
+// --- New types for Driver Dashboard ---
+export interface Feedback {
+  id: string;
+  rating: number;
+  comment?: string;
+  date: string; // ISO date string
+}
+
+export interface Payout {
+  id: string;
+  date: string; // ISO date string
+  amount: number;
+  status: 'completed' | 'pending' | 'failed';
+  bankName: string;
+  accountNumberLast4: string;
 }
