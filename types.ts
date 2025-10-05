@@ -377,3 +377,17 @@ export interface AgentApplication {
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string; // ISO Date string
 }
+
+// --- New types for Massage Directory ---
+export enum MassageTypeCategory {
+  International = 'International',
+  IndonesianTraditional = 'Indonesian Traditional',
+}
+
+export interface MassageType {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  category: MassageTypeCategory;
+}

@@ -6,9 +6,9 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'agents' | 'agentApplications';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
@@ -99,6 +99,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
         <button onClick={() => onAdminViewChange?.('massage')} className={`${navLinkClasses} ${adminView === 'massage' ? activeNavLinkClasses : ''}`}>
             <SparklesIcon className="w-5 h-5 mr-3" />
             <Editable editId="layout-nav-massage" type="text" defaultValue="Massage & Wellness" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('massageDirectory')} className={`${navLinkClasses} ${adminView === 'massageDirectory' ? activeNavLinkClasses : ''}`}>
+            <BookOpenIcon className="w-5 h-5 mr-3" />
+            <Editable editId="layout-nav-massage-directory" type="text" defaultValue="Massage Directory" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('renewals')} className={`${navLinkClasses} ${adminView === 'renewals' ? activeNavLinkClasses : ''}`}>
           <BanknotesIcon className="w-5 h-5 mr-3" />

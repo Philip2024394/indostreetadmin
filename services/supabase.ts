@@ -25,6 +25,8 @@ import {
   AgentApplication,
   MassagePrice,
   GalleryPhoto,
+  MassageType,
+  MassageTypeCategory,
 } from '../types';
 
 // #region MOCK DATABASE
@@ -582,6 +584,30 @@ let mockAgentApplications: AgentApplication[] = [
   },
 ];
 
+let mockMassageTypes: MassageType[] = [
+    {
+        id: 'mt-1',
+        name: 'Balinese Massage',
+        description: 'A full-body, deep-tissue, holistic treatment. Balinese massage uses a combination of gentle stretches, acupressure, reflexology, and aromatherapy to stimulate the flow of blood, oxygen and "qi" (energy) around your body, and bring a sense of wellbeing, calm and deep relaxation.',
+        imageUrl: 'https://via.placeholder.com/400x300/A7F3D0/14532D?Text=Balinese+Massage',
+        category: MassageTypeCategory.IndonesianTraditional,
+    },
+    {
+        id: 'mt-2',
+        name: 'Swedish Massage',
+        description: 'Swedish massage is the most common and best-known type of massage in the West. If it\'s your first time at the spa or you don\'t get massage very often, Swedish massage is the perfect massage for you. It involves long, fluid strokes of muscles and tissues with pressure that varies from light to medium to firm.',
+        imageUrl: 'https://via.placeholder.com/400x300/BAE6FD/0C4A6E?Text=Swedish+Massage',
+        category: MassageTypeCategory.International,
+    },
+    {
+        id: 'mt-3',
+        name: 'Javanese Lulur',
+        description: 'A traditional Javanese beauty ritual that originated from the royal palaces of Central Java, Indonesia. The treatment consists of a traditional massage, a scrub with a paste of sandalwood, turmeric, and rice powder, a yogurt conditioning treatment, and finally, a floral bath.',
+        imageUrl: 'https://via.placeholder.com/400x300/FBCFE8/831843?Text=Javanese+Lulur',
+        category: MassageTypeCategory.IndonesianTraditional,
+    },
+];
+
 // Helper for simulating network delay
 const mockApiCall = <T>(data: T, delay = 500): Promise<T> => {
     return new Promise(resolve => {
@@ -981,4 +1007,27 @@ export const submitAgentApplication = (data: Omit<AgentApplication, 'id' | 'stat
     };
     mockAgentApplications.push(newApp);
     return mockApiCall(newApp);
+};
+
+// --- Massage Directory API ---
+export const getMassageTypes = (): Promise<MassageType[]> => mockApiCall(mockMassageTypes);
+
+export const createMassageType = (data: Omit<MassageType, 'id'>): Promise<MassageType> => {
+    const newType: MassageType = { ...data, id: `mt-${Date.now()}` };
+    mockMassageTypes.push(newType);
+    return mockApiCall(newType);
+};
+
+export const updateMassageType = (id: string, data: Partial<Omit<MassageType, 'id'>>): Promise<MassageType> => {
+    const typeIndex = mockMassageTypes.findIndex(t => t.id === id);
+    if (typeIndex > -1) {
+        mockMassageTypes[typeIndex] = { ...mockMassageTypes[typeIndex], ...data };
+        return mockApiCall(mockMassageTypes[typeIndex]);
+    }
+    return Promise.reject(new Error("Massage type not found"));
+};
+
+export const deleteMassageType = (id: string): Promise<void> => {
+    mockMassageTypes = mockMassageTypes.filter(t => t.id !== id);
+    return mockApiCall(undefined);
 };
