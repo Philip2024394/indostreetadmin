@@ -32,7 +32,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const fetchContent = async () => {
         try {
             const data = await api.getContentOverrides();
-            setContent(data);
+            // Ensure the content object always has the correct shape
+            setContent({ ...defaultContent, ...data });
         } catch (error) {
             console.error("Failed to fetch content overrides:", error);
         } finally {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import * as api from '../../services/supabase';
+import { supabaseInitializationError } from '../../services/supabase';
 import { User } from '../../types';
 import { Editable } from '../shared/Editable';
 import AgentSignupPage from './AgentSignupPage';
@@ -49,6 +50,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <Editable editId="login-subtitle" type="text" defaultValue="Sign in to your account" />
           </p>
         </div>
+
+        {supabaseInitializationError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                <p className="font-bold">Configuration Error</p>
+                <p>{supabaseInitializationError}</p>
+            </div>
+        )}
 
         <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg text-sm text-gray-700">
           <p className="font-semibold text-center text-orange-800 mb-2">Demo Accounts (password: "password")</p>
@@ -108,7 +116,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !!supabaseInitializationError}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
             >
               {loading ? 'Signing in...' : <Editable editId="login-button" type="text" defaultValue="Sign in" as="span" />}

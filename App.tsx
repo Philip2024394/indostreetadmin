@@ -15,13 +15,25 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for an active session on initial load
+  // Check for an active session on initial load and listen for auth changes
   useEffect(() => {
-    const sessionUser = api.checkSession();
-    if (sessionUser) {
-      setUser(sessionUser);
-    }
-    setLoading(false);
+    setLoading(true);
+    
+    // Check initial session
+    api.checkSession().then(user => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Listen for auth state changes (login, logout)
+    const subscription = api.supabase?.auth.onAuthStateChange(async (event, session) => {
+        const currentUser = await api.checkSession();
+        setUser(currentUser);
+    })?.data?.subscription;
+
+    return () => {
+        subscription?.unsubscribe();
+    };
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
