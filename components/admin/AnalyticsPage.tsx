@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import * as api from '../../services/supabase';
 import { AnalyticsSummary } from '../../types';
@@ -11,7 +12,7 @@ const AnalyticsCard: React.FC<{ title: string; value: string; change?: number; i
                 <p className="text-sm font-medium text-gray-500">{title}</p>
                 <p className="text-2xl font-bold text-gray-900">{value}</p>
             </div>
-            <div className="bg-blue-100 text-blue-600 p-3 rounded-full">{icon}</div>
+            <div className="bg-orange-100 text-orange-600 p-3 rounded-full">{icon}</div>
         </div>
         {change !== undefined && (
             <div className={`mt-2 flex items-center text-sm ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -34,7 +35,7 @@ const BarChart: React.FC<{ title: string; data: { label: string; value: number }
                         <p className="w-1/3 text-sm text-gray-600">{item.label}</p>
                         <div className="w-2/3 bg-gray-200 rounded-full h-4">
                             <div
-                                className="bg-blue-500 h-4 rounded-full flex items-center justify-end pr-2"
+                                className="bg-orange-500 h-4 rounded-full flex items-center justify-end pr-2"
                                 style={{ width: `${(item.value / maxValue) * 100}%` }}
                             >
                                <span className="text-xs font-medium text-white">{item.value.toLocaleString()}</span>

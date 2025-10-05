@@ -74,7 +74,7 @@ const MonthlyReport: React.FC<MonthlyReportProps> = ({ transactions, partnersMap
                     </div>
                     <div className="flex space-x-2 print:hidden">
                         <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">Close</button>
-                        <button onClick={handlePrint} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Print Report</button>
+                        <button onClick={handlePrint} className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600">Print Report</button>
                     </div>
                 </div>
 

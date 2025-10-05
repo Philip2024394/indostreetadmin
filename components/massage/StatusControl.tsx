@@ -10,20 +10,29 @@ const StatusControl: React.FC<StatusControlProps> = ({ partner, onUpdate }) => {
     const currentStatus = partner.massageStatus || 'offline';
 
     const handleStatusChange = (status: 'online' | 'busy' | 'offline') => {
-        onUpdate({ massageStatus: status });
+        let finalStatus: 'online' | 'busy' | 'offline' = status;
+
+        // If therapist selects 'offline', randomly show therapist as busy status
+        if (status === 'offline') {
+            if (Math.random() < 0.5) { // 50% chance to appear busy
+                finalStatus = 'busy';
+            }
+        }
+
+        onUpdate({ massageStatus: finalStatus });
     };
 
     const statusConfig = {
         online: { text: 'Online', color: 'bg-green-500', hover: 'hover:bg-green-600', ring: 'ring-green-500' },
         busy: { text: 'Busy', color: 'bg-yellow-500', hover: 'hover:bg-yellow-600', ring: 'ring-yellow-500' },
-        offline: { text: 'Offline', color: 'bg-gray-500', hover: 'hover:bg-gray-600', ring: 'ring-gray-500' },
+        offline: { text: 'Offline', color: 'bg-red-500', hover: 'hover:bg-red-600', ring: 'ring-red-500' },
     };
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Your Status</h3>
             <p className="text-sm text-gray-500 mb-4">Set your availability to appear in customer searches.</p>
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row gap-4">
                 {(['online', 'busy', 'offline'] as const).map((status) => {
                     const config = statusConfig[status];
                     const isActive = currentStatus === status;

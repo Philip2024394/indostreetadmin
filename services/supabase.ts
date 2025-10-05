@@ -129,10 +129,10 @@ let mockUsers: (User | Partner)[] = [
     phone: '6281211112222',
     activationExpiry: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString(),
     bankDetails: { bankName: 'BCA', accountHolderName: 'Indah Sari', accountNumber: '111222333' },
-    profile: { name: 'Indah Sari', profilePicture: 'https://i.pravatar.cc/150?u=therapist-1', headerPicture: 'https://via.placeholder.com/600x200/A7F3D0/14532D?Text=Relax+and+Rejuvenate' },
+    profile: { name: 'Indah Sari', profilePicture: 'https://i.imgur.com/8kF9t6d.jpeg', headerPicture: 'https://via.placeholder.com/600x200/A7F3D0/14532D?Text=Relax+and+Rejuvenate' },
     bio: 'Certified massage therapist with 5 years of experience specializing in traditional Balinese and deep tissue massage. I bring a professional and relaxing experience to your home.',
     massageStatus: 'online',
-    massageServices: ['Balinese Massage', 'Deep Tissue', 'Reflexology'],
+    massageServices: ['Balinese Massage', 'Deep Tissue Massage', 'Reflexology'],
     massagePricing: [
       { id: 'price-1', duration: 60, price: 150000 },
       { id: 'price-2', duration: 90, price: 220000 },
@@ -151,12 +151,12 @@ let mockUsers: (User | Partner)[] = [
     phone: '6287733334444',
     activationExpiry: new Date(Date.now() + 200 * 24 * 60 * 60 * 1000).toISOString(),
     bankDetails: { bankName: 'Mandiri', accountHolderName: 'PT Sejahtera Spa', accountNumber: '444555666' },
-    profile: { name: 'Serenity Spa', shopName: 'Serenity Spa Jakarta', profilePicture: 'https://i.pravatar.cc/150?u=spa-1', headerPicture: 'https://via.placeholder.com/600x200/BAE6FD/0C4A6E?Text=Your+Oasis+of+Calm' },
+    profile: { name: 'Serenity Spa', shopName: 'Serenity Spa Jakarta', profilePicture: 'https://i.imgur.com/Nrh5p6i.png', headerPicture: 'https://via.placeholder.com/600x200/BAE6FD/0C4A6E?Text=Your+Oasis+of+Calm' },
     bio: 'A luxurious day spa in the heart of Jakarta. We offer a wide range of wellness treatments, from traditional massages to modern spa packages. Visit us to escape the hustle and bustle.',
     address: 'Jakarta Selatan',
     street: 'Jl. Senopati No. 50',
     massageStatus: 'online',
-    massageServices: ['Swedish Massage', 'Aromatherapy', 'Hot Stone', 'Body Scrub'],
+    massageServices: ['Swedish Massage', 'Aromatherapy Massage', 'Hot Stone Massage', 'Cupping Therapy'],
     massagePricing: [
       { id: 'price-4', duration: 60, price: 250000 },
       { id: 'price-5', duration: 90, price: 350000 },
@@ -365,9 +365,30 @@ let mockTransactions: Transaction[] = [
 ];
 
 let mockVendorItems: VendorItem[] = [
-    { id: 'item-1', vendorId: 'vendor-1', name: 'Nasi Goreng Spesial', price: 25000, isAvailable: true, imageUrl: 'https://via.placeholder.com/150/FFC107/000000?Text=Nasi+Goreng' },
-    { id: 'item-2', vendorId: 'vendor-1', name: 'Soto Ayam Lamongan', price: 20000, isAvailable: true, imageUrl: 'https://via.placeholder.com/150/8BC34A/000000?Text=Soto+Ayam' },
-    { id: 'item-3', vendorId: 'vendor-1', name: 'Sate Ayam (10 tusuk)', price: 30000, isAvailable: false, imageUrl: 'https://via.placeholder.com/150/E91E63/000000?Text=Sate+Ayam' },
+    { 
+        id: 'item-1', vendorId: 'vendor-1', name: 'Nasi Goreng Spesial', price: 25000, isAvailable: true, imageUrl: 'https://i.imgur.com/n1Y4Nkf.png',
+        description: 'Classic Indonesian fried rice.',
+        longDescription: "A quintessential Indonesian dish, Nasi Goreng is stir-fried rice with a sweet and savory kecap manis sauce, vegetables, and your choice of protein. Our 'Spesial' version comes with a fried egg, chicken satay, and prawn crackers.",
+        category: "Rice and Noodle Dishes",
+        chiliLevel: 2,
+        cookingTime: 15,
+    },
+    { 
+        id: 'item-2', vendorId: 'vendor-1', name: 'Soto Ayam Lamongan', price: 20000, isAvailable: true, imageUrl: 'https://i.imgur.com/JLXmg37.png',
+        description: 'Flavorful chicken noodle soup.',
+        longDescription: 'A traditional Indonesian chicken soup infused with turmeric and a blend of aromatic spices. Served with rice noodles, shredded chicken, boiled egg, and celery. A comforting and hearty meal.',
+        category: 'Soups and Curries',
+        chiliLevel: 0,
+        cookingTime: 20,
+    },
+    { 
+        id: 'item-3', vendorId: 'vendor-1', name: 'Sate Ayam (10 tusuk)', price: 30000, isAvailable: false, imageUrl: 'https://i.imgur.com/e3sE3j8.png',
+        description: 'Grilled chicken skewers with peanut sauce.',
+        longDescription: 'Tender chicken skewers marinated in a sweet soy sauce and grilled over charcoal. Served with a rich and creamy peanut sauce, lontong (rice cakes), and sliced shallots.',
+        category: 'Grilled and Skewered',
+        chiliLevel: 1,
+        cookingTime: 15,
+    },
 ];
 
 const mockRideRequests: RideRequest[] = [
@@ -665,26 +686,138 @@ let mockAgentApplications: AgentApplication[] = [
 ];
 
 let mockMassageTypes: MassageType[] = [
+    // Western Massages
     {
-        id: 'mt-1',
-        name: 'Balinese Massage',
-        description: 'A full-body, deep-tissue, holistic treatment. Balinese massage uses a combination of gentle stretches, acupressure, reflexology, and aromatherapy to stimulate the flow of blood, oxygen and "qi" (energy) around your body, and bring a sense of wellbeing, calm and deep relaxation.',
-        imageUrl: 'https://via.placeholder.com/400x300/A7F3D0/14532D?Text=Balinese+Massage',
-        category: MassageTypeCategory.IndonesianTraditional,
-    },
-    {
-        id: 'mt-2',
+        id: 'mt-swedish',
         name: 'Swedish Massage',
-        description: 'Swedish massage is the most common and best-known type of massage in the West. If it\'s your first time at the spa or you don\'t get massage very often, Swedish massage is the perfect massage for you. It involves long, fluid strokes of muscles and tissues with pressure that varies from light to medium to firm.',
+        description: 'The most common type of massage, involving long, flowing strokes to relax the entire body. Ideal for first-timers and stress relief.',
         imageUrl: 'https://via.placeholder.com/400x300/BAE6FD/0C4A6E?Text=Swedish+Massage',
-        category: MassageTypeCategory.International,
+        category: MassageTypeCategory.Western,
     },
     {
-        id: 'mt-3',
-        name: 'Javanese Lulur',
-        description: 'A traditional Javanese beauty ritual that originated from the royal palaces of Central Java, Indonesia. The treatment consists of a traditional massage, a scrub with a paste of sandalwood, turmeric, and rice powder, a yogurt conditioning treatment, and finally, a floral bath.',
-        imageUrl: 'https://via.placeholder.com/400x300/FBCFE8/831843?Text=Javanese+Lulur',
-        category: MassageTypeCategory.IndonesianTraditional,
+        id: 'mt-deeptissue',
+        name: 'Deep Tissue Massage',
+        description: 'Uses more forceful strokes to target the deeper layers of muscle and connective tissue. Commonly used for chronic aches and pains.',
+        imageUrl: 'https://via.placeholder.com/400x300/93C5FD/1E40AF?Text=Deep+Tissue',
+        category: MassageTypeCategory.Western,
+    },
+    {
+        id: 'mt-sports',
+        name: 'Sports Massage',
+        description: 'Designed for athletes, this massage focuses on areas of the body that are overused and stressed from repetitive and aggressive movements.',
+        imageUrl: 'https://via.placeholder.com/400x300/6EE7B7/064E3B?Text=Sports+Massage',
+        category: MassageTypeCategory.Western,
+    },
+    {
+        id: 'mt-hotstone',
+        name: 'Hot Stone Massage',
+        description: 'Heated stones are placed on different areas of the body to ease muscle tension and pain. The heat helps to relax muscles.',
+        imageUrl: 'https://via.placeholder.com/400x300/FDBA74/9A3412?Text=Hot+Stone',
+        category: MassageTypeCategory.Western,
+    },
+    {
+        id: 'mt-aromatherapy',
+        name: 'Aromatherapy Massage',
+        description: 'Combines soft, gentle pressure with the use of essential oils. The therapist decides which oils to use based on your needs.',
+        imageUrl: 'https://via.placeholder.com/400x300/FBCFE8/9D2B6B?Text=Aromatherapy',
+        category: MassageTypeCategory.Western,
+    },
+    {
+        id: 'mt-prenatal',
+        name: 'Prenatal Massage',
+        description: 'A safe and gentle massage for pregnant women to help reduce stress, decrease swelling, and relieve aches and pains.',
+        imageUrl: 'https://via.placeholder.com/400x300/DDD6FE/5B21B6?Text=Prenatal',
+        category: MassageTypeCategory.Western,
+    },
+
+    // Eastern & Indonesian Massages
+    {
+        id: 'mt-balinese',
+        name: 'Balinese Massage',
+        description: 'A full-body, deep-tissue, holistic treatment using a combination of gentle stretches, acupressure, and aromatherapy to stimulate energy flow.',
+        imageUrl: 'https://via.placeholder.com/400x300/A7F3D0/14532D?Text=Balinese+Massage',
+        category: MassageTypeCategory.EasternIndonesian,
+    },
+    {
+        id: 'mt-javanese',
+        name: 'Javanese Massage',
+        description: 'A strong, deep tissue massage that uses all parts of the hand, including the knuckles, to stimulate the muscles and improve circulation.',
+        imageUrl: 'https://via.placeholder.com/400x300/FDE68A/92400E?Text=Javanese+Massage',
+        category: MassageTypeCategory.EasternIndonesian,
+    },
+    {
+        id: 'mt-thai',
+        name: 'Thai Massage',
+        description: 'An interactive massage where the therapist uses their hands, knees, legs, and feet to move you into a series of yoga-like stretches.',
+        imageUrl: 'https://via.placeholder.com/400x300/A5B4FC/3730A3?Text=Thai+Massage',
+        category: MassageTypeCategory.EasternIndonesian,
+    },
+    {
+        id: 'mt-shiatsu',
+        name: 'Shiatsu Massage',
+        description: 'A Japanese form of massage that uses finger pressure in a rhythmic sequence on acupuncture meridians to improve energy flow.',
+        imageUrl: 'https://via.placeholder.com/400x300/FDA4AF/9F1239?Text=Shiatsu',
+        category: MassageTypeCategory.EasternIndonesian,
+    },
+    {
+        id: 'mt-reflexology',
+        name: 'Reflexology',
+        description: 'Involves applying different amounts of pressure to the feet, hands, and ears. It’s based on a theory that these body parts are connected to certain organs.',
+        imageUrl: 'https://via.placeholder.com/400x300/D9F99D/4D7C0F?Text=Reflexology',
+        category: MassageTypeCategory.EasternIndonesian,
+    },
+    {
+        id: 'mt-acupressure',
+        name: 'Acupressure',
+        description: 'An ancient healing art using the fingers to gradually press key healing points, which stimulate the body\'s natural self-curative abilities.',
+        imageUrl: 'https://via.placeholder.com/400x300/C4B5FD/5B21B6?Text=Acupressure',
+        category: MassageTypeCategory.EasternIndonesian,
+    },
+
+    // Traditional Indonesian Techniques
+    {
+        id: 'mt-kerokan',
+        name: 'Kerokan (Coin Rub)',
+        description: 'A traditional healing technique that uses a coin to scrape the skin, believed to relieve cold and muscle pain by releasing "wind" from the body.',
+        imageUrl: 'https://via.placeholder.com/400x300/E5E7EB/4B5563?Text=Kerokan',
+        category: MassageTypeCategory.TraditionalIndonesian,
+    },
+    {
+        id: 'mt-jamu',
+        name: 'Jamu Massage',
+        description: 'A traditional massage that uses herbal remedies and ancient techniques passed down through generations to restore balance and well-being.',
+        imageUrl: 'https://via.placeholder.com/400x300/BBF7D0/166534?Text=Jamu+Massage',
+        category: MassageTypeCategory.TraditionalIndonesian,
+    },
+
+    // Specialty Massages
+    {
+        id: 'mt-lymphatic',
+        name: 'Lymphatic Drainage Massage',
+        description: 'A gentle massage that encourages the movement of lymph fluids around the body. It can help reduce swelling and improve health.',
+        imageUrl: 'https://via.placeholder.com/400x300/BFDBFE/1E40AF?Text=Lymphatic',
+        category: MassageTypeCategory.Specialty,
+    },
+    {
+        id: 'mt-triggerpoint',
+        name: 'Trigger Point Massage',
+        description: 'Designed to alleviate the source of the pain through cycles of isolated pressure and release. The recipient actively participates through deep breathing.',
+        imageUrl: 'https://via.placeholder.com/400x300/FECACA/991B1B?Text=Trigger+Point',
+        category: MassageTypeCategory.Specialty,
+    },
+    {
+        id: 'mt-myofascial',
+        name: 'Myofascial Release',
+        description: 'A therapy used for treating skeletal muscle immobility and pain by relaxing contracted muscles, improving blood and lymphatic circulation.',
+        imageUrl: 'https://via.placeholder.com/400x300/FED7AA/9A3412?Text=Myofascial',
+        category: MassageTypeCategory.Specialty,
+    },
+    {
+        id: 'mt-cupping',
+        name: 'Cupping Therapy',
+        description: 'An ancient form of alternative medicine in which a therapist puts special cups on your skin for a few minutes to create suction.',
+        imageUrl: 'https://via.placeholder.com/400x300/E9D5FF/6B21A8?Text=Cupping',
+        category: MassageTypeCategory.Specialty,
     },
 ];
 
@@ -834,7 +967,7 @@ export const updatePartner = (id: string, data: Partial<Partner>): Promise<Partn
         if(userIndex > -1) {
           mockUsers[userIndex] = updatedPartner;
         }
-        return mockApiCall(updatedPartner, 200);
+        return mockApiCall(updatedPartner, 1000);
     }
     return Promise.reject(new Error("Partner not found"));
 };
@@ -853,6 +986,7 @@ export const updateTransaction = (id: string, data: Partial<Transaction>): Promi
 };
 
 // --- Mock Vendor Items API ---
+export const getAllVendorItems = (): Promise<VendorItem[]> => mockApiCall(mockVendorItems);
 export const getVendorItems = (vendorId: string): Promise<VendorItem[]> => mockApiCall(mockVendorItems.filter(i => i.vendorId === vendorId));
 export const createVendorItem = (vendorId: string, data: Omit<VendorItem, 'id' | 'vendorId'>): Promise<VendorItem> => {
     const newItem: VendorItem = { ...data, id: `item-${Date.now()}`, vendorId };

@@ -50,7 +50,7 @@ const BroadcastMessageModal: React.FC<BroadcastMessageModalProps> = ({ onClose }
                 rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="w-full border rounded-md p-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
                 placeholder="Type your announcement or message here..."
                 disabled={isSending || isSent}
             />
@@ -59,7 +59,7 @@ const BroadcastMessageModal: React.FC<BroadcastMessageModalProps> = ({ onClose }
             <button
                 type="submit"
                 disabled={isSending || isSent || message.trim() === ''}
-                className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                className="flex items-center justify-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
             >
                 {isSent ? (
                     'Message Sent!'

@@ -47,16 +47,29 @@ const MassageDirectoryPage: React.FC<MassageDirectoryPageProps> = ({ onBack }) =
 
             {loading ? <p>Loading...</p> : (
                 <div className="space-y-10">
-                    {grouped[MassageTypeCategory.IndonesianTraditional] && (
-                        <MassageCategorySection 
-                            title={<Editable editId="massage-directory-indonesian-header" type="text" defaultValue="Traditional Indonesian Treatments" />} 
-                            types={grouped[MassageTypeCategory.IndonesianTraditional]} 
+                    {/* Fix: Replaced hardcoded and incorrect categories with a dynamic list of all available categories. */}
+                    {grouped[MassageTypeCategory.TraditionalIndonesian] && (
+                        <MassageCategorySection
+                            title={<Editable editId="massage-directory-indonesian-header" type="text" defaultValue={MassageTypeCategory.TraditionalIndonesian} />}
+                            types={grouped[MassageTypeCategory.TraditionalIndonesian]}
                         />
                     )}
-                     {grouped[MassageTypeCategory.International] && (
-                        <MassageCategorySection 
-                            title={<Editable editId="massage-directory-international-header" type="text" defaultValue="International Massages" />} 
-                            types={grouped[MassageTypeCategory.International]} 
+                    {grouped[MassageTypeCategory.EasternIndonesian] && (
+                        <MassageCategorySection
+                            title={<Editable editId="massage-directory-eastern-header" type="text" defaultValue={MassageTypeCategory.EasternIndonesian} />}
+                            types={grouped[MassageTypeCategory.EasternIndonesian]}
+                        />
+                    )}
+                    {grouped[MassageTypeCategory.Western] && (
+                        <MassageCategorySection
+                            title={<Editable editId="massage-directory-international-header" type="text" defaultValue={MassageTypeCategory.Western} />}
+                            types={grouped[MassageTypeCategory.Western]}
+                        />
+                    )}
+                    {grouped[MassageTypeCategory.Specialty] && (
+                        <MassageCategorySection
+                            title={<Editable editId="massage-directory-specialty-header" type="text" defaultValue={MassageTypeCategory.Specialty} />}
+                            types={grouped[MassageTypeCategory.Specialty]}
                         />
                     )}
                 </div>

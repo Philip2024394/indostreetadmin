@@ -50,8 +50,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           </p>
         </div>
 
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-700">
-          <p className="font-semibold text-center text-blue-800 mb-2">Demo Accounts (password: "password")</p>
+        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg text-sm text-gray-700">
+          <p className="font-semibold text-center text-orange-800 mb-2">Demo Accounts (password: "password")</p>
           <ul className="space-y-1">
             <li><strong>Admin:</strong> admin@indostreet.com</li>
             <li><strong>Agent:</strong> agent@indostreet.com</li>
@@ -81,7 +81,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -95,7 +95,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -109,14 +109,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
             >
               {loading ? 'Signing in...' : <Editable editId="login-button" type="text" defaultValue="Sign in" as="span" />}
             </button>
           </div>
         </form>
          <div className="text-center text-sm">
-            <button onClick={() => setShowSignup(true)} className="font-medium text-blue-600 hover:text-blue-500">
+            <button onClick={() => setShowSignup(true)} className="font-medium text-orange-600 hover:text-orange-500">
                 Register as an Agent
             </button>
         </div>

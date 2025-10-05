@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import * as api from '../../services/supabase';
 import { Transaction, Partner } from '../../types';
@@ -98,7 +99,7 @@ const FinancialsPage: React.FC = () => {
                     <div className="flex items-center space-x-2">
                          <button 
                             onClick={() => setShowReport(true)}
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                            className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600"
                         >
                             Generate Comprehensive Report
                         </button>

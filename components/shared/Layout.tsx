@@ -6,9 +6,9 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
@@ -95,6 +95,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, adminV
         <button onClick={() => onAdminViewChange?.('fleet')} className={`${navLinkClasses} ${adminView === 'fleet' ? activeNavLinkClasses : ''}`}>
           <RealCarIcon className="w-5 h-5 mr-3" />
           <Editable editId="layout-nav-fleet" type="text" defaultValue="Fleet Management" as="span" />
+        </button>
+        <button onClick={() => onAdminViewChange?.('foodDirectory')} className={`${navLinkClasses} ${adminView === 'foodDirectory' ? activeNavLinkClasses : ''}`}>
+          <FoodIcon className="w-5 h-5 mr-3" />
+          <Editable editId="layout-nav-food-directory" type="text" defaultValue="Food Directory" as="span" />
         </button>
         <button onClick={() => onAdminViewChange?.('massage')} className={`${navLinkClasses} ${adminView === 'massage' ? activeNavLinkClasses : ''}`}>
             <SparklesIcon className="w-5 h-5 mr-3" />

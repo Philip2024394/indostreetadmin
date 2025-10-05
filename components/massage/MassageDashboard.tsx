@@ -9,6 +9,8 @@ import ProfileEditor from './ProfileEditor';
 import ServicesEditor from './ServicesEditor';
 import PlaceFeaturesEditor from './PlaceFeaturesEditor';
 import MassageMainPage from './MassageMainPage';
+import PrivateInfoEditor from './PrivateInfoEditor';
+import PartnerTOSPage from './directory/PartnerTOSPage';
 
 interface MassageDashboardProps {
   user: User;
@@ -19,7 +21,7 @@ const MassageDashboard: React.FC<MassageDashboardProps> = ({ user, onLogout }) =
   const [partner, setPartner] = useState<Partner | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
-  const [view, setView] = useState<'dashboard' | 'info'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'profile' | 'info' | 'private-info' | 'partner-tos'>('dashboard');
 
   const fetchPartnerData = useCallback(async () => {
     setLoading(true);
@@ -60,21 +62,37 @@ const MassageDashboard: React.FC<MassageDashboardProps> = ({ user, onLogout }) =
     if (!partner) {
         return <div className="text-center p-10 text-red-500">Could not load your partner profile. Please try again later.</div>;
     }
+    
+    if (view === 'partner-tos') {
+        return <PartnerTOSPage onBack={() => setView('private-info')} />;
+    }
 
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-                <StatusControl partner={partner} onUpdate={handleUpdatePartner} />
-                <ServicesEditor partner={partner} onUpdate={handleUpdatePartner} />
-                {partner.partnerType === PartnerType.MassagePlace && (
-                    <PlaceFeaturesEditor partner={partner} onUpdate={handleUpdatePartner} />
-                )}
+    if (view === 'private-info') {
+        return <PrivateInfoEditor partner={partner} onUpdate={handleUpdatePartner} onViewTOS={() => setView('partner-tos')} />;
+    }
+    
+    if (view === 'info') {
+        return <MassageMainPage />;
+    }
+
+    if (view === 'profile') {
+        return (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <ServicesEditor partner={partner} onUpdate={handleUpdatePartner} />
+                    {partner.partnerType === PartnerType.MassagePlace && (
+                        <PlaceFeaturesEditor partner={partner} onUpdate={handleUpdatePartner} />
+                    )}
+                </div>
+                <div className="lg:col-span-1 space-y-8">
+                    <ProfileEditor partner={partner} onUpdate={handleUpdatePartner} />
+                </div>
             </div>
-            <div className="lg:col-span-1 space-y-8">
-                <ProfileEditor partner={partner} onUpdate={handleUpdatePartner} />
-            </div>
-        </div>
-    );
+        );
+    }
+
+    // Default view is 'dashboard' which is now just the status control
+    return <StatusControl partner={partner} onUpdate={handleUpdatePartner} />;
   };
   
   return (
@@ -84,23 +102,35 @@ const MassageDashboard: React.FC<MassageDashboardProps> = ({ user, onLogout }) =
        </div>
 
         <div className="mb-6 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-6">
+            <nav className="-mb-px flex space-x-6 overflow-x-auto">
                 <button
                     onClick={() => setView('dashboard')}
-                    className={`${view === 'dashboard' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
+                    className={`${view === 'dashboard' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
                 >
-                    My Dashboard
+                    My Status
+                </button>
+                <button
+                    onClick={() => setView('profile')}
+                    className={`${view === 'profile' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
+                >
+                    Profile & Services
                 </button>
                 <button
                     onClick={() => setView('info')}
-                    className={`${view === 'info' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
+                    className={`${view === 'info' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
                 >
                     Massage Info & TOS
+                </button>
+                 <button
+                    onClick={() => setView('private-info')}
+                    className={`${view === 'private-info' || view === 'partner-tos' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm`}
+                >
+                    Private Information
                 </button>
             </nav>
         </div>
 
-        {view === 'dashboard' ? renderDashboardContent() : <MassageMainPage />}
+        {renderDashboardContent()}
 
       {isRenewalModalOpen && partner && (
         <RenewalModal

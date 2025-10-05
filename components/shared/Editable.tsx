@@ -89,13 +89,13 @@ export const Editable: React.FC<EditableProps> = (props) => {
 
   return (
     <div
-      className={`relative group border-2 border-dashed border-transparent hover:border-blue-400 p-1 rounded-md transition-all ${props.className}`}
+      className={`relative group border-2 border-dashed border-transparent hover:border-orange-400 p-1 rounded-md transition-all ${props.className}`}
       onClick={() => {
         if (props.type === 'text' || props.type === 'number') setIsEditing(true);
         if (props.type === 'asset') fileInputRef.current?.click();
       }}
     >
-      <div className="absolute -top-2 -right-2 z-10 bg-blue-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-lg">
+      <div className="absolute -top-2 -right-2 z-10 bg-orange-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-lg">
         <PencilIcon className="w-3 h-3" />
       </div>
 
@@ -105,7 +105,7 @@ export const Editable: React.FC<EditableProps> = (props) => {
             suppressContentEditableWarning
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-100"
+            className="focus:outline-none focus:ring-2 focus:ring-orange-400 bg-orange-100"
             autoFocus
         >
           {overrideValue ?? props.defaultValue}
@@ -121,7 +121,7 @@ export const Editable: React.FC<EditableProps> = (props) => {
                 onChange={handleNumberChange}
                 onBlur={() => setIsEditing(false)}
                 onKeyDown={handleKeyDown}
-                className="w-full focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-100"
+                className="w-full focus:outline-none focus:ring-2 focus:ring-orange-400 bg-orange-100"
                 autoFocus
             />
           </div>

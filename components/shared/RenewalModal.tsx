@@ -92,10 +92,10 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
     const PriceCard: React.FC<{ months: 3 | 6 | 12; price: number }> = ({ months, price }) => (
         <div
             onClick={() => setSelectedPackage(months)}
-            className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${selectedPackage === months ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-500' : 'border-gray-300 hover:border-blue-400'}`}
+            className={`p-4 border-2 rounded-lg cursor-pointer text-center transition-all ${selectedPackage === months ? 'border-orange-600 bg-orange-50 ring-2 ring-orange-500' : 'border-gray-300 hover:border-orange-400'}`}
         >
             <p className="font-bold text-lg text-gray-800">{months} Months</p>
-            <p className="text-xl font-semibold text-blue-600">
+            <p className="text-xl font-semibold text-orange-600">
                 Rp {price.toLocaleString('id-ID')}
             </p>
         </div>
@@ -137,7 +137,7 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
                             type="button"
                             onClick={handleConfirmSubmit}
                             disabled={status === 'submitting'}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                            className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-orange-300"
                         >
                             {status === 'submitting' ? 'Submitting...' : 'Confirm & Submit'}
                         </button>
@@ -174,13 +174,13 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">Payment Method</label>
-                            <select id="paymentMethod" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <select id="paymentMethod" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
                                 {PaymentMethods.map(method => <option key={method} value={method}>{method}</option>)}
                             </select>
                         </div>
                         <div>
                             <label htmlFor="transactionNumber" className="block text-sm font-medium text-gray-700">Transaction/Reference Number</label>
-                            <input type="text" id="transactionNumber" value={transactionNumber} onChange={(e) => setTransactionNumber(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                            <input type="text" id="transactionNumber" value={transactionNumber} onChange={(e) => setTransactionNumber(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
                         </div>
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700">Upload Receipt Screenshot</label>
@@ -188,7 +188,7 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
                                 <div className="space-y-1 text-center">
                                     <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                     <div className="flex text-sm text-gray-600">
-                                        <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                        <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
                                             <span>Upload a file</span>
                                             <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
                                         </label>
@@ -208,7 +208,7 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
                     <div className="p-4 bg-gray-50 border-t flex justify-end">
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                            className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-orange-300"
                         >
                             Proceed to Confirmation
                         </button>

@@ -58,9 +58,9 @@ const AccountManagement: React.FC<{ partner: Partner; onUpdate: (data: Partial<P
                 <div>
                     <p className="text-sm font-medium text-gray-700 mb-2">Set Activation Period:</p>
                     <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => handleSetExpiry(3)} className="px-2 py-2 text-xs text-white bg-blue-500 rounded hover:bg-blue-600">3 Months</button>
-                        <button onClick={() => handleSetExpiry(6)} className="px-2 py-2 text-xs text-white bg-blue-500 rounded hover:bg-blue-600">6 Months</button>
-                        <button onClick={() => handleSetExpiry(12)} className="px-2 py-2 text-xs text-white bg-blue-500 rounded hover:bg-blue-600">12 Months</button>
+                        <button onClick={() => handleSetExpiry(3)} className="px-2 py-2 text-xs text-white bg-orange-500 rounded hover:bg-orange-600">3 Months</button>
+                        <button onClick={() => handleSetExpiry(6)} className="px-2 py-2 text-xs text-white bg-orange-500 rounded hover:bg-orange-600">6 Months</button>
+                        <button onClick={() => handleSetExpiry(12)} className="px-2 py-2 text-xs text-white bg-orange-500 rounded hover:bg-orange-600">12 Months</button>
                     </div>
                 </div>
             </div>
@@ -109,7 +109,7 @@ const PartnerChat: React.FC<{ partner: Partner }> = ({ partner }) => {
             <div className="flex-1 p-6 space-y-4 overflow-y-auto h-64 bg-gray-50">
                 {loading ? <p>Loading messages...</p> : messages.map(msg => (
                     <div key={msg.id} className="flex flex-col items-end">
-                        <div className="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+                        <div className="bg-orange-500 text-white p-3 rounded-lg max-w-xs">
                             <p className="text-sm">{msg.content}</p>
                         </div>
                         <div className="text-xs text-gray-500 mt-1 flex items-center">
@@ -126,9 +126,9 @@ const PartnerChat: React.FC<{ partner: Partner }> = ({ partner }) => {
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-grow border rounded-l-md p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="flex-grow border rounded-l-md p-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
                 />
-                <button type="submit" className="bg-blue-600 text-white p-2 rounded-r-md hover:bg-blue-700">
+                <button type="submit" className="bg-orange-500 text-white p-2 rounded-r-md hover:bg-orange-600">
                     <PaperAirplaneIcon className="w-5 h-5" />
                 </button>
             </form>

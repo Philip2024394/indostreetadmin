@@ -19,6 +19,7 @@ import AgentApplicationManagementPage from './AgentApplicationManagementPage';
 import { Editable } from '../shared/Editable';
 import MassagePartnerDetails from './MassagePartnerDetails';
 import MassageDirectoryManagementPage from './MassageDirectoryManagementPage';
+import FoodDirectoryManagementPage from './FoodDirectoryManagementPage';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
@@ -30,7 +31,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agentApplications';
+type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agentApplications' | 'foodDirectory';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -139,6 +140,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         case 'agents': return 'Agent Management';
         case 'members': return 'Member Management';
         case 'fleet': return 'Fleet Management';
+        case 'foodDirectory': return 'Food Directory Management';
         case 'massage': return 'Massage & Wellness Management';
         case 'massageDirectory': return 'Massage Directory Management';
         case 'renewals': return 'Membership Renewals';
@@ -163,6 +165,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <AgentApplicationManagementPage />;
         case 'fleet':
             return <FleetManagement />;
+        case 'foodDirectory':
+            return <FoodDirectoryManagementPage />;
         case 'massage':
             return <MassageManagementPage onPartnerSelect={setSelectedPartner} />;
         case 'massageDirectory':
@@ -229,10 +233,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                             <p className="text-sm text-gray-500 mt-1">Review applications or manage existing partners.</p>
                           </div>
                           <div className="flex mt-4 sm:mt-0 rounded-md shadow-sm">
-                              <button onClick={() => setView('applications')} className={`px-4 py-2 text-sm font-medium border ${view === 'applications' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} rounded-l-md focus:z-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}>
+                              <button onClick={() => setView('applications')} className={`px-4 py-2 text-sm font-medium border ${view === 'applications' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} rounded-l-md focus:z-10 focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}>
                                   Applications
                               </button>
-                              <button onClick={() => setView('partners')} className={`px-4 py-2 text-sm font-medium border ${view === 'partners' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} rounded-r-md focus:z-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}>
+                              <button onClick={() => setView('partners')} className={`px-4 py-2 text-sm font-medium border ${view === 'partners' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} rounded-r-md focus:z-10 focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}>
                                   Partners
                               </button>
                           </div>
@@ -250,7 +254,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                 onClick={() => setActiveAppTab(type)}
                                 className={`${
                                   activeAppTab === type
-                                    ? 'border-blue-500 text-blue-600'
+                                    ? 'border-orange-500 text-orange-600'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 } flex items-center whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm transition-colors focus:outline-none`}
                               >
@@ -281,7 +285,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell text-sm text-gray-500">{new Date(app.submittedAt).toLocaleString()}</td>
                                     <td className="px-6 py-4 whitespace-nowrap"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge(app.status)}`}>{app.status}</span></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button onClick={() => setSelectedApp(app)} className="text-blue-600 hover:text-blue-900">View Details</button></td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button onClick={() => setSelectedApp(app)} className="text-orange-600 hover:text-orange-900">View Details</button></td>
                                   </tr>
                                 )) : <tr><td colSpan={4} className="text-center py-10 px-6 text-gray-500">No pending applications in this category.</td></tr>}
                               </tbody>
@@ -303,7 +307,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                               placeholder="Search by name, email, or type..."
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
-                              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                             />
                           </div>
                           <button 

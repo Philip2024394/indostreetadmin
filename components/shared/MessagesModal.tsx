@@ -48,7 +48,7 @@ const MessagesModal: React.FC<MessagesModalProps> = ({ user, onClose }) => {
             <p className="text-center text-gray-500">Loading messages...</p>
           ) : messages.length > 0 ? (
             messages.map(msg => (
-              <div key={msg.id} className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+              <div key={msg.id} className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
                 <p className="text-sm text-gray-800">{msg.content}</p>
                 <div className="text-right text-xs text-gray-500 mt-2">
                   <span>{new Date(msg.sentAt).toLocaleString()}</span>
@@ -61,7 +61,7 @@ const MessagesModal: React.FC<MessagesModalProps> = ({ user, onClose }) => {
           )}
         </div>
         <div className="p-4 bg-gray-50 border-t text-center">
-            <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button onClick={onClose} className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
                 Close
             </button>
         </div>

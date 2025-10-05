@@ -196,7 +196,7 @@ const PayoutManagement: React.FC<{partner: Partner; payouts: Payout[]; onUpdate:
             <div className="border-t pt-4">
                  <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-800">Bank Account</h3>
-                    {!isEditing && <button onClick={() => setIsEditing(true)} className="text-sm font-medium text-blue-600">Edit</button>}
+                    {!isEditing && <button onClick={() => setIsEditing(true)} className="text-sm font-medium text-orange-600">Edit</button>}
                 </div>
                 {isEditing ? (
                     <div className="space-y-3">
@@ -205,7 +205,7 @@ const PayoutManagement: React.FC<{partner: Partner; payouts: Payout[]; onUpdate:
                         <input value={bankDetails.accountNumber} onChange={e => setBankDetails({...bankDetails, accountNumber: e.target.value})} placeholder="Account Number" className="w-full border rounded-md p-2 text-sm"/>
                         <div className="flex justify-end space-x-2">
                              <button onClick={() => setIsEditing(false)} className="px-3 py-1 text-sm bg-gray-200 rounded-md">Cancel</button>
-                             <button onClick={handleSave} className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md">Save</button>
+                             <button onClick={handleSave} className="px-3 py-1 text-sm bg-orange-500 text-white rounded-md">Save</button>
                         </div>
                     </div>
                 ) : (
@@ -346,7 +346,7 @@ const DriverDashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user,
   };
 
   const NavButton: React.FC<{ targetView: DriverView; children: React.ReactNode; icon: React.ReactNode }> = ({ targetView, children, icon }) => (
-    <button onClick={() => setView(targetView)} className={`flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center sm:justify-start px-3 py-2 text-sm font-medium rounded-md transition-colors ${view === targetView ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
+    <button onClick={() => setView(targetView)} className={`flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center sm:justify-start px-3 py-2 text-sm font-medium rounded-md transition-colors ${view === targetView ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
         <span className="mb-1 sm:mb-0 sm:mr-2">{icon}</span>
         {children}
     </button>

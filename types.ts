@@ -167,6 +167,19 @@ export interface Partner extends User {
   // --- New Driver Performance Fields ---
   acceptanceRate?: number; // percentage
   cancellationRate?: number; // percentage
+
+  // --- New Private fields for Massage Therapists ---
+  privateInfo?: {
+    legalName?: string;
+    personalAddress?: string;
+    idCardImage?: string; // base64
+    experienceYears?: number;
+    age?: number;
+    gender?: 'male' | 'female' | 'other';
+    religion?: string;
+    noCriminalRecord?: boolean;
+    agreedToTerms?: boolean;
+  }
 }
 
 export interface PartnerApplication {
@@ -201,6 +214,11 @@ export interface VendorItem {
   price: number;
   isAvailable: boolean;
   imageUrl: string;
+  description?: string; // Short description
+  longDescription?: string; // Detailed description for directory
+  category?: string;
+  chiliLevel?: number; // 0-4
+  cookingTime?: number; // in minutes
 }
 
 export interface Transaction {
@@ -390,8 +408,10 @@ export interface AgentApplication {
 
 // --- New types for Massage Directory ---
 export enum MassageTypeCategory {
-  International = 'International',
-  IndonesianTraditional = 'Indonesian Traditional',
+  Western = 'Western Massages',
+  EasternIndonesian = 'Eastern & Indonesian Massages',
+  TraditionalIndonesian = 'Traditional Indonesian Techniques',
+  Specialty = 'Specialty Massages',
 }
 
 export interface MassageType {
