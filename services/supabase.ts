@@ -531,8 +531,25 @@ export const createMassageType = async (data: Omit<MassageType, 'id'>): Promise<
 };
 
 export const updateMassageType = async (id: string, data: Partial<Omit<MassageType, 'id'>>): Promise<MassageType> => {
-    const { data: result, error } = await supabase.from('massage_types').update(data).eq('id', id).select().single();
-    if (error) throw error;
+    const { data: result, error } = await supabase
+        .from('massage_types')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        // This will catch database-level errors, like constraint violations.
+        console.error("Supabase update error:", error);
+        throw error;
+    }
+    
+    // This handles cases where the update affects 0 rows, which Supabase doesn't treat as an error.
+    // This is common with RLS policies or if the ID doesn't exist.
+    if (!result) {
+        throw new Error(`Update failed for Massage Type ID: ${id}. The item was not found or you don't have permission to modify it. Please check Row Level Security (RLS) policies on the 'massage_types' table.`);
+    }
+
     return result;
 };
 
