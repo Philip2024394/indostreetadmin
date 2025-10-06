@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import * as api from '../../services/supabase';
 import { AgentApplication } from '../../types';
-import { blobToBase64 } from '../shared/Editable';
 import { ChevronLeftIcon, CheckCircleIcon } from '../shared/Icons';
 
 interface AgentSignupPageProps {
@@ -10,8 +9,7 @@ interface AgentSignupPageProps {
 
 const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
   const [step, setStep] = useState(1);
-  // Fix: Add 'agreedToTerms' property to the formData state type and initial value to resolve TypeScript errors related to its usage in the component.
-  const [formData, setFormData] = useState<Partial<AgentApplication> & { email?: string; password?: string; confirmPassword?: string; agreedToTerms?: boolean }>({
+  const [formData, setFormData] = useState<Partial<Omit<AgentApplication, 'idCardImage' | 'profilePhotoImage'>> & { email?: string; password?: string; confirmPassword?: string; agreedToTerms?: boolean }>({
     name: '',
     email: '',
     password: '',
@@ -25,16 +23,12 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
     equipment: [],
     shirtSize: 'M',
     policeRecord: false,
-    idCardImage: '',
-    profilePhotoImage: '',
     agreedToTerms: false,
   });
+  const [files, setFiles] = useState<{ idCardImage?: File; profilePhotoImage?: File }>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [previews, setPreviews] = useState({ idCardImage: '', profilePhotoImage: '' });
-
-  const idCardInputRef = useRef<HTMLInputElement>(null);
-  const profilePhotoInputRef = useRef<HTMLInputElement>(null);
 
   const handleNext = () => setStep(prev => prev + 1);
   const handlePrev = () => setStep(prev => prev - 1);
@@ -43,28 +37,26 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
         const { checked } = e.target as HTMLInputElement;
-        setFormData(prev => {
-            const currentEquipment = prev.equipment || [];
-            const newEquipment = checked ? [...currentEquipment, value] : currentEquipment.filter(item => item !== value);
-            return { ...prev, equipment: newEquipment as ('laptop' | 'phone')[] };
-        });
+        if (name === 'equipment') {
+            setFormData(prev => {
+                const currentEquipment = prev.equipment || [];
+                const newEquipment = checked ? [...currentEquipment, value] : currentEquipment.filter(item => item !== value);
+                return { ...prev, equipment: newEquipment as ('laptop' | 'phone')[] };
+            });
+        } else {
+             setFormData(prev => ({ ...prev, [name]: checked }));
+        }
     } else {
         setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    if (files && files[0]) {
-        const file = files[0];
-        try {
-            const base64 = await blobToBase64(file);
-            setFormData(prev => ({...prev, [name]: base64 }));
-            setPreviews(prev => ({...prev, [name]: URL.createObjectURL(file) }));
-        } catch (err) {
-            console.error(err);
-            setError("Failed to process image file.");
-        }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, files: selectedFiles } = e.target;
+    if (selectedFiles && selectedFiles[0]) {
+        const file = selectedFiles[0];
+        setFiles(prev => ({ ...prev, [name]: file }));
+        setPreviews(prev => ({ ...prev, [name]: URL.createObjectURL(file) }));
     }
   };
 
@@ -75,10 +67,23 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
         setError("You must agree to the terms and conditions.");
         return;
       }
+      if (!files.idCardImage || !files.profilePhotoImage) {
+        setError("Please upload both ID card and profile photo.");
+        return;
+      }
+
       setLoading(true);
       try {
+        const idCardImageUrl = await api.uploadFile('documents', files.idCardImage);
+        const profilePhotoImageUrl = await api.uploadFile('avatars', files.profilePhotoImage);
+
         const { password, confirmPassword, agreedToTerms, ...appData } = formData;
-        await api.submitAgentApplication(appData as Omit<AgentApplication, 'id' | 'status' | 'submittedAt'>);
+        
+        await api.submitAgentApplication({
+            ...(appData as Omit<AgentApplication, 'id' | 'status' | 'submittedAt' | 'idCardImage' | 'profilePhotoImage'>),
+            idCardImage: idCardImageUrl,
+            profilePhotoImage: profilePhotoImageUrl,
+        });
         setStep(6); // Success step
       } catch (err: any) {
         setError(err.message || 'An error occurred during submission.');
@@ -139,7 +144,7 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
                 <h3 className="text-xl font-semibold">Review Your Application</h3>
                 <div className="p-4 bg-gray-50 border rounded-lg space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(formData).map(([key, value]) => {
-                        if (['password', 'confirmPassword', 'agreedToTerms', 'idCardImage', 'profilePhotoImage'].includes(key)) return null;
+                        if (['password', 'confirmPassword', 'agreedToTerms'].includes(key)) return null;
                         return <p key={key} className="text-sm"><strong className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</strong> {Array.isArray(value) ? value.join(', ') : String(value)}</p>
                     })}
                 </div>
@@ -149,7 +154,7 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
                 </div>
                  <div>
                     <label className="flex items-center">
-                        <input type="checkbox" name="agreedToTerms" checked={!!formData.agreedToTerms} onChange={e => setFormData(p => ({...p, agreedToTerms: e.target.checked}))} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
+                        <input type="checkbox" name="agreedToTerms" checked={!!formData.agreedToTerms} onChange={handleChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
                         <span className="ml-2 text-sm text-gray-600">I confirm that all information provided is true and I agree to the terms.</span>
                     </label>
                 </div>
@@ -236,7 +241,7 @@ const CheckboxGroup: React.FC<{ label: string; name: string; values?: string[]; 
         <div className="mt-2 flex space-x-4">
             {options.map(opt => (
                 <label key={opt.value} className="flex items-center">
-                    <input type="checkbox" name={name} value={opt.value} checked={values.includes(opt.value)} onChange={onChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
+                    <input type="checkbox" name="equipment" value={opt.value} checked={values.includes(opt.value)} onChange={onChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
                     <span className="ml-2 text-sm">{opt.label}</span>
                 </label>
             ))}

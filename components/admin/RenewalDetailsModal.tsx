@@ -41,9 +41,9 @@ const RenewalDetailsModal: React.FC<RenewalDetailsModalProps> = ({ submission, o
             
             <div className="md:col-span-2">
                 <p className="text-sm font-medium text-gray-500 mb-2">Payment Receipt</p>
-                <a href={`data:image/png;base64,${submission.receiptImage}`} target="_blank" rel="noopener noreferrer" className="block border rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500">
+                <a href={submission.receiptImage} target="_blank" rel="noopener noreferrer" className="block border rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500">
                     <img 
-                        src={`data:image/png;base64,${submission.receiptImage}`} 
+                        src={submission.receiptImage} 
                         alt="Payment Receipt" 
                         className="w-full h-auto object-contain max-h-96"
                     />

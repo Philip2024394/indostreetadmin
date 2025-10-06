@@ -1,5 +1,3 @@
-
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   User,
@@ -53,6 +51,13 @@ if (!supabaseUrl || !supabaseKey) {
         select: () => Promise.resolve({ data: [], error: { message: supabaseInitializationError } }),
         update: () => Promise.resolve({ data: null, error: { message: supabaseInitializationError } }),
     }),
+    channel: () => ({
+        on: () => ({
+            subscribe: () => {}
+        }),
+        subscribe: () => {}
+    }),
+    removeChannel: () => {}
   } as unknown as SupabaseClient;
 
 } else {
@@ -61,69 +66,138 @@ if (!supabaseUrl || !supabaseKey) {
 
 export { supabase };
 
-// --- Mock Data for Authentication ---
-const createMockPartner = (id: string, email: string, partnerType: PartnerType, role: Role, overrides: Partial<Partner> = {}): Partner => ({
-    id, email, partnerType, role,
-    status: 'active',
-    rating: 4.5,
-    totalEarnings: 1500000,
-    memberSince: new Date().toISOString(),
-    phone: '628123456789',
-    activationExpiry: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(),
-    profile: {
-      name: overrides.profile?.name || `${partnerType} User`,
-      shopName: overrides.profile?.shopName,
-      profilePicture: 'https://i.pravatar.cc/150?u=' + email,
-    },
-    ...overrides
-});
-
-const mockUsers: Record<string, User> = {
-  'admin@indostreet.com': { id: 'uuid-admin', email: 'admin@indostreet.com', role: Role.Admin, profile: { name: 'Admin User' } },
-  'agent@indostreet.com': { id: 'uuid-agent', email: 'agent@indostreet.com', role: Role.Agent, profile: { name: 'Agent Smith' } },
-  'driver@indostreet.com': createMockPartner('uuid-driver-bike', 'driver@indostreet.com', PartnerType.BikeDriver, Role.Driver),
-  'cardriver@indostreet.com': createMockPartner('uuid-driver-car', 'cardriver@indostreet.com', PartnerType.CarDriver, Role.Driver, {profile: {name: "Car Driver Budi"}}),
-  'lorrydriver@indostreet.com': createMockPartner('uuid-driver-lorry', 'lorrydriver@indostreet.com', PartnerType.LorryDriver, Role.Driver),
-  'jeep@indostreet.com': createMockPartner('uuid-driver-jeep', 'jeep@indostreet.com', PartnerType.JeepTourOperator, Role.Driver),
-  'vendor@indostreet.com': createMockPartner('uuid-vendor-food', 'vendor@indostreet.com', PartnerType.FoodVendor, Role.Vendor, { profile: { shopName: "Soto Ayam Pak Man" } }),
-  'shop@indostreet.com': createMockPartner('uuid-vendor-shop', 'shop@indostreet.com', PartnerType.StreetShop, Role.Vendor, { profile: { shopName: "Warung Modern" } }),
-  'business@indostreet.com': createMockPartner('uuid-vendor-biz', 'business@indostreet.com', PartnerType.LocalBusiness, Role.Vendor, { profile: { shopName: "Bali Crafts" } }),
-  'carrental@indostreet.com': createMockPartner('uuid-vendor-carrental', 'carrental@indostreet.com', PartnerType.CarRental, Role.Vendor, { profile: { shopName: "Bali Car Hire" } }),
-  'bikerental@indostreet.com': createMockPartner('uuid-vendor-bikerental', 'bikerental@indostreet.com', PartnerType.BikeRental, Role.Vendor, { profile: { shopName: "Scooter Rentals" } }),
-  'busrental@indostreet.com': createMockPartner('uuid-vendor-busrental', 'busrental@indostreet.com', PartnerType.BusRental, Role.Vendor, { profile: { shopName: "Island Bus Tours" } }),
-  'therapist@indostreet.com': createMockPartner('uuid-vendor-therapist', 'therapist@indostreet.com', PartnerType.MassageTherapist, Role.Vendor, { profile: { name: "Ayu Wellness" } }),
-  'spa@indostreet.com': createMockPartner('uuid-vendor-spa', 'spa@indostreet.com', PartnerType.MassagePlace, Role.Vendor, { profile: { shopName: "Ubud Zen Spa" } }),
-  'hotel@indostreet.com': createMockPartner('uuid-lodging-hotel', 'hotel@indostreet.com', PartnerType.Hotel, Role.LodgingPartner, { profile: { name: "Grand Bali Hotel" } }),
-  'villa@indostreet.com': createMockPartner('uuid-lodging-villa', 'villa@indostreet.com', PartnerType.Villa, Role.LodgingPartner, { profile: { name: "Canggu Private Villa" } }),
-};
-
 
 // --- Authentication ---
 
+// Helper to build a User object from DB data based on an authenticated user
+const buildUserFromDb = async (authUserId: string, email: string): Promise<User | null> => {
+    // Check partners table
+    let { data: partnerData } = await supabase.from('partners').select('*').eq('id', authUserId).single();
+    if (partnerData) return partnerData as User;
+    
+    // Check general users table (for admin, agent)
+    let { data: userData } = await supabase.from('users').select('*').eq('id', authUserId).single();
+    if (userData) return userData as User;
+    
+    // Check members table
+    let { data: memberData } = await supabase.from('members').select('*').eq('id', authUserId).single();
+    if (memberData) {
+        const member = memberData as Member;
+        return {
+            id: member.id,
+            email: member.email,
+            role: Role.Member,
+            profile: { name: member.name },
+        };
+    }
+    
+    return null;
+};
+
+
 export const login = async (email: string, password: string): Promise<{ user: User; token: string }> => {
-    console.warn("Using MOCK login. All data fetching is still live from Supabase.");
-    if (password !== 'password') {
-        throw new Error('Invalid login credentials.');
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+        throw authError;
     }
-    const user = mockUsers[email];
-    if (user) {
-        localStorage.setItem('mockUser', JSON.stringify(user));
-        return { user, token: 'mock-token-for-' + email };
+    if (!authData.user) {
+        throw new Error("Login failed: User not found.");
     }
-    throw new Error('Invalid login credentials.');
+
+    const userProfile = await buildUserFromDb(authData.user.id, authData.user.email!);
+    if (userProfile) {
+        console.log("Successful login with Supabase Auth.");
+        return { user: userProfile, token: authData.session!.access_token };
+    }
+    
+    // If login succeeds but profile is not in DB, something is wrong.
+    await supabase.auth.signOut();
+    throw new Error("Authentication successful, but user profile not found. Please contact support.");
 };
 
 export const logout = async (): Promise<void> => {
-  localStorage.removeItem('mockUser');
   await supabase.auth.signOut();
 };
 
 export const checkSession = async (): Promise<User | null> => {
-    const mockUserJson = localStorage.getItem('mockUser');
-    if (mockUserJson) {
-        return JSON.parse(mockUserJson) as User;
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session && session.user) {
+        const userProfile = await buildUserFromDb(session.user.id, session.user.email!);
+        if (userProfile) {
+            return userProfile;
+        }
+        // If user is in Auth but not DB, sign out to clear session.
+        await supabase.auth.signOut();
     }
     return null;
+};
+
+
+export const signUpMember = async (name: string, email: string, password: string, whatsapp: string, area: Zone): Promise<void> => {
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+    });
+
+    if (authError) {
+        throw authError;
+    }
+    if (!authData.user) {
+        throw new Error('Sign up successful, but no user data returned.');
+    }
+
+    const userId = authData.user.id;
+
+    const { error: insertError } = await supabase.from('members').insert({
+        id: userId,
+        name,
+        email,
+        whatsappNumber: whatsapp,
+        lastKnownLocation: area,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+    });
+
+    if (insertError) {
+        console.error('Auth user created, but DB insert failed:', insertError);
+        throw new Error('Could not create your member profile. Please contact support.');
+    }
+};
+
+// --- Storage Helpers ---
+export const uploadFile = async (bucket: string, file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file);
+
+    if (uploadError) {
+        console.error("Supabase storage upload error:", uploadError);
+        throw new Error(`Failed to upload file to bucket '${bucket}'. Check storage policies and bucket existence.`);
+    }
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    return data.publicUrl;
+};
+
+export const deleteFileByUrl = async (bucket: string, url: string): Promise<void> => {
+    if (!url || !url.includes(supabaseUrl!)) return; // Don't try to delete non-supabase URLs
+    try {
+        const path = new URL(url).pathname.split(`/${bucket}/`)[1];
+        if (path) {
+            const { error } = await supabase.storage.from(bucket).remove([path]);
+            if (error) {
+                console.error("Failed to delete file from storage:", error.message);
+            }
+        }
+    } catch (error) {
+        console.error("Error parsing URL for file deletion:", error);
+    }
 };
 
 
@@ -144,7 +218,7 @@ export const getAdminStats = async (): Promise<AdminStats> => {
 
     for (const result of results) {
         if (result.error) {
-            console.error('Error fetching admin stats:', result.error);
+            console.error('Error fetching admin stats:', result.error.message || result.error);
             throw result.error;
         }
     }
@@ -191,14 +265,6 @@ export const updateApplication = async (id: string, status: 'approved' | 'reject
 
 // --- Partners API ---
 export const getPartner = async (id: string): Promise<Partner> => {
-    // MOCK DATA CHECK: First, check mock users for a match.
-    const mockUser = Object.values(mockUsers).find(u => u.id === id);
-    if (mockUser) {
-        console.warn(`Returning MOCK partner data for id: ${id}`);
-        return mockUser as Partner;
-    }
-
-    // LIVE API CALL: If not found in mock, proceed with live Supabase call (original logic)
     const { data: partnerData } = await supabase.from('partners').select('*').eq('id', id).single();
     if (partnerData) return partnerData as Partner;
     

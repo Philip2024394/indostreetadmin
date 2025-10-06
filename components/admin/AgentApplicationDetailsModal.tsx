@@ -58,11 +58,11 @@ const AgentApplicationDetailsModal: React.FC<AgentApplicationDetailsModalProps> 
                 <DetailSection title="Documents">
                     <div>
                         <p className="font-medium text-gray-600 mb-2">KTP (ID Card)</p>
-                        <img src={`data:image/png;base64,${application.idCardImage}`} alt="ID Card" className="w-full rounded-lg border"/>
+                        <img src={application.idCardImage} alt="ID Card" className="w-full rounded-lg border"/>
                     </div>
                      <div>
                         <p className="font-medium text-gray-600 mb-2">Profile Photo</p>
-                        <img src={`data:image/png;base64,${application.profilePhotoImage}`} alt="Profile" className="w-40 h-40 object-cover rounded-lg border"/>
+                        <img src={application.profilePhotoImage} alt="Profile" className="w-40 h-40 object-cover rounded-lg border"/>
                     </div>
                 </DetailSection>
              </div>

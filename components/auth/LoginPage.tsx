@@ -4,17 +4,19 @@ import { supabaseInitializationError } from '../../services/supabase';
 import { User } from '../../types';
 import { Editable } from '../shared/Editable';
 import AgentSignupPage from './AgentSignupPage';
+import MemberSignupPage from './MemberSignupPage';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('agent@indostreet.com');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('phillipofarrell@gmail.com');
+  const [password, setPassword] = useState('admin1240176');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
+  const [showAgentSignup, setShowAgentSignup] = useState(false);
+  const [showMemberSignup, setShowMemberSignup] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,19 +37,24 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     }
   };
   
-  if (showSignup) {
-    return <AgentSignupPage onBackToLogin={() => setShowSignup(false)} />;
+  if (showAgentSignup) {
+    return <AgentSignupPage onBackToLogin={() => setShowAgentSignup(false)} />;
   }
+
+  if (showMemberSignup) {
+    return <MemberSignupPage onBackToLogin={() => setShowMemberSignup(false)} />;
+  }
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">
-            <Editable editId="login-title" type="text" defaultValue="IndoStreet Partner Portal" />
+            IndoStreet Partner Portal
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            <Editable editId="login-subtitle" type="text" defaultValue="Sign in to your account" />
+            Sign in to your account
           </p>
         </div>
 
@@ -58,26 +65,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </div>
         )}
 
-        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg text-sm text-gray-700">
-          <p className="font-semibold text-center text-orange-800 mb-2">Demo Accounts (password: "password")</p>
-          <ul className="space-y-1">
-            <li><strong>Admin:</strong> admin@indostreet.com</li>
-            <li><strong>Agent:</strong> agent@indostreet.com</li>
-            <li><strong>Bike Driver:</strong> driver@indostreet.com</li>
-            <li><strong>Car Driver:</strong> cardriver@indostreet.com</li>
-            <li><strong>Lorry Driver:</strong> lorrydriver@indostreet.com</li>
-            <li><strong>Jeep Tour Operator:</strong> jeep@indostreet.com</li>
-            <li><strong>Food Vendor:</strong> vendor@indostreet.com</li>
-            <li><strong>Street Shop:</strong> shop@indostreet.com</li>
-            <li><strong>Local Business:</strong> business@indostreet.com</li>
-            <li><strong>Car Rental:</strong> carrental@indostreet.com</li>
-            <li><strong>Bike Rental:</strong> bikerental@indostreet.com</li>
-            <li><strong>Bus Rental:</strong> busrental@indostreet.com</li>
-            <li><strong>Therapist:</strong> therapist@indostreet.com</li>
-            <li><strong>Spa/Salon:</strong> spa@indostreet.com</li>
-            <li><strong>Hotel Partner:</strong> hotel@indostreet.com</li>
-            <li><strong>Villa Partner:</strong> villa@indostreet.com</li>
-          </ul>
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <p className="font-semibold text-center mb-2">Welcome!</p>
+          <p>This portal is now fully integrated with Supabase. All user accounts must be created and managed within the Supabase dashboard's Authentication section.</p>
+          <p className="mt-2">The previous mock/demo accounts have been removed.</p>
         </div>
         
         <form className="space-y-6" onSubmit={handleLogin}>
@@ -120,13 +111,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               disabled={loading || !!supabaseInitializationError}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
             >
-              {loading ? 'Signing in...' : <Editable editId="login-button" type="text" defaultValue="Sign in" as="span" />}
+              {loading ? 'Signing in...' : "Sign in"}
             </button>
           </div>
         </form>
-         <div className="text-center text-sm">
-            <button onClick={() => setShowSignup(true)} className="font-medium text-orange-600 hover:text-orange-500">
+         <div className="text-center text-sm flex justify-center items-center">
+            <button onClick={() => setShowAgentSignup(true)} className="font-medium text-orange-600 hover:text-orange-500">
                 Register as an Agent
+            </button>
+            <span className="text-gray-400 mx-2">|</span>
+            <button onClick={() => setShowMemberSignup(true)} className="font-medium text-blue-600 hover:text-blue-500">
+                Create a Member Account
             </button>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { XIcon } from '../shared/Icons';
 interface ItemEditorModalProps {
   item: VendorItem | null;
   onClose: () => void;
-  onSave: (itemData: Omit<VendorItem, 'id' | 'vendorId'>) => void;
+  onSave: (itemData: Omit<VendorItem, 'id' | 'vendorId'>, newImageFile?: File) => void;
 }
 
 const ItemEditorModal: React.FC<ItemEditorModalProps> = ({ item, onClose, onSave }) => {
@@ -13,6 +13,8 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({ item, onClose, onSave
     const [price, setPrice] = useState(0);
     const [imageUrl, setImageUrl] = useState('');
     const [isAvailable, setIsAvailable] = useState(true);
+    const [imageFile, setImageFile] = useState<File | undefined>();
+    const [imagePreview, setImagePreview] = useState<string>('');
 
     useEffect(() => {
         if (item) {
@@ -20,12 +22,21 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({ item, onClose, onSave
             setPrice(item.price);
             setImageUrl(item.imageUrl);
             setIsAvailable(item.isAvailable);
+            setImagePreview(item.imageUrl);
         }
     }, [item]);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ name, price, imageUrl, isAvailable });
+        onSave({ name, price, imageUrl, isAvailable }, imageFile);
     };
 
     return (
@@ -48,8 +59,14 @@ const ItemEditorModal: React.FC<ItemEditorModalProps> = ({ item, onClose, onSave
                             <input type="number" id="item-price" value={price} onChange={(e) => setPrice(Number(e.target.value))} required min="0" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
                         </div>
                         <div>
-                            <label htmlFor="item-image-url" className="block text-sm font-medium text-gray-700">Image URL</label>
-                            <input type="url" id="item-image-url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
+                            <label className="block text-sm font-medium text-gray-700">Image</label>
+                            <div className="mt-1 flex items-center space-x-4">
+                                {imagePreview && <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-md object-cover" />}
+                                <label htmlFor="image-upload" className="cursor-pointer text-sm font-medium text-orange-600 hover:text-orange-700">
+                                    {imagePreview ? 'Change' : 'Upload Image'}
+                                    <input id="image-upload" type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2">

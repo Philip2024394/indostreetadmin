@@ -20,10 +20,11 @@ import { Editable } from '../shared/Editable';
 import MassagePartnerDetails from './MassagePartnerDetails';
 import MassageDirectoryManagementPage from './MassageDirectoryManagementPage';
 import FoodDirectoryManagementPage from './FoodDirectoryManagementPage';
+import SupabaseStatusPage from './SupabaseStatusPage';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
-  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon, IdCardIcon
+  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon, IdCardIcon, ExclamationCircleIcon, ClipboardListIcon
 } from '../shared/Icons';
 
 interface AdminDashboardProps {
@@ -31,7 +32,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agentApplications' | 'foodDirectory';
+type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -64,9 +65,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
   const [view, setView] = useState<AdminView>('applications');
   const [searchTerm, setSearchTerm] = useState('');
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
         const [statsRes, appsRes, partnersRes] = await Promise.all([
             api.getAdminStats(),
@@ -76,9 +79,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         setStats(statsRes);
         setApplications(appsRes);
         setPartners(partnersRes);
-    } catch (error) {
-        console.error("Failed to fetch admin data:", error);
-        // Here you might want to set an error state to show in the UI
+    } catch (err: any) {
+        console.error("Failed to fetch admin data:", err.message || err);
+        setError(`Failed to load dashboard data. This is likely a permission issue. Please ensure your Supabase RLS policies allow authenticated users to read the required tables. (Error: ${err.message})`);
     } finally {
         setLoading(false);
     }
@@ -150,11 +153,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         case 'analytics': return 'Business Analytics';
         case 'tours': return 'Tour Destination Management';
         case 'siteContent': return 'Site Content Management';
+        case 'supabaseStatus': return 'Supabase Integration Status';
         default: return 'Admin Dashboard';
     }
   };
 
   const renderContent = () => {
+    if (loading) {
+        return <div className="text-center p-10">Loading dashboard...</div>;
+    }
+    if (error) {
+        return (
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+                <div className="flex">
+                    <div className="flex-shrink-0">
+                        <ExclamationCircleIcon className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                        <h3 className="text-sm font-medium text-red-800">Error Loading Data</h3>
+                        <div className="mt-2 text-sm text-red-700">
+                            <p>{error}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
     if (selectedPartner) {
         const isMassagePartner = selectedPartner.partnerType === PartnerType.MassageTherapist || selectedPartner.partnerType === PartnerType.MassagePlace;
         if (isMassagePartner) {
@@ -183,8 +207,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <TourManagementPage />;
         case 'siteContent':
             return <SiteContentPage />;
+        case 'supabaseStatus':
+            return <SupabaseStatusPage />;
         case 'members':
-            return <MemberManagementPage />;
+            return <MemberManagementPage user={user} />;
         case 'agents':
             return <AgentManagementPage />;
         case 'applications':
@@ -194,38 +220,56 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                  <>
                   {/* Stats Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-                    <StatCard 
-                        title={<Editable editId="stat-total-partners-title" type="text" defaultValue="Total Partners" />} 
-                        value={stats?.totalPartners ?? '...'} 
-                        icon={<Editable editId="stat-total-partners-icon" type="asset" defaultValue={<UserGroupIcon className="w-6 h-6"/>} />} 
-                    />
-                    <StatCard 
-                        title={<Editable editId="stat-pending-apps-title" type="text" defaultValue="Pending Partner Apps" />} 
-                        value={stats?.pendingApplications ?? '...'} 
-                        icon={<Editable editId="stat-pending-apps-icon" type="asset" defaultValue={<DocumentTextIcon className="w-6 h-6"/>} />} 
-                    />
-                     <StatCard 
-                        title={<Editable editId="stat-pending-agent-apps-title" type="text" defaultValue="Pending Agent Apps" />} 
-                        value={stats?.pendingAgentApplications ?? '...'} 
-                        icon={<Editable editId="stat-pending-agent-apps-icon" type="asset" defaultValue={<IdCardIcon className="w-6 h-6"/>} />} 
-                    />
-                    <StatCard 
-                        title={<Editable editId="stat-pending-agent-signups-title" type="text" defaultValue="Agent Partner Signups" />} 
-                        value={stats?.pendingAgentSignups ?? '...'} 
-                        icon={<Editable editId="stat-pending-agent-signups-icon" type="asset" defaultValue={<BriefcaseIcon className="w-6 h-6"/>} />} 
-                    />
-                     <StatCard 
-                        title={<Editable editId="stat-pending-renewals-title" type="text" defaultValue="Pending Renewals" />} 
-                        value={stats?.pendingRenewals ?? '...'} 
-                        icon={<Editable editId="stat-pending-renewals-icon" type="asset" defaultValue={<BanknotesIcon className="w-6 h-6"/>} />} 
-                    />
-                    <StatCard 
-                        title={<Editable editId="stat-active-vendors-title" type="text" defaultValue="Active Partners" />} 
-                        value={(stats?.activeDrivers ?? 0) + (stats?.activeVendorsAndBusinesses ?? 0)} 
-                        icon={<Editable editId="stat-active-vendors-icon" type="asset" defaultValue={<CheckCircleIcon className="w-6 h-6"/>} />} 
-                    />
+                    <StatCard title="Total Partners" value={stats?.totalPartners ?? '...'} icon={<UserGroupIcon className="w-6 h-6"/>} />
+                    <StatCard title="Pending Partner Apps" value={stats?.pendingApplications ?? '...'} icon={<DocumentTextIcon className="w-6 h-6"/>} />
+                    <StatCard title="Pending Agent Apps" value={stats?.pendingAgentApplications ?? '...'} icon={<IdCardIcon className="w-6 h-6"/>} />
+                    <StatCard title="Agent Partner Signups" value={stats?.pendingAgentSignups ?? '...'} icon={<BriefcaseIcon className="w-6 h-6"/>} />
+                    <StatCard title="Pending Renewals" value={stats?.pendingRenewals ?? '...'} icon={<BanknotesIcon className="w-6 h-6"/>} />
+                    <StatCard title="Active Partners" value={(stats?.activeDrivers ?? 0) + (stats?.activeVendorsAndBusinesses ?? 0)} icon={<CheckCircleIcon className="w-6 h-6"/>} />
                   </div>
 
+                  {/* Development Priorities Section */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Top Priority Panel */}
+                    <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-6 shadow-md">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                        </div>
+                        <div className="ml-4">
+                          <h3 className="text-lg font-bold text-green-800">Authentication Complete</h3>
+                          <div className="mt-2 text-sm text-green-700">
+                            <p>
+                              The application is now fully integrated with Supabase Authentication, replacing the previous mock login system.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Next Steps Panel */}
+                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 shadow-md">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <ClipboardListIcon className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <div className="ml-4">
+                          <h3 className="text-lg font-bold text-blue-800">Architectural Upgrades</h3>
+                          <div className="mt-2 text-sm text-blue-700">
+                            <ul className="list-disc pl-5 space-y-2">
+                              <li>
+                                Image handling has been migrated from base64 strings to Supabase Storage for better performance and scalability.
+                              </li>
+                              <li>
+                                All polling mechanisms have been replaced with Supabase Realtime for instant data updates.
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   {/* Main Content Area */}
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
                     <div className="p-4 sm:p-6 border-b">
@@ -268,7 +312,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                         </div>
                         {/* Applications Table */}
                         <div className="overflow-x-auto">
-                          {loading ? <p className="p-6 text-center text-gray-500">Loading...</p> : (
+                          
                             <table className="min-w-full divide-y divide-gray-200">
                               <thead className="bg-gray-50">
                                 <tr>
@@ -292,7 +336,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                 )) : <tr><td colSpan={4} className="text-center py-10 px-6 text-gray-500">No pending applications in this category.</td></tr>}
                               </tbody>
                             </table>
-                          )}
+                          
                         </div>
                       </div>
                     )}
@@ -320,7 +364,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                           </button>
                         </div>
                          <div className="overflow-x-auto">
-                          {loading ? <p className="p-6 text-center text-gray-500">Loading partners...</p> : (
+                          
                             <table className="min-w-full divide-y divide-gray-200">
                               <thead className="bg-gray-50">
                                 <tr>
@@ -353,7 +397,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                                 )) : <tr><td colSpan={5} className="text-center py-10 px-6 text-gray-500">No partners found.</td></tr>}
                               </tbody>
                             </table>
-                          )}
+                          
                         </div>
                       </div>
                     )}

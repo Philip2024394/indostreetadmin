@@ -6,9 +6,9 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, ServerIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
@@ -34,22 +34,29 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
   useEffect(() => {
     if (user.role === Role.Admin || user.role === Role.Agent) return; // No notifications for admin/agent
 
-    const fetchMessages = async () => {
-        try {
-            const data = await api.getMessages();
-            if (data) {
-                const myMessages = data.filter(m => m.recipientId === user.id || m.recipientId === 'all');
-                const myUnread = myMessages.filter(m => !m.readBy.includes(user.id));
-                setUnreadMessages(myUnread);
-            }
-        } catch (error) {
-            console.error("Failed to fetch messages:", error);
+    // Initial fetch
+    api.getMessages().then(data => {
+        if (data) {
+            const myMessages = data.filter(m => m.recipientId === user.id || m.recipientId === 'all');
+            const myUnread = myMessages.filter(m => !m.readBy.includes(user.id));
+            setUnreadMessages(myUnread);
         }
+    }).catch(error => console.error("Failed to fetch initial messages:", error));
+    
+    // Realtime subscription
+    const channel = api.supabase.channel('public:messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+            const newMessage = payload.new as AdminMessage;
+            if ((newMessage.recipientId === user.id || newMessage.recipientId === 'all') && !newMessage.readBy.includes(user.id)) {
+                setUnreadMessages(prev => [newMessage, ...prev]);
+            }
+        })
+        .subscribe();
+        
+    // Cleanup
+    return () => {
+        api.supabase.removeChannel(channel);
     };
-
-    fetchMessages();
-    const interval = setInterval(fetchMessages, 10000); // Poll every 10s
-    return () => clearInterval(interval);
   }, [user.id, user.role]);
 
   const handleOpenMessages = () => {
@@ -93,60 +100,66 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
           <>
               <button onClick={() => handleViewClick('applications')} className={`${navLinkClasses} ${currentView === 'applications' ? activeNavLinkClasses : ''}`}>
                 <DocumentTextIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-applications" type="text" defaultValue="Partner Applications" as="span" />
+                Partner Applications
               </button>
               <button onClick={() => handleViewClick('agentApplications')} className={`${navLinkClasses} ${currentView === 'agentApplications' ? activeNavLinkClasses : ''}`}>
                   <IdCardIcon className="w-5 h-5 mr-3" />
-                  <Editable editId="layout-nav-agent-applications" type="text" defaultValue="Agent Applications" as="span" />
+                  Agent Applications
               </button>
                <button onClick={() => handleViewClick('partners')} className={`${navLinkClasses} ${currentView === 'partners' ? activeNavLinkClasses : ''}`}>
                 <UserGroupIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-partners" type="text" defaultValue="Partners" as="span" />
+                Partners
               </button>
               <button onClick={() => handleViewClick('agents')} className={`${navLinkClasses} ${currentView === 'agents' ? activeNavLinkClasses : ''}`}>
                 <BriefcaseIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-agents" type="text" defaultValue="Agents" as="span" />
+                Agents
               </button>
               <button onClick={() => handleViewClick('members')} className={`${navLinkClasses} ${currentView === 'members' ? activeNavLinkClasses : ''}`}>
                 <DevicePhoneMobileIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-members" type="text" defaultValue="Members" as="span" />
+                Members
               </button>
               <button onClick={() => handleViewClick('fleet')} className={`${navLinkClasses} ${currentView === 'fleet' ? activeNavLinkClasses : ''}`}>
                 <RealCarIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-fleet" type="text" defaultValue="Fleet Management" as="span" />
+                Fleet Management
               </button>
               <button onClick={() => handleViewClick('foodDirectory')} className={`${navLinkClasses} ${currentView === 'foodDirectory' ? activeNavLinkClasses : ''}`}>
                 <FoodIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-food-directory" type="text" defaultValue="Food Directory" as="span" />
+                Food Directory
               </button>
               <button onClick={() => handleViewClick('massage')} className={`${navLinkClasses} ${currentView === 'massage' ? activeNavLinkClasses : ''}`}>
                   <SparklesIcon className="w-5 h-5 mr-3" />
-                  <Editable editId="layout-nav-massage" type="text" defaultValue="Massage & Wellness" as="span" />
+                  Massage & Wellness
               </button>
               <button onClick={() => handleViewClick('massageDirectory')} className={`${navLinkClasses} ${currentView === 'massageDirectory' ? activeNavLinkClasses : ''}`}>
                   <BookOpenIcon className="w-5 h-5 mr-3" />
-                  <Editable editId="layout-nav-massage-directory" type="text" defaultValue="Massage Directory" as="span" />
+                  Massage Directory
               </button>
               <button onClick={() => handleViewClick('renewals')} className={`${navLinkClasses} ${currentView === 'renewals' ? activeNavLinkClasses : ''}`}>
                 <BanknotesIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-renewals" type="text" defaultValue="Renewals" as="span" />
+                Renewals
               </button>
               <button onClick={() => handleViewClick('financials')} className={`${navLinkClasses} ${currentView === 'financials' ? activeNavLinkClasses : ''}`}>
                 <DollarSignIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-financials" type="text" defaultValue="Financials" as="span" />
+                Financials
               </button>
               <button onClick={() => handleViewClick('analytics')} className={`${navLinkClasses} ${currentView === 'analytics' ? activeNavLinkClasses : ''}`}>
                 <ChartBarIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-analytics" type="text" defaultValue="Analytics" as="span" />
+                Analytics
               </button>
               <button onClick={() => handleViewClick('tours')} className={`${navLinkClasses} ${currentView === 'tours' ? activeNavLinkClasses : ''}`}>
                 <LandmarkIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-tours" type="text" defaultValue="Tours" as="span" />
+                Tours
               </button>
               <button onClick={() => handleViewClick('siteContent')} className={`${navLinkClasses} ${currentView === 'siteContent' ? activeNavLinkClasses : ''}`}>
                 <ClipboardListIcon className="w-5 h-5 mr-3" />
-                <Editable editId="layout-nav-site-content" type="text" defaultValue="Site Content" as="span" />
+                Site Content
               </button>
+              <div className="pt-4 mt-4 border-t border-gray-800">
+                <button onClick={() => handleViewClick('supabaseStatus')} className={`${navLinkClasses} ${currentView === 'supabaseStatus' ? activeNavLinkClasses : ''}`}>
+                  <ServerIcon className="w-5 h-5 mr-3" />
+                  Supabase Status
+                </button>
+              </div>
           </>
       );
     }

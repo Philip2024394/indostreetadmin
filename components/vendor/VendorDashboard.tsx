@@ -68,12 +68,22 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
     setIsModalOpen(false);
   };
 
-  const handleSaveItem = async (itemData: Omit<VendorItem, 'id' | 'vendorId'>) => {
+  const handleSaveItem = async (itemData: Omit<VendorItem, 'id' | 'vendorId'>, newImageFile?: File) => {
     try {
+        let imageUrl = itemData.imageUrl;
+        if (newImageFile) {
+            if (editingItem?.imageUrl) {
+                // await api.deleteFileByUrl('items', editingItem.imageUrl);
+            }
+            imageUrl = await api.uploadFile('items', newImageFile);
+        }
+
+        const dataToSave = { ...itemData, imageUrl };
+
         if (editingItem) { // Update
-          await api.updateVendorItem(editingItem.id, itemData);
+          await api.updateVendorItem(editingItem.id, dataToSave);
         } else { // Create
-          await api.createVendorItem(user.id, itemData);
+          await api.createVendorItem(user.id, dataToSave);
         }
         fetchData(); // Refresh list
     } catch (error) {
@@ -137,19 +147,10 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
                         {items.map(item => (
                             <div key={item.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
                                 <div className="flex items-center space-x-4">
-                                    <Editable 
-                                      editId={`item-${item.id}-image`} 
-                                      type="asset" 
-                                      defaultValue={<img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-md object-cover" />}
-                                      className="w-16 h-16"
-                                    />
+                                    <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-md object-cover" />
                                     <div>
-                                        <p className="font-semibold text-gray-800">
-                                            <Editable editId={`item-${item.id}-name`} type="text" defaultValue={item.name} />
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                             <Editable editId={`item-${item.id}-price`} type="number" defaultValue={item.price} prefix="Rp " />
-                                        </p>
+                                        <p className="font-semibold text-gray-800">{item.name}</p>
+                                        <p className="text-sm text-gray-600">Rp {item.price.toLocaleString('id-ID')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-4">

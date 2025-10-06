@@ -4,6 +4,7 @@ export enum Role {
   Vendor = 'vendor',
   LodgingPartner = 'lodging',
   Agent = 'agent',
+  Member = 'member',
 }
 
 export enum PartnerType {
@@ -53,7 +54,7 @@ export interface RentalDetails {
 
 // --- New types for Lodging Management ---
 export interface RoomPhoto {
-  url: string; // base64 or URL
+  url: string; // URL
   name: string; // caption
 }
 
@@ -93,8 +94,8 @@ export interface Room {
   vendorId: string;
   name: string;
   pricePerNight: number;
-  mainImage: string; // base64 or URL
-  thumbnails: string[]; // array of 3 base64/URLs
+  mainImage: string; // URL
+  thumbnails: string[]; // array of 3 URLs
   isAvailable: boolean;
   amenities: RoomAmenities;
   specialOffer: {
@@ -112,7 +113,7 @@ export interface MassagePrice {
 
 export interface GalleryPhoto {
   id: string;
-  url: string; // base64 or URL
+  url: string; // URL
   name: string; // caption
 }
 
@@ -178,7 +179,7 @@ export interface Partner extends User {
   privateInfo?: {
     legalName?: string;
     personalAddress?: string;
-    idCardImage?: string; // base64
+    idCardImage?: string; // URL
     experienceYears?: number;
     age?: number;
     gender?: 'male' | 'female' | 'other';
@@ -309,7 +310,7 @@ export interface RenewalSubmission {
   selectedPackage: 3 | 6 | 12; // months
   transactionNumber: string;
   paymentMethod: PaymentMethod;
-  receiptImage: string; // base64 string
+  receiptImage: string; // URL
   status: 'pending' | 'approved' | 'rejected';
   amountPaid: number;
   approvedAt?: string; // ISO date string
@@ -379,6 +380,7 @@ export interface Member {
   id: string;
   whatsappNumber: string;
   name?: string;
+  email: string;
   lastKnownLocation: string;
   createdAt: string; // ISO Date string
   status: 'active' | 'suspended' | 'warned';
@@ -414,8 +416,8 @@ export interface AgentApplication {
   equipment: ('laptop' | 'phone')[];
   shirtSize: 'S' | 'M' | 'L' | 'XL' | 'XXL';
   policeRecord: boolean;
-  idCardImage: string; // base64
-  profilePhotoImage: string; // base64
+  idCardImage: string; // URL
+  profilePhotoImage: string; // URL
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string; // ISO Date string
 }

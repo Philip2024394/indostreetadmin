@@ -39,7 +39,6 @@ const isToday = (date: Date) => {
 // --- Dashboard Home Page ---
 const DashboardHome: React.FC<{ partner: Partner | null, isOnline: boolean, onOnlineChange: (isOnline: boolean) => void, transactions: Transaction[] }> = ({ partner, isOnline, onOnlineChange, transactions }) => {
     const [requests, setRequests] = useState<RideRequest[]>([]);
-    const requestInterval = useRef<number | null>(null);
 
     const todayStats = useMemo(() => {
         const todayTx = transactions.filter(tx => isToday(new Date(tx.date)) && tx.status === 'completed');
@@ -50,26 +49,27 @@ const DashboardHome: React.FC<{ partner: Partner | null, isOnline: boolean, onOn
         return { earnings, trips, hoursOnline };
     }, [transactions, isOnline, partner]);
 
-    const fetchNewRequest = useCallback(async () => {
-        try {
-            const data = await api.getRideRequests();
-            if (data && data.length > 0) {
-              const newRequest = { ...data[0], id: `ride-${Date.now()}` };
-              setRequests(prev => [newRequest, ...prev].slice(0, 5));
-            }
-        } catch (error) { console.error("Failed to fetch ride requests:", error); }
-    }, []);
-
     useEffect(() => {
-        if (isOnline) {
-          fetchNewRequest();
-          requestInterval.current = setInterval(fetchNewRequest, 7000);
-        } else {
-          if (requestInterval.current) clearInterval(requestInterval.current);
-          setRequests([]);
+        if (!isOnline) {
+            setRequests([]);
+            return;
         }
-        return () => { if (requestInterval.current) clearInterval(requestInterval.current); };
-    }, [isOnline, fetchNewRequest]);
+        
+        console.warn("Subscribing to hypothetical 'ride_requests' table. Ensure this table exists with RLS enabled for authenticated users to SELECT.");
+    
+        const channel = api.supabase
+            .channel('public:ride_requests')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ride_requests' }, (payload) => {
+                const newRequest = payload.new as RideRequest;
+                // In a real app, you might add filtering logic here based on driver location, etc.
+                setRequests(prev => [newRequest, ...prev].slice(0, 5));
+            })
+            .subscribe();
+    
+        return () => {
+            api.supabase.removeChannel(channel);
+        };
+    }, [isOnline]);
 
     const handleAcceptReject = (id: string) => {
         setRequests(prev => prev.filter(r => r.id !== id));

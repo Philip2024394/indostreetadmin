@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Partner, PaymentMethods, PaymentMethod, PartnerType } from '../../types';
 import * as api from '../../services/supabase';
 import { useContent } from '../../contexts/ContentContext';
-import { Editable, blobToBase64 } from './Editable';
+import { Editable } from './Editable';
 import { XIcon, ChevronLeftIcon } from './Icons';
 
 interface RenewalModalProps {
@@ -18,7 +18,7 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
     const [selectedPackage, setSelectedPackage] = useState<3 | 6 | 12>(3);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethods[0]);
     const [transactionNumber, setTransactionNumber] = useState('');
-    const [receiptImage, setReceiptImage] = useState<string | null>(null);
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
     const [receiptFileName, setReceiptFileName] = useState('');
     
     const [step, setStep] = useState<'form' | 'confirm' | 'submitted'>('form');
@@ -32,23 +32,17 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
         12: content.numbers[`membership-price-${slug}-12mo`] || 500000,
     };
 
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            try {
-                const base64 = await blobToBase64(file);
-                setReceiptImage(base64);
-                setReceiptFileName(file.name);
-            } catch (err) {
-                console.error("Failed to convert file to base64", err);
-                setError("Could not read the selected file. Please try another image.");
-            }
+            setReceiptFile(file);
+            setReceiptFileName(file.name);
         }
     };
     
     const handleProceedToConfirm = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!receiptImage) {
+        if (!receiptFile) {
             setError('Please upload a receipt screenshot.');
             return;
         }
@@ -62,12 +56,14 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
     };
 
     const handleConfirmSubmit = async () => {
-        if (!receiptImage) return; // Should not happen due to previous check
+        if (!receiptFile) return;
         
         setStatus('submitting');
         setError('');
 
         try {
+            const imageUrl = await api.uploadFile('receipts', receiptFile);
+
             await api.createRenewalSubmission({
                 partnerId: partner.id,
                 partnerName: partner.profile.name || partner.profile.shopName || partner.email,
@@ -75,7 +71,7 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
                 amountPaid: prices[selectedPackage],
                 transactionNumber,
                 paymentMethod,
-                receiptImage,
+                receiptImage: imageUrl,
             });
             setStatus('idle');
             setStep('submitted');

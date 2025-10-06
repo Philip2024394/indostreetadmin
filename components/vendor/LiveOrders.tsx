@@ -30,10 +30,30 @@ const LiveOrders: React.FC<LiveOrdersProps> = ({ user }) => {
     }, [user.id]);
 
     useEffect(() => {
-        fetchOrders();
-        const interval = setInterval(fetchOrders, 10000); // Poll for new orders
-        return () => clearInterval(interval);
-    }, [fetchOrders]);
+        fetchOrders(); // Initial fetch
+
+        const channel = api.supabase
+            .channel(`public:transactions:partnerId=eq.${user.id}`)
+            .on('postgres_changes', 
+                { 
+                    event: 'INSERT', 
+                    schema: 'public', 
+                    table: 'transactions',
+                    filter: `partnerId=eq.${user.id}`
+                }, 
+                (payload) => {
+                    const newOrder = payload.new as Transaction;
+                    if (newOrder.type === 'Order' && newOrder.status === 'in_progress') {
+                        setOrders(prev => [newOrder, ...prev].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            api.supabase.removeChannel(channel);
+        };
+    }, [fetchOrders, user.id]);
 
     const handleUpdateStatus = async (orderId: string, status: 'completed' | 'cancelled') => {
         setOrders(prev => prev.filter(o => o.id !== orderId)); // Optimistic update

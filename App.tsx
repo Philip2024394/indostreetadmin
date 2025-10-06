@@ -9,6 +9,7 @@ import LodgingDashboard from './components/lodging/LodgingDashboard';
 import JeepDashboard from './components/jeep/JeepDashboard';
 import AgentDashboard from './components/agent/AgentDashboard';
 import BusDashboard from './components/bus/BusDashboard';
+import MemberDashboard from './components/member/MemberDashboard';
 import * as api from './services/supabase';
 import { ContentProvider } from './contexts/ContentContext';
 
@@ -18,19 +19,22 @@ const App: React.FC = () => {
 
   // Check for an active session on initial load and listen for auth changes
   useEffect(() => {
-    setLoading(true);
-    
-    // Check initial session
-    api.checkSession().then(user => {
-      setUser(user);
+    const checkUserSession = async () => {
+      setLoading(true);
+      const currentUser = await api.checkSession();
+      setUser(currentUser);
       setLoading(false);
-    });
+    };
+
+    checkUserSession();
 
     // Listen for auth state changes (login, logout)
-    const subscription = api.supabase?.auth.onAuthStateChange(async (event, session) => {
-        const currentUser = await api.checkSession();
-        setUser(currentUser);
-    })?.data?.subscription;
+    const { data: { subscription } } = api.supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+            const currentUser = await api.checkSession();
+            setUser(currentUser);
+        }
+    });
 
     return () => {
         subscription?.unsubscribe();
@@ -41,8 +45,8 @@ const App: React.FC = () => {
     setUser(loggedInUser);
   };
 
-  const handleLogout = () => {
-    api.logout();
+  const handleLogout = async () => {
+    await api.logout();
     setUser(null);
   };
 
@@ -84,6 +88,8 @@ const App: React.FC = () => {
         return <VendorDashboard user={user} onLogout={handleLogout} />;
       case Role.LodgingPartner:
         return <LodgingDashboard user={user} onLogout={handleLogout} />;
+      case Role.Member:
+        return <MemberDashboard user={user} onLogout={handleLogout} />;
       default:
         // In a real app, you might want a more robust fallback or error page
         return <p>Unknown user role. Please contact support.</p>;
