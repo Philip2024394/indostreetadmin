@@ -1,4 +1,5 @@
 
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   User,
@@ -500,6 +501,41 @@ export const submitAgentApplication = async (applicationData: Omit<AgentApplicat
 export const getMassageTypes = async (): Promise<MassageType[]> => {
     const { data, error } = await supabase.from('massage_types').select('*');
     if (error) throw error;
+
+    if (!data || data.length === 0) {
+        console.warn("No massage types found in DB, returning mock data.");
+        return [
+            {
+                id: 'mock-1',
+                name: 'Balinese Massage',
+                description: 'A full-body, deep-tissue, holistic treatment using a combination of gentle stretches, acupressure, reflexology, and aromatherapy to stimulate the flow of blood, oxygen and "qi" (energy) around your body.',
+                imageUrl: 'https://placehold.co/300x200/f97316/FFFFFF/png?text=Balinese',
+                category: MassageTypeCategory.TraditionalIndonesian,
+            },
+            {
+                id: 'mock-2',
+                name: 'Swedish Massage',
+                description: 'Involves long, kneading strokes, as well as light, rhythmic, tapping strokes, on topmost layers of muscles. This is also combined with movement of the joints. By relieving muscle tension, Swedish therapy can be both relaxing and energizing.',
+                imageUrl: 'https://placehold.co/300x200/10b981/FFFFFF/png?text=Swedish',
+                category: MassageTypeCategory.Western,
+            },
+            {
+                id: 'mock-3',
+                name: 'Thai Massage',
+                description: 'An ancient healing system combining acupressure, Indian Ayurvedic principles, and assisted yoga postures. The massage generally follows designated lines ("sen") in the body.',
+                imageUrl: 'https://placehold.co/300x200/3b82f6/FFFFFF/png?text=Thai',
+                category: MassageTypeCategory.EasternIndonesian,
+            },
+            {
+                id: 'mock-4',
+                name: 'Hot Stone Massage',
+                description: 'A specialty massage where the therapist uses smooth, heated stones as an extension of their own hands, or by placing them on the body. The heat can be both deeply relaxing and help warm up tight muscles.',
+                imageUrl: 'https://placehold.co/300x200/8b5cf6/FFFFFF/png?text=Hot+Stone',
+                category: MassageTypeCategory.Specialty,
+            },
+        ];
+    }
+
     return data || [];
 };
 
