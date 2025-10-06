@@ -170,7 +170,14 @@ export const updateApplication = async (id: string, status: 'approved' | 'reject
 
 // --- Partners API ---
 export const getPartner = async (id: string): Promise<Partner> => {
-    // Similar to checkSession, check both tables
+    // MOCK DATA CHECK: First, check mock users for a match.
+    const mockUser = Object.values(mockUsers).find(u => u.id === id);
+    if (mockUser) {
+        console.warn(`Returning MOCK partner data for id: ${id}`);
+        return mockUser as Partner;
+    }
+
+    // LIVE API CALL: If not found in mock, proceed with live Supabase call (original logic)
     const { data: partnerData } = await supabase.from('partners').select('*').eq('id', id).single();
     if (partnerData) return partnerData as Partner;
     
