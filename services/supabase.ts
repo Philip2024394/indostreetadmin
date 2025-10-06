@@ -129,24 +129,44 @@ export const checkSession = async (): Promise<User | null> => {
 
 // --- Admin API ---
 export const getAdminStats = async (): Promise<AdminStats> => {
-    // This runs multiple queries. For performance on a large scale,
-    // you might create a database function (RPC) to get all stats in one call.
-    const { count: totalPartners } = await supabase.from('partners').select('*', { count: 'exact', head: true });
-    const { count: pendingApplications } = await supabase.from('applications').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-    const { count: activeDrivers } = await supabase.from('partners').select('*', { count: 'exact', head: true }).eq('role', Role.Driver).eq('status', 'active');
-    const { count: activeVendors } = await supabase.from('partners').select('*', { count: 'exact', head: true }).in('role', [Role.Vendor, Role.LodgingPartner]).eq('status', 'active');
-    const { count: pendingRenewals } = await supabase.from('renewal_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-    const { count: pendingAgentSignups } = await supabase.from('prospects').select('*', { count: 'exact', head: true }).eq('status', 'pending_approval');
-    const { count: pendingAgentApplications } = await supabase.from('agent_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    // This runs multiple queries in parallel for better performance.
+    const queries = [
+        supabase.from('partners').select('*', { count: 'exact', head: true }),
+        supabase.from('applications').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('partners').select('*', { count: 'exact', head: true }).eq('role', Role.Driver).eq('status', 'active'),
+        supabase.from('partners').select('*', { count: 'exact', head: true }).in('role', [Role.Vendor, Role.LodgingPartner]).eq('status', 'active'),
+        supabase.from('renewal_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('prospects').select('*', { count: 'exact', head: true }).eq('status', 'pending_approval'),
+        supabase.from('agent_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+    ];
+
+    const results = await Promise.all(queries);
+
+    for (const result of results) {
+        if (result.error) {
+            console.error('Error fetching admin stats:', result.error);
+            throw result.error;
+        }
+    }
+
+    const [
+        totalPartnersResult,
+        pendingApplicationsResult,
+        activeDriversResult,
+        activeVendorsResult,
+        pendingRenewalsResult,
+        pendingAgentSignupsResult,
+        pendingAgentApplicationsResult
+    ] = results;
 
     return {
-        totalPartners: totalPartners || 0,
-        pendingApplications: pendingApplications || 0,
-        activeDrivers: activeDrivers || 0,
-        activeVendorsAndBusinesses: activeVendors || 0,
-        pendingRenewals: pendingRenewals || 0,
-        pendingAgentSignups: pendingAgentSignups || 0,
-        pendingAgentApplications: pendingAgentApplications || 0,
+        totalPartners: totalPartnersResult.count || 0,
+        pendingApplications: pendingApplicationsResult.count || 0,
+        activeDrivers: activeDriversResult.count || 0,
+        activeVendorsAndBusinesses: activeVendorsResult.count || 0,
+        pendingRenewals: pendingRenewalsResult.count || 0,
+        pendingAgentSignups: pendingAgentSignupsResult.count || 0,
+        pendingAgentApplications: pendingAgentApplicationsResult.count || 0,
     };
 };
 
