@@ -60,7 +60,7 @@ const MessagesModal: React.FC<MessagesModalProps> = ({ user, onClose }) => {
             <p className="text-center text-gray-500 py-8">You have no messages.</p>
           )}
         </div>
-        <div className="p-4 bg-gray-50 border-t text-center">
+        <div className="p-4 border-t text-center">
             <button onClick={onClose} className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
                 Close
             </button>

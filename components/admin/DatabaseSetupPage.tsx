@@ -6,12 +6,21 @@ const DatabaseSetupPage: React.FC = () => {
 -- 1. Enable Row Level Security
 ALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;
 
--- 2. Create/update Policies. This script is now idempotent.
-DROP POLICY IF EXISTS "Allow all access to authenticated users" ON public.${tableName};
-CREATE POLICY "Allow all access to authenticated users" ON public.${tableName} FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- 2. Create/update a single, permissive policy for development.
+-- This script is idempotent (safe to run multiple times).
+-- WARNING: This policy is wide open for development to support the "live admin" login bypass.
+-- It allows ANY user (anonymous or logged-in) to perform any action.
+-- For production, you MUST restrict this for a production environment.
 
+-- Drop old policies to avoid conflicts
+DROP POLICY IF EXISTS "Allow all access to all users" ON public.${tableName};
 DROP POLICY IF EXISTS "Enable read access for all users" ON public.${tableName};
-CREATE POLICY "Enable read access for all users" ON public.${tableName} FOR SELECT USING (true);
+
+-- Create the single permissive policy for all actions
+CREATE POLICY "Allow all access to all users" ON public.${tableName}
+FOR ALL
+USING (true)
+WITH CHECK (true);
 `;
 
     const sqlScripts = {
@@ -301,12 +310,76 @@ ${rlsAndPolicyTemplate('agent_applications')}`,
 DROP TABLE IF EXISTS public.massage_types;
 CREATE TABLE public.massage_types (
     id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    name text NOT NULL,
+    name text NOT NULL UNIQUE,
     description text NOT NULL,
     "imageUrl" text NOT NULL,
     category text NOT NULL
 );
 ${rlsAndPolicyTemplate('massage_types')}`,
+        seed_massage_types: `
+-- This script pre-populates the 'massage_types' table with a standard list of common massages.
+-- It is safe to run multiple times as it checks for existing entries before inserting.
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Pijat Tradisional (Urut)', 'A traditional Indonesian deep tissue massage using palm pressure and invigorating strokes to relieve muscle tension and improve circulation.', 'https://placehold.co/300x200/f97316/ffffff?text=Pijat', 'Traditional Indonesian Techniques'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Pijat Tradisional (Urut)');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Kerokan (Coin Rub)', 'A folk remedy using a coin to scrape the skin, believed to release "wind" from the body and alleviate cold symptoms. Often followed by a balm application.', 'https://placehold.co/300x200/f97316/ffffff?text=Kerokan', 'Traditional Indonesian Techniques'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Kerokan (Coin Rub)');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Lulur Body Scrub', 'A royal Javanese beauty ritual. A paste of turmeric, rice powder, and spices is applied to exfoliate and soften the skin, followed by a yogurt rub.', 'https://placehold.co/300x200/f97316/ffffff?text=Lulur', 'Traditional Indonesian Techniques'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Lulur Body Scrub');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Totok Wajah (Facial Acupressure)', 'A facial treatment that applies pressure to specific points on the face to improve blood flow, reduce tension, and create a natural facelift effect.', 'https://placehold.co/300x200/f97316/ffffff?text=Totok', 'Traditional Indonesian Techniques'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Totok Wajah (Facial Acupressure)');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Balinese Massage', 'A full-body treatment combining gentle stretches, acupressure, and aromatherapy oils to stimulate blood flow and induce deep relaxation.', 'https://placehold.co/300x200/ea580c/ffffff?text=Balinese', 'Eastern & Indonesian Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Balinese Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Thai Massage', 'An invigorating and dynamic massage that involves assisted yoga postures and stretching to improve flexibility, reduce tension, and boost energy.', 'https://placehold.co/300x200/ea580c/ffffff?text=Thai', 'Eastern & Indonesian Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Thai Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Shiatsu Massage', 'A Japanese finger pressure technique that uses thumbs, fingers, and palms to apply pressure to specific points, promoting energy flow and correcting imbalances.', 'https://placehold.co/300x200/ea580c/ffffff?text=Shiatsu', 'Eastern & Indonesian Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Shiatsu Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Lomi Lomi Massage', 'A traditional Hawaiian massage using long, flowing strokes with the forearms and hands, mimicking the rhythm of ocean waves to soothe and heal.', 'https://placehold.co/300x200/ea580c/ffffff?text=Lomi+Lomi', 'Eastern & Indonesian Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Lomi Lomi Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Swedish Massage', 'A classic Western massage using long, gliding strokes, kneading, and friction on the more superficial layers of muscles. Ideal for relaxation.', 'https://placehold.co/300x200/d97706/ffffff?text=Swedish', 'Western Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Swedish Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Deep Tissue Massage', 'Focuses on realigning deeper layers of muscles and connective tissue. It is especially helpful for chronically tense and contracted areas.', 'https://placehold.co/300x200/d97706/ffffff?text=Deep+Tissue', 'Western Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Deep Tissue Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Aromatherapy Massage', 'A Swedish massage therapy using essential oils derived from plants to affect your mood and alleviate pain, promoting physical and emotional well-being.', 'https://placehold.co/300x200/d97706/ffffff?text=Aromatherapy', 'Western Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Aromatherapy Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Hot Stone Massage', 'Heated, smooth stones are placed on key points of the body. The heat relaxes muscles, allowing the therapist to work deeper without intense pressure.', 'https://placehold.co/300x200/d97706/ffffff?text=Hot+Stone', 'Western Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Hot Stone Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Reflexology', 'Applying pressure to specific points on the feet, hands, and ears. These points correspond to different body organs and systems, promoting health in those areas.', 'https://placehold.co/300x200/b45309/ffffff?text=Reflexology', 'Specialty Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Reflexology');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Sports Massage', 'Specifically designed for people who are involved in physical activity. It focuses on preventing and treating injury and enhancing athletic performance.', 'https://placehold.co/300x200/b45309/ffffff?text=Sports', 'Specialty Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Sports Massage');
+
+INSERT INTO public.massage_types (name, description, "imageUrl", category)
+SELECT 'Prenatal Massage', 'A gentle massage tailored for the expectant mother''s needs. It is used to improve circulation, reduce swelling, and relieve muscle and joint pain.', 'https://placehold.co/300x200/b45309/ffffff?text=Prenatal', 'Specialty Massages'
+WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Massage');
+`,
         feedback: `
 -- Table for customer feedback
 -- WARNING: This will drop the existing table and its data.
@@ -342,7 +415,7 @@ ${rlsAndPolicyTemplate('payouts')}`
             <div className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
                 <h3 className="font-bold text-blue-800">Database Setup Guide</h3>
                  <p className="text-sm text-blue-700 mt-1">
-                    This page provides the necessary SQL scripts to create all 17 tables required for the application. The scripts now also enable Row Level Security (RLS) and apply basic security policies to resolve common setup errors.
+                    This page provides the necessary SQL scripts to create all tables required for the application. It also includes scripts for seeding initial data (like the massage directory). The scripts now enable Row Level Security (RLS) and apply basic security policies to resolve common setup errors.
                 </p>
             </div>
              <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
@@ -354,9 +427,10 @@ ${rlsAndPolicyTemplate('payouts')}`
                 </p>
             </div>
 
-            {Object.entries(sqlScripts).map(([title, sql]) => (
-                <SqlCopyBlock key={title} title={title} sql={sql} sqlId={`setup-table-${title}`} />
-            ))}
+            {Object.entries(sqlScripts).map(([key, sql]) => {
+                const title = key.replace(/_/g, ' ').replace('seed ', 'Seed Data: ');
+                return <SqlCopyBlock key={key} title={title} sql={sql} sqlId={`setup-table-${key}`} />
+            })}
         </div>
     );
 };

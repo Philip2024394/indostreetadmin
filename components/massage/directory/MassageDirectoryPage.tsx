@@ -42,7 +42,7 @@ const MassageDirectoryPage: React.FC<MassageDirectoryPageProps> = ({ onBack }) =
                 <Editable editId="massage-directory-title" type="text" defaultValue="IndoStreet Massage Directory" />
             </h2>
             <p className="text-center text-gray-500 mt-1 mb-8">
-                 <Editable editId="massage-directory-subtitle" type="text" defaultValue="A guide to help you choose the perfect massage for your needs." />
+                 <Editable editId="massage-directory-subtitle" type="text" defaultValue="A guide to help you choose the perfect massage for your needs, from international favorites to local healing traditions." />
             </p>
 
             {loading ? <p>Loading...</p> : (
@@ -85,9 +85,17 @@ const MassageCategorySection: React.FC<{ title: React.ReactNode, types: MassageT
             {types.map(type => (
                 <div key={type.id} className="md:flex md:space-x-6">
                     <img src={type.imageUrl} alt={type.name} className="w-full md:w-48 h-32 object-cover rounded-lg flex-shrink-0" />
-                    <div>
+                    <div className="flex-grow">
                         <h4 className="font-bold text-lg text-gray-800 mt-2 md:mt-0">{type.name}</h4>
                         <p className="text-sm text-gray-600 mt-1">{type.description}</p>
+                        <div className="mt-3">
+                            <button
+                                onClick={() => alert(`This would show a list of partners offering ${type.name}.`)}
+                                className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                            >
+                                Find Therapists
+                            </button>
+                        </div>
                     </div>
                 </div>
             ))}

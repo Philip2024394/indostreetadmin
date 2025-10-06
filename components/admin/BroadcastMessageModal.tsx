@@ -55,7 +55,7 @@ const BroadcastMessageModal: React.FC<BroadcastMessageModalProps> = ({ onClose }
                 disabled={isSending || isSent}
             />
             </div>
-            <div className="p-4 bg-gray-50 border-t flex justify-end">
+            <div className="p-4 border-t flex justify-end">
             <button
                 type="submit"
                 disabled={isSending || isSent || message.trim() === ''}

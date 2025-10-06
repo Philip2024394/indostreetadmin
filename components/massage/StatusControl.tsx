@@ -10,16 +10,7 @@ const StatusControl: React.FC<StatusControlProps> = ({ partner, onUpdate }) => {
     const currentStatus = partner.massageStatus || 'offline';
 
     const handleStatusChange = (status: 'online' | 'busy' | 'offline') => {
-        let finalStatus: 'online' | 'busy' | 'offline' = status;
-
-        // If therapist selects 'offline', randomly show therapist as busy status
-        if (status === 'offline') {
-            if (Math.random() < 0.5) { // 50% chance to appear busy
-                finalStatus = 'busy';
-            }
-        }
-
-        onUpdate({ massageStatus: finalStatus });
+        onUpdate({ massageStatus: status });
     };
 
     const statusConfig = {

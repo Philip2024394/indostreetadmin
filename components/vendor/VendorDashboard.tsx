@@ -73,7 +73,7 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ user, onLogout }) => 
         let imageUrl = itemData.imageUrl;
         if (newImageFile) {
             if (editingItem?.imageUrl) {
-                // await api.deleteFileByUrl('items', editingItem.imageUrl);
+                await api.deleteFileByUrl('items', editingItem.imageUrl);
             }
             imageUrl = await api.uploadFile('items', newImageFile);
         }

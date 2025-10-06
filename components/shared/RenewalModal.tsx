@@ -201,7 +201,7 @@ const RenewalModal: React.FC<RenewalModalProps> = ({ partner, onClose, onSuccess
                 {error && <p className="text-sm text-red-600 text-center">{error}</p>}
                 
                  <div className="!mt-auto">
-                    <div className="p-4 bg-gray-50 border-t flex justify-end">
+                    <div className="p-4 border-t flex justify-end">
                         <button
                             type="submit"
                             className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-orange-300"

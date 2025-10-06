@@ -717,35 +717,68 @@ export const getMassageTypes = async (): Promise<MassageType[]> => {
 };
 
 export const createMassageType = async (data: Omit<MassageType, 'id'>): Promise<MassageType> => {
-    const { data: result, error } = await supabase.from('massage_types').insert(data).select().single();
-    if (error) throw error;
-    return result;
+    const { data: results, error } = await supabase.from('massage_types').insert(data).select();
+
+    if (error) {
+        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` +
+                            (error.details ? `\nDetails: ${error.details}` : '') +
+                            (error.hint ? `\nHint: ${error.hint}` : '');
+        
+        // Add a specific hint for the most common RLS issue on INSERT.
+        if (error.message.includes('violates row-level security policy')) {
+            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing new data from being saved. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table. This will fix the security configuration.`;
+        }
+
+        console.error("Supabase insert error:", userMessage);
+        throw new Error(userMessage);
+    }
+    if (!results || results.length === 0) {
+        throw new Error(`Create failed for new Massage Type. The item was not returned after creation. This is likely a Row Level Security (RLS) issue. Please ensure your 'massage_types' table has a SELECT policy enabled for authenticated users.`);
+    }
+    return results[0];
 };
 
 export const updateMassageType = async (id: string, data: Partial<Omit<MassageType, 'id'>>): Promise<MassageType> => {
-    const { data: result, error } = await supabase
+    const { data: results, error } = await supabase
         .from('massage_types')
         .update(data)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
     if (error) {
-        // This will catch database-level errors, like constraint violations.
-        console.error("Supabase update error:", error);
-        throw error;
+        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` +
+                            (error.details ? `\nDetails: ${error.details}` : '') +
+                            (error.hint ? `\nHint: ${error.hint}` : '');
+
+        // Add a specific hint for RLS issues on UPDATE.
+        if (error.message.includes('violates row-level security policy')) {
+            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing data from being updated. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table. This will fix the security configuration.`;
+        }
+                            
+        console.error("Supabase update error:", userMessage);
+        throw new Error(userMessage);
     }
     
-    // This handles cases where the update affects 0 rows, which Supabase doesn't treat as an error.
-    // This is common with RLS policies or if the ID doesn't exist.
-    if (!result) {
+    if (!results || results.length === 0) {
         throw new Error(`Update failed for Massage Type ID: ${id}. The item was not found or you don't have permission to modify it. Please check Row Level Security (RLS) policies on the 'massage_types' table.`);
     }
 
-    return result;
+    return results[0];
 };
+
 
 export const deleteMassageType = async (id: string): Promise<void> => {
     const { error } = await supabase.from('massage_types').delete().eq('id', id);
-    if (error) throw error;
+    if (error) {
+        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` +
+                            (error.details ? `\nDetails: ${error.details}` : '') +
+                            (error.hint ? `\nHint: ${error.hint}` : '');
+
+        if (error.message.includes('violates row-level security policy')) {
+            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing data from being deleted. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table to fix the security configuration.`;
+        }
+                            
+        console.error("Supabase delete error:", userMessage);
+        throw new Error(userMessage);
+    }
 };

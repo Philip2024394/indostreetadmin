@@ -110,7 +110,7 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
                          <InputField label="Set Callback Reminder (Optional)" name="callbackDateTime" value={formData.callbackDateTime} onChange={handleChange} type="datetime-local" />
                     </div>
                 </form>
-                <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2 flex-shrink-0">
+                <div className="p-4 border-t flex justify-end space-x-2 flex-shrink-0">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                     <button type="submit" onClick={handleSubmit} className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Prospect</button>
                 </div>

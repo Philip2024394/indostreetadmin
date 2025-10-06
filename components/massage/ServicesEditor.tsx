@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Partner, MassagePrice, MassageType } from '../../types';
 import * as api from '../../services/supabase';
-import { XIcon, PlusCircleIcon, TrashIcon, ChevronDownIcon } from '../shared/Icons';
+import { XIcon, PlusCircleIcon, TrashIcon, ChevronDownIcon, CheckIcon } from '../shared/Icons';
 
 interface ServicesEditorProps {
     partner: Partner;
@@ -82,7 +82,7 @@ const ServicesEditor: React.FC<ServicesEditorProps> = ({ partner, onUpdate }) =>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Massage Types Offered</label>
                     <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-gray-900">massage types =</span>
+                        <span className="text-sm font-medium text-gray-900">Add Massage Type:</span>
                         <div className="relative" ref={dropdownRef}>
                             <button
                                 type="button"
@@ -91,28 +91,39 @@ const ServicesEditor: React.FC<ServicesEditorProps> = ({ partner, onUpdate }) =>
                                 aria-haspopup="true"
                                 aria-expanded={isDropdownOpen}
                             >
-                                <ChevronDownIcon className={`w-6 h-6 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                <PlusCircleIcon className={`w-6 h-6 transition-transform ${isDropdownOpen ? 'rotate-45' : ''}`} />
                             </button>
                             {isDropdownOpen && (
                                 <div className="absolute z-10 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                                     <div className="py-1 max-h-60 overflow-y-auto" role="menu" aria-orientation="vertical">
                                         {allMassageTypes
-                                            .filter(type => !services.includes(type.name))
-                                            .map(type => (
-                                                <a
-                                                    key={type.id}
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleAddService(type.name);
-                                                        setIsDropdownOpen(false);
-                                                    }}
-                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    role="menuitem"
-                                                >
-                                                    {type.name}
-                                                </a>
-                                            ))
+                                            .sort((a, b) => a.name.localeCompare(b.name))
+                                            .map(type => {
+                                                const isSelected = services.includes(type.name);
+                                                return (
+                                                    <a
+                                                        key={type.id}
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            if (!isSelected) {
+                                                                handleAddService(type.name);
+                                                                setIsDropdownOpen(false);
+                                                            }
+                                                        }}
+                                                        className={`flex justify-between items-center px-4 py-2 text-sm ${
+                                                            isSelected
+                                                                ? 'text-gray-400 cursor-not-allowed'
+                                                                : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                        role="menuitem"
+                                                        aria-disabled={isSelected}
+                                                    >
+                                                        <span>{type.name}</span>
+                                                        {isSelected && <CheckIcon className="w-4 h-4 text-green-500" />}
+                                                    </a>
+                                                );
+                                            })
                                         }
                                     </div>
                                 </div>
