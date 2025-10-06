@@ -21,10 +21,11 @@ import MassagePartnerDetails from './MassagePartnerDetails';
 import MassageDirectoryManagementPage from './MassageDirectoryManagementPage';
 import FoodDirectoryManagementPage from './FoodDirectoryManagementPage';
 import SupabaseStatusPage from './SupabaseStatusPage';
+import DatabaseSetupPage from './DatabaseSetupPage';
 import { 
   UserGroupIcon, DocumentTextIcon, CheckCircleIcon, StoreIcon, SearchIcon,
   CarIcon, MotorcycleIcon, FoodIcon, ShoppingBagIcon, KeyIcon, BriefcaseIcon, ChevronRightIcon,
-  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon, IdCardIcon, ExclamationCircleIcon, ClipboardListIcon
+  BanknotesIcon, SparklesIcon, LandmarkIcon, RealCarIcon, IdCardIcon, ExclamationCircleIcon, ClipboardListIcon, ServerIcon
 } from '../shared/Icons';
 
 interface AdminDashboardProps {
@@ -32,7 +33,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus';
+type AdminView = 'applications' | 'partners' | 'agents' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup';
 
 const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
   [PartnerType.BikeDriver]: { icon: <MotorcycleIcon className="w-5 h-5 mr-2" /> },
@@ -54,20 +55,22 @@ const partnerTypeConfig: Record<PartnerType, { icon: React.ReactNode }> = {
 
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
+  const isMaintenanceMode = user.isMaintenanceMode;
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [applications, setApplications] = useState<PartnerApplication[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isMaintenanceMode);
   const [selectedApp, setSelectedApp] = useState<PartnerApplication | null>(null);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeAppTab, setActiveAppTab] = useState<PartnerType>(PartnerType.BikeDriver);
-  const [view, setView] = useState<AdminView>('applications');
+  const [view, setView] = useState<AdminView>(isMaintenanceMode ? 'databaseSetup' : 'applications');
   const [searchTerm, setSearchTerm] = useState('');
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (isMaintenanceMode) return;
     setLoading(true);
     setError(null);
     try {
@@ -85,7 +88,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
     } finally {
         setLoading(false);
     }
-  }, []);
+  }, [isMaintenanceMode]);
 
   useEffect(() => {
     fetchData();
@@ -138,6 +141,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
   
   const getTitle = () => {
     if (selectedPartner) return 'Partner Details';
+    if (isMaintenanceMode) {
+        if (view === 'databaseSetup') return 'Database Setup Guide';
+        if (view === 'supabaseStatus') return 'Supabase Integration Status';
+        return 'Setup & Recovery Mode';
+    }
     switch(view) {
         case 'applications': return 'Partner Application Management';
         case 'agentApplications': return 'Agent Application Management';
@@ -154,6 +162,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         case 'tours': return 'Tour Destination Management';
         case 'siteContent': return 'Site Content Management';
         case 'supabaseStatus': return 'Supabase Integration Status';
+        case 'databaseSetup': return 'Database Setup Guide';
         default: return 'Admin Dashboard';
     }
   };
@@ -209,6 +218,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <SiteContentPage />;
         case 'supabaseStatus':
             return <SupabaseStatusPage />;
+        case 'databaseSetup':
+            return <DatabaseSetupPage />;
         case 'members':
             return <MemberManagementPage user={user} />;
         case 'agents':
@@ -415,6 +426,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
       currentView={view}
       onViewChange={handleViewChange as (view: string) => void}
     >
+      {isMaintenanceMode && (
+          <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-r-lg">
+              <p className="font-bold">You are in Setup & Recovery Mode.</p>
+              <p className="text-sm">The application's database is not correctly configured. Use the tools below to diagnose and fix the issues. Once your database is set up, log out and sign in with your real admin account.</p>
+          </div>
+      )}
       {renderContent()}
       <ApplicationDetailsModal 
         application={selectedApp}

@@ -8,7 +8,7 @@ import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
 import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, ServerIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
@@ -23,6 +23,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navItems, currentView, onViewChange }) => {
+  const isMaintenanceMode = user.isMaintenanceMode;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState<AdminMessage[]>([]);
   const [isMessagesModalOpen, setIsMessagesModalOpen] = useState(false);
@@ -82,6 +83,21 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
   };
   
   const renderNavLinks = () => {
+    if (isMaintenanceMode) {
+        return (
+            <>
+                 <button onClick={() => handleViewClick('databaseSetup')} className={`${navLinkClasses} ${currentView === 'databaseSetup' ? activeNavLinkClasses : ''}`}>
+                  <ServerIcon className="w-5 h-5 mr-3" />
+                  Database Setup
+                </button>
+                <button onClick={() => handleViewClick('supabaseStatus')} className={`${navLinkClasses} ${currentView === 'supabaseStatus' ? activeNavLinkClasses : ''}`}>
+                  <ServerIcon className="w-5 h-5 mr-3" />
+                  Supabase Status
+                </button>
+            </>
+        )
+    }
+
     if (navItems) {
       return (
         <>
@@ -158,6 +174,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
                 <button onClick={() => handleViewClick('supabaseStatus')} className={`${navLinkClasses} ${currentView === 'supabaseStatus' ? activeNavLinkClasses : ''}`}>
                   <ServerIcon className="w-5 h-5 mr-3" />
                   Supabase Status
+                </button>
+                <button onClick={() => handleViewClick('databaseSetup')} className={`${navLinkClasses} ${currentView === 'databaseSetup' ? activeNavLinkClasses : ''}`}>
+                  <ServerIcon className="w-5 h-5 mr-3" />
+                  Database Setup
                 </button>
               </div>
           </>
@@ -246,7 +266,7 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
           </h1>
 
           <div className="flex items-center space-x-4">
-            {user.role === Role.Admin && (
+            {user.role === Role.Admin && !isMaintenanceMode && (
               <div className="border-r pr-4 hidden sm:block">
                  <ToggleSwitch enabled={isEditMode} onChange={setIsEditMode} enabledText="Edit Mode" disabledText="Edit Mode" />
               </div>

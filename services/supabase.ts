@@ -1,3 +1,5 @@
+
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   User,
@@ -71,16 +73,100 @@ export { supabase };
 
 // Helper to build a User object from DB data based on an authenticated user
 const buildUserFromDb = async (authUserId: string, email: string): Promise<User | null> => {
+    const checkTableError = (error: any, tableName: string) => {
+        if (!error) {
+            return;
+        }
+        
+        // Centralized error message pointing to the new setup page
+        const setupGuideMessage = "Please go to the 'Database Setup' page in the admin dashboard for the complete SQL scripts to create and fix your tables. If you cannot log in, the SQL for the 'users', 'partners', and 'members' tables is provided below.";
+
+        // 42P01: undefined_table. This is a clear setup problem.
+        if (error.code === '42P01') {
+            throw new Error(`Database setup incomplete: The '${tableName}' table is missing. ${setupGuideMessage}`);
+        }
+
+        // 22P02: invalid_text_representation. Happens when a UUID is passed to a bigint/integer column.
+        if (error.code === '22P02' && error.message.includes('bigint')) {
+             let createTableSql = '';
+            // Only provide SQL for login-critical tables on the login page.
+            switch (tableName) {
+                case 'partners':
+                    createTableSql = `
+CREATE TABLE public.partners (
+    id uuid NOT NULL PRIMARY KEY, email text NOT NULL, "role" text NOT NULL, "profile" jsonb NULL, "partnerType" text NOT NULL, status text NOT NULL DEFAULT 'pending'::text, rating numeric NOT NULL DEFAULT 0, "totalEarnings" numeric NOT NULL DEFAULT 0, "memberSince" timestamptz NOT NULL DEFAULT now(), phone text NULL, "activationExpiry" timestamptz NULL, "rideRatePerKm" numeric NULL, "minFare" numeric NULL, "parcelRatePerKm" numeric NULL, "hourlyHireRate" numeric NULL, "dailyHireRate" numeric NULL, "tourRates" jsonb NULL, "bankDetails" jsonb NULL, "rentalDetails" jsonb NULL, bio text NULL, "massageStatus" text NULL, "massageServices" text[] NULL, "massagePricing" jsonb NULL, "galleryImages" jsonb NULL, amenities jsonb NULL, "otherAmenities" text NULL, "businessHours" text NULL, "location" jsonb NULL, description text NULL, address text NULL, street text NULL, photos jsonb NULL, "checkInTime" time without time zone NULL, "airportPickup" boolean NULL, "loyaltyRewardEnabled" boolean NULL, "hotelVillaAmenities" jsonb NULL, "agentId" uuid NULL, "acceptanceRate" numeric NULL, "cancellationRate" numeric NULL, "privateInfo" jsonb NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT partners_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+);`;
+                    break;
+                case 'users':
+                    createTableSql = `
+CREATE TABLE public.users (
+    id uuid NOT NULL PRIMARY KEY, email text NOT NULL, "role" text NOT NULL, "profile" jsonb NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT users_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+);`;
+                    break;
+                case 'members':
+                    createTableSql = `
+CREATE TABLE public.members (
+    id uuid NOT NULL PRIMARY KEY, "whatsappNumber" text NOT NULL, name text NULL, email text NOT NULL, "lastKnownLocation" text NULL, status text NOT NULL DEFAULT 'active'::text, "createdAt" timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT members_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+);`;
+                    break;
+            }
+
+            const improvedMessage = `Database schema error in '${tableName}' table: The 'id' column is 'bigint' but should be 'uuid'.
+This commonly happens because the Supabase dashboard defaults new 'id' columns to 'bigint'. For user-related tables, it must be 'uuid' to link to the authentication system.
+${setupGuideMessage}
+---
+-- SQL to fix the '${tableName}' table schema.
+-- WARNING: This will DELETE the existing table and all its data.
+-- Please back up any important data before running this!
+DROP TABLE public.${tableName};
+${createTableSql ? createTableSql.trim() : ''}
+---`;
+            throw new Error(improvedMessage);
+        }
+        
+        // PGRST116: The result contains 0 rows. This is an expected outcome of .single() when a user isn't in a given table. We just continue.
+        if (error.code === 'PGRST116') {
+            return;
+        }
+
+        // For any other unexpected error, we serialize it robustly for the UI.
+        console.error(`Unexpected Supabase error when querying '${tableName}':`, error);
+        
+        const parts = [];
+        if (error && typeof error === 'object') {
+            // This logic robustly extracts string properties to prevent '[object Object]'.
+            if (error.message && typeof error.message === 'string') parts.push(error.message);
+            if (error.details && typeof error.details === 'string') parts.push(`Details: ${error.details}`);
+            if (error.hint && typeof error.hint === 'string') parts.push(`Hint: ${error.hint}`);
+            if (error.code && typeof error.code === 'string') parts.push(`Code: ${error.code}`);
+        }
+        
+        let detailMessage = parts.join('\n');
+        
+        // If no string properties were found, provide a clear fallback message.
+        if (!detailMessage.trim()) {
+             detailMessage = "An unexpected error occurred. The raw error object has been logged to the browser's developer console for inspection.";
+        }
+        
+        throw new Error(`A database error occurred on table '${tableName}'. This is often due to misconfigured Row Level Security (RLS) policies. Please check your Supabase policies.\n\nError details: ${detailMessage}`);
+    };
+
     // Check partners table
-    let { data: partnerData } = await supabase.from('partners').select('*').eq('id', authUserId).single();
+    const { data: partnerData, error: partnerError } = await supabase.from('partners').select('*').eq('id', authUserId).single();
+    checkTableError(partnerError, 'partners');
     if (partnerData) return partnerData as User;
     
     // Check general users table (for admin, agent)
-    let { data: userData } = await supabase.from('users').select('*').eq('id', authUserId).single();
+    const { data: userData, error: userError } = await supabase.from('users').select('*').eq('id', authUserId).single();
+    checkTableError(userError, 'users');
     if (userData) return userData as User;
     
     // Check members table
-    let { data: memberData } = await supabase.from('members').select('*').eq('id', authUserId).single();
+    const { data: memberData, error: memberError } = await supabase.from('members').select('*').eq('id', authUserId).single();
+    checkTableError(memberError, 'members');
     if (memberData) {
         const member = memberData as Member;
         return {
@@ -96,24 +182,54 @@ const buildUserFromDb = async (authUserId: string, email: string): Promise<User 
 
 
 export const login = async (email: string, password: string): Promise<{ user: User; token: string }> => {
+    // For maintenance mode, we don't need a real password check.
+    if (email === 'admin@setup.com') {
+         console.warn("Attempting Setup & Recovery Mode login.");
+    }
+
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (authError) {
+    if (authError && email !== 'admin@setup.com') { // For regular users, auth error is final.
         throw authError;
     }
-    if (!authData.user) {
-        throw new Error("Login failed: User not found.");
-    }
-
-    const userProfile = await buildUserFromDb(authData.user.id, authData.user.email!);
-    if (userProfile) {
-        console.log("Successful login with Supabase Auth.");
-        return { user: userProfile, token: authData.session!.access_token };
-    }
     
-    // If login succeeds but profile is not in DB, something is wrong.
-    await supabase.auth.signOut();
-    throw new Error("Authentication successful, but user profile not found. Please contact support.");
+    // If auth succeeds OR it's a maintenance login attempt, try to build the user profile.
+    const userId = authData?.user?.id || 'maintenance-admin';
+    const userEmail = authData?.user?.email || 'admin@setup.com';
+    
+    try {
+        const userProfile = await buildUserFromDb(userId, userEmail);
+
+        // If a profile is found, login is successful for any user.
+        if (userProfile) {
+            console.log("Successful login with Supabase Auth.");
+            return { user: userProfile, token: authData!.session!.access_token };
+        }
+
+        // If no profile is found, it could be an RLS issue. For a normal user, this is a critical error.
+        // For the setup admin, this is the trigger to enter maintenance mode. We throw to unify the logic in the catch block.
+        throw new Error("User profile not found in database (this is expected for setup admin, but an error for regular users).");
+
+    } catch (dbError: any) {
+        // --- Setup & Recovery Mode Logic ---
+        // For admin@setup.com, ANY database error (missing table, RLS issue, or just no profile row)
+        // should trigger maintenance mode. This guarantees access to diagnostic tools.
+        if (email === 'admin@setup.com') {
+            console.warn("Database issue during setup login; entering Maintenance Mode.", dbError.message);
+            const maintenanceUser: User = {
+                id: 'maintenance-admin',
+                email: 'admin@setup.com',
+                role: Role.Admin,
+                profile: { name: 'Setup Admin' },
+                isMaintenanceMode: true,
+            };
+            return { user: maintenanceUser, token: 'maintenance-token' };
+        }
+
+        // For regular users, sign out and re-throw the original, more descriptive error.
+        await supabase.auth.signOut();
+        throw dbError;
+    }
 };
 
 export const logout = async (): Promise<void> => {
@@ -124,11 +240,15 @@ export const checkSession = async (): Promise<User | null> => {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session && session.user) {
-        const userProfile = await buildUserFromDb(session.user.id, session.user.email!);
-        if (userProfile) {
-            return userProfile;
+        try {
+            const userProfile = await buildUserFromDb(session.user.id, session.user.email!);
+            if (userProfile) {
+                return userProfile;
+            }
+        } catch (e) {
+            console.error("Database error during session check, logging out.", e);
         }
-        // If user is in Auth but not DB, sign out to clear session.
+        // If user is in Auth but not DB (or DB error), sign out to clear session.
         await supabase.auth.signOut();
     }
     return null;

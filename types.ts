@@ -44,6 +44,7 @@ export interface User {
   role: Role;
   profile: UserProfile;
   partnerType?: PartnerType;
+  isMaintenanceMode?: boolean;
 }
 
 export interface RentalDetails {

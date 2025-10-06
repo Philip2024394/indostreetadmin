@@ -12,8 +12,8 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('phillipofarrell@gmail.com');
-  const [password, setPassword] = useState('admin1240176');
+  const [email, setEmail] = useState('admin@setup.com');
+  const [password, setPassword] = useState('any-password');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,8 +69,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
           <p className="font-semibold text-center mb-2">Welcome!</p>
-          <p>This portal is now fully integrated with Supabase. All user accounts must be created and managed within the Supabase dashboard's Authentication section.</p>
-          <p className="mt-2">The previous mock/demo accounts have been removed.</p>
+          <p>
+             If you are setting up the application and see database errors below, use the special login <strong className="font-mono">admin@setup.com</strong> (with any password) to access the database setup tools in a limited-access admin panel.
+          </p>
+          <p className="mt-2">For regular use, all accounts must be created in the Supabase dashboard.</p>
         </div>
         
         <form className="space-y-6" onSubmit={handleLogin}>
@@ -119,7 +121,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          {error && <div className="text-sm text-red-700 bg-red-50 p-4 rounded-md whitespace-pre-wrap font-mono">{error}</div>}
 
           <div>
             <button
