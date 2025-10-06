@@ -19,6 +19,20 @@ const App: React.FC = () => {
 
   // Check for an active session on initial load and listen for auth changes
   useEffect(() => {
+    // --- Bypassing login for live admin access as requested ---
+    const mockAdminUser: User = {
+      id: 'live-admin-user',
+      email: 'admin@indostreet.live',
+      role: Role.Admin,
+      profile: {
+        name: 'Live Admin',
+      },
+    };
+    setUser(mockAdminUser);
+    setLoading(false);
+    // --- End of login bypass ---
+
+    /* Original session check logic:
     const checkUserSession = async () => {
       setLoading(true);
       const currentUser = await api.checkSession();
@@ -39,6 +53,7 @@ const App: React.FC = () => {
     return () => {
         subscription?.unsubscribe();
     };
+    */
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
@@ -46,8 +61,9 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await api.logout();
-    setUser(null);
+    // Since login is bypassed, reloading the page is the simplest way to "log out"
+    // to the default admin state.
+    window.location.reload();
   };
 
   if (loading) {
