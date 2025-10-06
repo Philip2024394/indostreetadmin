@@ -135,23 +135,29 @@ ${createTableSql ? createTableSql.trim() : ''}
         // For any other unexpected error, we serialize it robustly for the UI.
         console.error(`Unexpected Supabase error when querying '${tableName}':`, error);
         
-        const parts = [];
+        let detailMessage = '';
         if (error && typeof error === 'object') {
+            const parts = [];
             // This logic robustly extracts string properties to prevent '[object Object]'.
             if (error.message && typeof error.message === 'string') parts.push(error.message);
             if (error.details && typeof error.details === 'string') parts.push(`Details: ${error.details}`);
             if (error.hint && typeof error.hint === 'string') parts.push(`Hint: ${error.hint}`);
             if (error.code && typeof error.code === 'string') parts.push(`Code: ${error.code}`);
+            if (parts.length > 0) {
+              detailMessage = parts.join('\n');
+            }
         }
         
-        let detailMessage = parts.join('\n');
-        
-        // If no string properties were found, provide a clear fallback message.
+        // If standard properties were not found, try to serialize the whole object for debugging.
         if (!detailMessage.trim()) {
-             detailMessage = "An unexpected error occurred. The raw error object has been logged to the browser's developer console for inspection.";
+             try {
+                detailMessage = `Raw error object:\n${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`;
+             } catch {
+                detailMessage = "An unexpected and non-serializable error occurred. The raw error object has been logged to the browser's developer console for inspection.";
+             }
         }
         
-        throw new Error(`A database error occurred on table '${tableName}'. This is often due to misconfigured Row Level Security (RLS) policies. Please check your Supabase policies.\n\nError details: ${detailMessage}`);
+        throw new Error(`A database error occurred on table '${tableName}'. This is often due to misconfigured Row Level Security (RLS) policies. Please check your Supabase policies.\n\nError details:\n${detailMessage}`);
     };
 
     // Check partners table

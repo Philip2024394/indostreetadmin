@@ -18,7 +18,7 @@ CREATE POLICY "Enable read access for all users" ON public.${tableName} FOR SELE
         users: `
 -- Table for non-partner users like admins and agents
 -- WARNING: This will drop the existing table and its data.
-DROP TABLE IF EXISTS public.users;
+DROP TABLE IF EXISTS public.users CASCADE;
 CREATE TABLE public.users (
     id uuid NOT NULL PRIMARY KEY,
     email text NOT NULL,
@@ -32,7 +32,7 @@ ${rlsAndPolicyTemplate('users')}`,
         partners: `
 -- Table for all partners (drivers, vendors, etc.)
 -- WARNING: This will drop the existing table and its data.
-DROP TABLE IF EXISTS public.partners;
+DROP TABLE IF EXISTS public.partners CASCADE;
 CREATE TABLE public.partners (
     id uuid NOT NULL PRIMARY KEY,
     email text NOT NULL,

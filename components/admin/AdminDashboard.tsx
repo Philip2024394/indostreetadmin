@@ -83,8 +83,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         setApplications(appsRes);
         setPartners(partnersRes);
     } catch (err: any) {
-        console.error("Failed to fetch admin data:", err.message || err);
-        setError(`Failed to load dashboard data. This is likely a permission issue. Please ensure your Supabase RLS policies allow authenticated users to read the required tables. (Error: ${err.message})`);
+        console.error("Failed to fetch admin data:", err);
+        setError(err.message || 'An unknown error occurred while fetching dashboard data.');
     } finally {
         setLoading(false);
     }
@@ -180,7 +180,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
                     </div>
                     <div className="ml-3">
                         <h3 className="text-sm font-medium text-red-800">Error Loading Data</h3>
-                        <div className="mt-2 text-sm text-red-700">
+                        <div className="mt-2 text-sm text-red-700 whitespace-pre-wrap font-mono">
                             <p>{error}</p>
                         </div>
                     </div>
