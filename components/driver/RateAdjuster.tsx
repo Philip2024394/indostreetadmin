@@ -16,7 +16,7 @@ const RateInput: React.FC<{ label: string; value: number; onChange: (value: numb
             </div>
             <input
                 type="number"
-                className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-8 pr-4 py-2 sm:text-sm border-gray-300 rounded-md"
+                className="focus:ring-orange-500 focus:border-orange-500 block w-full pl-8 pr-4 py-2 sm:text-sm border-gray-300 rounded-md"
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(Number(e.target.value))}
@@ -138,7 +138,7 @@ const RateAdjuster: React.FC<RateAdjusterProps> = ({ partner, onUpdate }) => {
             <button
                 onClick={handleSave}
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300"
             >
                 {loading ? 'Saving...' : saved ? 'Rates Saved!' : 'Save All Rates'}
             </button>

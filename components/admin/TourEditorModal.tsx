@@ -67,18 +67,18 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
                     <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                         <div>
                             <label htmlFor="dest-name" className="block text-sm font-medium text-gray-700">Destination Name</label>
-                            <input type="text" id="dest-name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                            <input type="text" id="dest-name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
                         </div>
                         <div>
                             <label htmlFor="dest-category" className="block text-sm font-medium text-gray-700">Category</label>
                             {/* Fix: Explicitly type the event to ensure correct type inference for e.target.value */}
-                            <select id="dest-category" value={category} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as TourDestination['category'])} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <select id="dest-category" value={category} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as TourDestination['category'])} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
                                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                         </div>
                          <div>
                             <label htmlFor="dest-description" className="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="dest-description" value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                            <textarea id="dest-description" value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
                         </div>
                         <div>
                             <label htmlFor="dest-image-url" className="block text-sm font-medium text-gray-700">Image</label>
@@ -94,7 +94,7 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
                             </div>
                             <div className="mt-2 text-center text-xs text-gray-500">OR</div>
                             <div className="mt-2">
-                                <label className="w-full flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500">
+                                <label className="w-full flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-orange-500">
                                     <div className="space-y-1 text-center">
                                         {imageUrl ? (
                                             <img src={imageUrl} alt="Preview" className="mx-auto h-24 max-h-24 w-auto object-contain" />
@@ -104,7 +104,7 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
                                             </svg>
                                         )}
                                         <div className="flex text-sm text-gray-600 justify-center">
-                                            <span className="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                            <span className="relative bg-white rounded-md font-medium text-orange-600 hover:text-orange-500">
                                                 <span>Upload a file</span>
                                                 <input type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
                                             </span>
@@ -116,7 +116,7 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
                     </div>
                     <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                        <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Destination</button>
+                        <button type="submit" className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Destination</button>
                     </div>
                 </form>
             </div>

@@ -93,7 +93,7 @@ const FoodItemEditorModal: React.FC<FoodItemEditorModalProps> = ({ item, vendors
                 </form>
                 <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2 flex-shrink-0">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" formNoValidate onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Item</button>
+                    <button type="submit" formNoValidate onClick={handleSubmit} className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Item</button>
                 </div>
             </div>
         </div>

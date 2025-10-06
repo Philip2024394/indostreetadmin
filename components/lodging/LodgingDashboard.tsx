@@ -101,7 +101,7 @@ const LodgingDashboard: React.FC<LodgingDashboardProps> = ({ user, onLogout }) =
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Profile Completion</h3>
                <div className="w-full bg-gray-200 rounded-full h-4 mb-4">
-                  <div className="bg-blue-600 h-4 rounded-full" style={{ width: `${completionStatus.percentage}%` }}></div>
+                  <div className="bg-orange-500 h-4 rounded-full" style={{ width: `${completionStatus.percentage}%` }}></div>
                </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center">
@@ -120,16 +120,16 @@ const LodgingDashboard: React.FC<LodgingDashboardProps> = ({ user, onLogout }) =
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <button onClick={() => setView('profile')} className="p-6 bg-white rounded-lg shadow-md text-center hover:shadow-lg hover:ring-2 hover:ring-blue-500 transition-all">
-                <DocumentTextIcon className="w-10 h-10 mx-auto text-blue-500" />
+              <button onClick={() => setView('profile')} className="p-6 bg-white rounded-lg shadow-md text-center hover:shadow-lg hover:ring-2 hover:ring-orange-500 transition-all">
+                <DocumentTextIcon className="w-10 h-10 mx-auto text-orange-500" />
                 <h4 className="mt-2 font-semibold text-lg">Edit Property Profile</h4>
               </button>
-              <button onClick={() => setView('amenities')} className="p-6 bg-white rounded-lg shadow-md text-center hover:shadow-lg hover:ring-2 hover:ring-blue-500 transition-all">
-                <SparklesIcon className="w-10 h-10 mx-auto text-blue-500" />
+              <button onClick={() => setView('amenities')} className="p-6 bg-white rounded-lg shadow-md text-center hover:shadow-lg hover:ring-2 hover:ring-orange-500 transition-all">
+                <SparklesIcon className="w-10 h-10 mx-auto text-orange-500" />
                 <h4 className="mt-2 font-semibold text-lg">Manage Amenities</h4>
               </button>
-              <button onClick={() => setView('rooms')} className="p-6 bg-white rounded-lg shadow-md text-center hover:shadow-lg hover:ring-2 hover:ring-blue-500 transition-all">
-                <CubeIcon className="w-10 h-10 mx-auto text-blue-500" />
+              <button onClick={() => setView('rooms')} className="p-6 bg-white rounded-lg shadow-md text-center hover:shadow-lg hover:ring-2 hover:ring-orange-500 transition-all">
+                <CubeIcon className="w-10 h-10 mx-auto text-orange-500" />
                 <h4 className="mt-2 font-semibold text-lg">Manage Rooms</h4>
               </button>
             </div>

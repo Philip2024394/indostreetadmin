@@ -103,7 +103,7 @@ const FleetManagement: React.FC = () => {
                         </div>
                         <button 
                             onClick={handleAddNew}
-                            className="mt-4 sm:mt-0 flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="mt-4 sm:mt-0 flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                         >
                             <PlusCircleIcon className="w-5 h-5 mr-2" />
                             Add New Vehicle
@@ -168,7 +168,7 @@ const FleetManagement: React.FC = () => {
                                             <ToggleSwitch enabled={v.isAvailable} onChange={(enabled) => handleStatusToggle(v, enabled)} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                            <button onClick={() => handleEdit(v)} className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5"/></button>
+                                            <button onClick={() => handleEdit(v)} className="p-2 text-gray-500 hover:text-orange-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5"/></button>
                                             <button onClick={() => handleDelete(v.id)} className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100"><TrashIcon className="w-5 h-5"/></button>
                                         </td>
                                     </tr>

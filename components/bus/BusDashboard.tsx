@@ -80,7 +80,7 @@ const BusDashboard: React.FC<BusDashboardProps> = ({ user, onLogout }) => {
             <h3 className="text-xl font-semibold text-gray-800">My Bus Fleet</h3>
             <p className="text-sm text-gray-500">Manage your buses for rental and sale.</p>
         </div>
-         <button onClick={() => { setEditingVehicle(null); setIsFormOpen(true); }} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+         <button onClick={() => { setEditingVehicle(null); setIsFormOpen(true); }} className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
             <PlusCircleIcon className="w-5 h-5 mr-2" />
             Add Bus
         </button>
@@ -109,7 +109,7 @@ const BusDashboard: React.FC<BusDashboardProps> = ({ user, onLogout }) => {
                     </div>
                      <div className="p-4 border-t flex justify-between items-center bg-gray-50">
                         <ToggleSwitch enabled={v.isAvailable} onChange={() => {}} enabledText="Available" disabledText="Unavailable" />
-                         <button onClick={() => handleEditVehicle(v)} className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                         <button onClick={() => handleEditVehicle(v)} className="flex items-center text-sm font-medium text-orange-600 hover:text-orange-700">
                             <PencilIcon className="w-4 h-4 mr-1" />
                             Edit
                         </button>
@@ -129,12 +129,12 @@ const BusDashboard: React.FC<BusDashboardProps> = ({ user, onLogout }) => {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 bg-white rounded-lg shadow-md text-center">
                 <h4 className="font-semibold text-lg">Active Fleet</h4>
-                <p className="text-3xl font-bold text-blue-600 my-2">{vehicles.length}</p>
-                 <button onClick={() => setView('fleet')} className="text-sm text-blue-600 hover:underline">Manage My Fleet</button>
+                <p className="text-3xl font-bold text-orange-600 my-2">{vehicles.length}</p>
+                 <button onClick={() => setView('fleet')} className="text-sm text-orange-600 hover:underline">Manage My Fleet</button>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-md text-center">
                 <h4 className="font-semibold text-lg">Booking Inquiries Today</h4>
-                <p className="text-3xl font-bold text-blue-600 my-2">3</p>
+                <p className="text-3xl font-bold text-orange-600 my-2">3</p>
                 <p className="text-sm text-gray-500">(Mock Data)</p>
             </div>
         </div>
@@ -158,9 +158,9 @@ const BusDashboard: React.FC<BusDashboardProps> = ({ user, onLogout }) => {
   return (
     <Layout user={user} onLogout={onLogout} title={title}>
       <div className="mb-6 space-x-2">
-         <button onClick={() => setView('dashboard')} className={`px-4 py-2 rounded-md text-sm font-medium ${view === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-white'}`}>Dashboard</button>
-         <button onClick={() => setView('fleet')} className={`px-4 py-2 rounded-md text-sm font-medium ${view === 'fleet' ? 'bg-blue-600 text-white' : 'bg-white'}`}>My Fleet</button>
-         <button onClick={() => setView('profile')} className={`px-4 py-2 rounded-md text-sm font-medium ${view === 'profile' ? 'bg-blue-600 text-white' : 'bg-white'}`}>Profile & Payouts</button>
+         <button onClick={() => setView('dashboard')} className={`px-4 py-2 rounded-md text-sm font-medium ${view === 'dashboard' ? 'bg-orange-500 text-white' : 'bg-white'}`}>Dashboard</button>
+         <button onClick={() => setView('fleet')} className={`px-4 py-2 rounded-md text-sm font-medium ${view === 'fleet' ? 'bg-orange-500 text-white' : 'bg-white'}`}>My Fleet</button>
+         <button onClick={() => setView('profile')} className={`px-4 py-2 rounded-md text-sm font-medium ${view === 'profile' ? 'bg-orange-500 text-white' : 'bg-white'}`}>Profile & Payouts</button>
       </div>
       {renderContent()}
       

@@ -92,7 +92,7 @@ const ProspectsPage: React.FC<ProspectsPageProps> = ({ agent }) => {
             <div className="bg-white rounded-lg shadow-md">
                 <div className="p-6 border-b flex justify-between items-center">
                     <h3 className="text-xl font-semibold text-gray-800">My Prospects</h3>
-                    <button onClick={() => { setEditingProspect(null); setIsFormOpen(true); }} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button onClick={() => { setEditingProspect(null); setIsFormOpen(true); }} className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
                         <PlusCircleIcon className="w-5 h-5 mr-2" />
                         Add Prospect
                     </button>
@@ -142,7 +142,7 @@ const ProspectsPage: React.FC<ProspectsPageProps> = ({ agent }) => {
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <button 
                                             onClick={() => { setEditingProspect(p); setIsFormOpen(true); }}
-                                            className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                                            className="p-2 text-gray-500 hover:text-orange-600 rounded-full hover:bg-gray-100 disabled:opacity-50"
                                             disabled={p.status !== 'prospect'}
                                             title={p.status !== 'prospect' ? 'Cannot edit after submission' : 'Edit notes & callback'}
                                         >

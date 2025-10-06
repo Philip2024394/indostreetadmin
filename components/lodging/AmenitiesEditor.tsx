@@ -76,7 +76,7 @@ const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({ partner, onUpdate, on
                                             type="checkbox"
                                             checked={!!amenities[key]}
                                             onChange={(e) => handleAmenityChange(key, e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                            className="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                                         />
                                         <label htmlFor={`amenity-${key}`} className="ml-2 block text-sm text-gray-900">{label}</label>
                                     </div>
@@ -91,7 +91,7 @@ const AmenitiesEditor: React.FC<AmenitiesEditorProps> = ({ partner, onUpdate, on
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                    className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-orange-300"
                 >
                     {saving ? 'Saving...' : 'Save Amenities'}
                 </button>

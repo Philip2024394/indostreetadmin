@@ -36,7 +36,7 @@ const TestPanel: React.FC<{ title: string; children: React.ReactNode; onRunTest:
         <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
         <div className="text-sm text-gray-600 mt-1 mb-4 flex-grow">{children}</div>
         <StatusIndicator {...statusState} />
-        <button onClick={onRunTest} disabled={statusState.status === 'testing'} className="mt-4 w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300">
+        <button onClick={onRunTest} disabled={statusState.status === 'testing'} className="mt-4 w-full px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600 disabled:bg-orange-300">
             Run Test
         </button>
     </div>

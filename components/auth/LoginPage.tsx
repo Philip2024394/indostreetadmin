@@ -120,7 +120,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 Register as an Agent
             </button>
             <span className="text-gray-400 mx-2">|</span>
-            <button onClick={() => setShowMemberSignup(true)} className="font-medium text-blue-600 hover:text-blue-500">
+            <button onClick={() => setShowMemberSignup(true)} className="font-medium text-orange-600 hover:text-orange-500">
                 Create a Member Account
             </button>
         </div>

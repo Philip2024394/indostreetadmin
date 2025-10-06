@@ -83,7 +83,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({ partner, rooms, onDataRefresh
                             <h3 className="text-xl font-semibold text-gray-800">Manage Rooms</h3>
                             <p className="text-sm text-gray-500">Add, edit, and manage availability for your property's rooms.</p>
                         </div>
-                        <button onClick={handleAddNew} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <button onClick={handleAddNew} className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
                             <PlusCircleIcon className="w-5 h-5 mr-2" />
                             Add New Room
                         </button>
@@ -112,7 +112,7 @@ const RoomManager: React.FC<RoomManagerProps> = ({ partner, rooms, onDataRefresh
                                             <ToggleSwitch enabled={room.isAvailable} onChange={(val) => handleAvailabilityToggle(room, val)} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                            <button onClick={() => handleEdit(room)} className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5"/></button>
+                                            <button onClick={() => handleEdit(room)} className="p-2 text-gray-500 hover:text-orange-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5"/></button>
                                             <button onClick={() => handleDelete(room.id)} className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100"><TrashIcon className="w-5 h-5"/></button>
                                         </td>
                                     </tr>

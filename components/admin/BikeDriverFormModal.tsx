@@ -40,6 +40,15 @@ const defaultFormData: Omit<Vehicle, 'id'> = {
     operatingHours: '',
 };
 
+// Fix: Define the missing InputField component.
+const InputField: React.FC<{ name: string; label: string; value: string | number; onChange: (e: any) => void; type?: string; required?: boolean; placeholder?: string; }> = 
+({ name, label, value, onChange, type = 'text', required = false, placeholder }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
+        <input type={type} id={name} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-orange-500 focus:border-orange-500"/>
+    </div>
+);
+
 const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, onSave }) => {
     const [formData, setFormData] = useState<Omit<Vehicle, 'id'>>(defaultFormData);
     const [destinations, setDestinations] = useState<TourDestination[]>([]);
@@ -167,91 +176,66 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                         <fieldset className="border p-4 rounded-md">
                             <legend className="px-2 font-semibold text-gray-700">Bike Pricing</legend>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Operating Zone *</label>
-                                    <select name="zone" value={formData.zone} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md p-2">
-                                        {Object.values(Zone).map(z => <option key={z} value={z}>{z}</option>)}
-                                    </select>
-                                </div>
-                                <InputField name="pricePerKm" label="Price/km (Ride)" value={formData.pricePerKm || ''} onChange={handleNumberChange} type="number" required />
-                                <InputField name="pricePerKmParcel" label="Price/km (Parcel)" value={formData.pricePerKmParcel || ''} onChange={handleNumberChange} type="number" required />
+                                <InputField name="pricePerKm" label="Ride Price per Km (Rp)" value={formData.pricePerKm || ''} onChange={handleNumberChange} type="number" />
+                                <InputField name="pricePerKmParcel" label="Parcel Price per Km (Rp)" value={formData.pricePerKmParcel || ''} onChange={handleNumberChange} type="number" />
                             </div>
                         </fieldset>
                     )}
 
                     {formData.type === VehicleType.Jeep && (
-                         <fieldset className="border p-4 rounded-md">
-                            <legend className="px-2 font-semibold text-gray-700">Jeep Tour Details</legend>
+                        <fieldset className="border p-4 rounded-md">
+                            <legend className="px-2 font-semibold text-gray-700">Tour Details</legend>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <InputField name="operatingHours" label="Operating Hours" value={formData.operatingHours || ''} onChange={handleChange} placeholder="e.g., 5:00 AM - 5:00 PM"/>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Associated Destination</label>
                                     <select name="associatedDestinationID" value={formData.associatedDestinationID} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
-                                        <option value="">None</option>
+                                        <option value="">Select a base destination</option>
                                         {destinations.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                                     </select>
                                 </div>
+                                <InputField name="operatingHours" label="Operating Hours" value={formData.operatingHours || ''} onChange={handleChange} placeholder="e.g., 08:00 - 17:00"/>
                             </div>
                             <div className="mt-4">
-                                <h4 className="text-md font-semibold text-gray-800 mb-2">Tour Packages</h4>
-                                <div className="space-y-4">
-                                    {(formData.tourPackages || []).map((pkg, index) => (
-                                        <div key={pkg.id} className="p-3 border rounded-md bg-gray-50 relative">
-                                            <button type="button" onClick={() => removePackage(pkg.id)} className="absolute top-2 right-2 p-1 text-gray-500 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-                                                {/* FIX: Added the required 'name' prop to the InputField components to resolve TypeScript errors. */}
-                                                <InputField name={`pkg_name_${pkg.id}`} label="Package Name" value={pkg.name} onChange={(e) => handlePackageChange(pkg.id, 'name', e.target.value)} />
-                                                <InputField name={`pkg_duration_${pkg.id}`} label="Duration" value={pkg.duration} onChange={(e) => handlePackageChange(pkg.id, 'duration', e.target.value)} placeholder="e.g., 2-3 Hours"/>
-                                                <InputField name={`pkg_price_${pkg.id}`} label="Price (Rp)" type="number" value={pkg.price} onChange={(e) => handlePackageChange(pkg.id, 'price', Number(e.target.value))} />
-                                                <InputField name={`pkg_includes_${pkg.id}`} label="Includes (comma-separated)" value={pkg.includes.join(', ')} onChange={(e) => handlePackageChange(pkg.id, 'includes', e.target.value.split(',').map(s => s.trim()))} />
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-xs font-medium text-gray-700">Description</label>
-                                                    <textarea value={pkg.description} onChange={(e) => handlePackageChange(pkg.id, 'description', e.target.value)} rows={2} className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-sm" />
-                                                </div>
+                                <h4 className="text-md font-semibold text-gray-700 mb-2">Tour Packages</h4>
+                                {(formData.tourPackages || []).map(pkg => (
+                                    <div key={pkg.id} className="border p-3 rounded-md mb-2 bg-gray-50 space-y-2">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-grow pr-2">
+                                                <InputField label="Package Name" name="name" value={pkg.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePackageChange(pkg.id, 'name', e.target.value)} />
                                             </div>
+                                            <button type="button" onClick={() => removePackage(pkg.id)} className="p-2 text-gray-400 hover:text-red-600 mt-6"><TrashIcon className="w-5 h-5"/></button>
                                         </div>
-                                    ))}
-                                </div>
-                                <button type="button" onClick={addPackage} className="mt-2 flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                                        <InputField label="Description" name="description" value={pkg.description} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePackageChange(pkg.id, 'description', e.target.value)} />
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <InputField label="Price (Rp)" name="price" type="number" value={pkg.price} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePackageChange(pkg.id, 'price', Number(e.target.value))} />
+                                            <InputField label="Duration" name="duration" value={pkg.duration} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePackageChange(pkg.id, 'duration', e.target.value)} placeholder="e.g., 4 hours" />
+                                        </div>
+                                        <InputField label="Includes (comma-separated)" name="includes" value={pkg.includes.join(', ')} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePackageChange(pkg.id, 'includes', e.target.value.split(',').map(s => s.trim()))} />
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addPackage} className="flex items-center text-sm font-medium text-orange-600 hover:text-orange-800 mt-2">
                                     <PlusCircleIcon className="w-5 h-5 mr-1" /> Add Package
                                 </button>
                             </div>
                         </fieldset>
                     )}
-                    
-                    <fieldset className="border p-4 rounded-md">
-                        <legend className="px-2 font-semibold text-gray-700">Bank Information</legend>
+
+                     <fieldset className="border p-4 rounded-md">
+                        <legend className="px-2 font-semibold text-gray-700">Bank Details</legend>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                           <InputField name="bankName" label="Bank Name" value={formData.bankDetails.bankName} onChange={handleBankChange} required />
-                           <InputField name="accountHolder" label="Account Holder" value={formData.bankDetails.accountHolder} onChange={handleBankChange} required />
-                           <InputField name="accountNumber" label="Account Number" value={formData.bankDetails.accountNumber} onChange={handleBankChange} required />
+                            <InputField name="bankName" label="Bank Name" value={formData.bankDetails.bankName} onChange={handleBankChange} />
+                            <InputField name="accountHolder" label="Account Holder" value={formData.bankDetails.accountHolder} onChange={handleBankChange} />
+                            <InputField name="accountNumber" label="Account Number" value={formData.bankDetails.accountNumber} onChange={handleBankChange} />
                         </div>
                     </fieldset>
-
-                    <div className="border p-4 rounded-md">
-                        <ToggleSwitch enabled={formData.isAvailable} onChange={enabled => setFormData(prev => ({...prev, isAvailable: enabled}))} enabledText="Vehicle is Available" disabledText="Vehicle is Unavailable" />
-                    </div>
                 </form>
                 <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2 flex-shrink-0">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" formNoValidate onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                        Save Vehicle
-                    </button>
+                    <button type="submit" onClick={handleSubmit} className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Vehicle</button>
                 </div>
             </div>
         </div>
     );
 };
-
-const InputField: React.FC<{name: string, label: string, value: string | number, onChange: (e: any) => void, type?: string, required?: boolean, placeholder?: string}> = 
-({ name, label, value, onChange, type = 'text', required = false, placeholder }) => (
-    <div>
-        <label htmlFor={name} className="block text-xs font-medium text-gray-700">{label}{required && ' *'}</label>
-        <input
-            type={type} id={name} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-        />
-    </div>
-);
 
 export default VehicleFormModal;

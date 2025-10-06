@@ -106,13 +106,13 @@ const PropertyProfileEditor: React.FC<PropertyProfileEditorProps> = ({ partner, 
             <InputField label="Check-In Time" name="checkInTime" value={formData.checkInTime} onChange={handleChange} type="time" />
             <InputField label="WhatsApp Number" name="whatsapp" value={formData.whatsapp} onChange={handleChange} placeholder="+62..." />
             <ToggleSwitchField label="Airport Pickup Available" enabled={formData.airportPickup} onChange={(val) => handleToggle('airportPickup', val)} />
-            <div className="p-4 border-l-4 border-blue-500 bg-blue-50 md:col-span-2">
+            <div className="p-4 border-l-4 border-orange-500 bg-orange-50 md:col-span-2">
                 <ToggleSwitchField 
                     label="Activate Guest Rewards Program" 
                     enabled={formData.loyaltyRewardEnabled} 
                     onChange={(val) => handleToggle('loyaltyRewardEnabled', val)} 
                 />
-                <p className="text-xs text-blue-800 mt-2">Offer IndoStreet users a 5% discount on all their food and taxi orders for 48 hours after booking with you. This significantly increases your property's visibility and appeal.</p>
+                <p className="text-xs text-orange-800 mt-2">Offer IndoStreet users a 5% discount on all their food and taxi orders for 48 hours after booking with you. This significantly increases your property's visibility and appeal.</p>
             </div>
         </div>
        </div>
@@ -121,7 +121,7 @@ const PropertyProfileEditor: React.FC<PropertyProfileEditorProps> = ({ partner, 
         <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+            className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:bg-orange-300"
         >
             {saving ? 'Saving...' : 'Save All Changes'}
         </button>
@@ -142,7 +142,7 @@ const ImageUploader: React.FC<{ label: string; currentImage: string; onFileChang
         <label className="block text-sm font-medium text-gray-700">{label}</label>
         <div className="mt-1 flex items-center space-x-4">
             <img src={currentImage || 'https://via.placeholder.com/100'} alt={label} className="h-16 w-16 object-cover rounded-md bg-gray-100" />
-             <label className="cursor-pointer text-sm text-blue-600 hover:text-blue-800 font-medium">
+             <label className="cursor-pointer text-sm text-orange-600 hover:text-orange-700 font-medium">
                 Change
                 <input type="file" className="hidden" accept="image/*" onChange={onFileChange} />
             </label>

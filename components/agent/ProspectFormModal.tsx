@@ -96,7 +96,7 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
                         <InputField label="Street Address" name="street" value={formData.street} onChange={handleChange} required ref={streetInputRef} />
                         <div>
                             <label htmlFor="partnerType" className="block text-sm font-medium text-gray-700">Business Type</label>
-                            <select id="partnerType" name="partnerType" value={formData.partnerType} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <select id="partnerType" name="partnerType" value={formData.partnerType} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
                                 {Object.values(PartnerType).map(type => <option key={type} value={type}>{type}</option>)}
                             </select>
                         </div>
@@ -112,7 +112,7 @@ const ProspectFormModal: React.FC<ProspectFormModalProps> = ({ prospect, onClose
                 </form>
                 <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2 flex-shrink-0">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Prospect</button>
+                    <button type="submit" onClick={handleSubmit} className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Prospect</button>
                 </div>
             </div>
         </div>
@@ -123,7 +123,7 @@ const InputField = forwardRef<HTMLInputElement, { label: string, name: string, v
     ({ label, name, value, onChange, type = 'text', required = false }, ref) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
-        <input ref={ref} type={type} id={name} name={name} value={value} onChange={onChange} required={required} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+        <input ref={ref} type={type} id={name} name={name} value={value} onChange={onChange} required={required} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
     </div>
 ));
 

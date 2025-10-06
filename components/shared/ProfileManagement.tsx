@@ -79,7 +79,7 @@ const ProfileManagement: React.FC<ProfileManagementProps> = ({ partner, onUpdate
         name={name}
         value={value}
         onChange={onChange}
-        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
       />
     </div>
   );
@@ -100,7 +100,7 @@ const ProfileManagement: React.FC<ProfileManagementProps> = ({ partner, onUpdate
                     </div>
                 </div>
                 {!isEditing && (
-                    <button onClick={() => setIsEditing(true)} className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                    <button onClick={() => setIsEditing(true)} className="flex items-center text-sm font-medium text-orange-600 hover:text-orange-700">
                         <PencilIcon className="w-4 h-4 mr-1" />
                         Edit
                     </button>
@@ -137,7 +137,7 @@ const ProfileManagement: React.FC<ProfileManagementProps> = ({ partner, onUpdate
                     <button onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
                         Cancel
                     </button>
-                    <button onClick={handleSave} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300">
+                    <button onClick={handleSave} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600 disabled:bg-orange-300">
                         {isLoading ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>

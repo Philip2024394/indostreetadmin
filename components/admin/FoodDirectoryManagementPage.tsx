@@ -102,7 +102,7 @@ const FoodDirectoryManagementPage: React.FC = () => {
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 onBlur={() => updateText('food-directory-title', title)}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                             />
                         </div>
                         <div>
@@ -113,7 +113,7 @@ const FoodDirectoryManagementPage: React.FC = () => {
                                 value={subtitle}
                                 onChange={e => setSubtitle(e.target.value)}
                                 onBlur={() => updateText('food-directory-subtitle', subtitle)}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                             />
                         </div>
                     </div>
@@ -125,7 +125,7 @@ const FoodDirectoryManagementPage: React.FC = () => {
                             <h3 className="text-xl font-semibold text-gray-800">Food Directory Items</h3>
                             <p className="text-sm text-gray-500">Manage all food items displayed on the directory page.</p>
                         </div>
-                        <button onClick={() => handleOpenModal()} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <button onClick={() => handleOpenModal()} className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
                             <PlusCircleIcon className="w-5 h-5 mr-2" /> Add Food Item
                         </button>
                     </div>
@@ -169,7 +169,7 @@ const FoodDirectoryManagementPage: React.FC = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">{partnerMap.get(item.vendorId) || 'Unknown'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">Rp {item.price.toLocaleString('id-ID')}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                <button onClick={() => handleOpenModal(item)} className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5"/></button>
+                                                <button onClick={() => handleOpenModal(item)} className="p-2 text-gray-500 hover:text-orange-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5"/></button>
                                                 <button onClick={() => handleDeleteItem(item.id)} className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100"><TrashIcon className="w-5 h-5"/></button>
                                             </td>
                                         </tr>

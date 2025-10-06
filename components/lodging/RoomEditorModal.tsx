@@ -108,7 +108,7 @@ const RoomEditorModal: React.FC<RoomEditorModalProps> = ({ room, onClose, onSave
                             <div className="space-y-2">
                                 {amenityOptions.map(({ key, label }) => (
                                      <div key={key} className="flex items-center">
-                                        <input id={`room-amenity-${key}`} type="checkbox" checked={!!formData.amenities[key]} onChange={(e) => handleAmenityChange(key, e.target.checked)} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
+                                        <input id={`room-amenity-${key}`} type="checkbox" checked={!!formData.amenities[key]} onChange={(e) => handleAmenityChange(key, e.target.checked)} className="h-4 w-4 text-orange-600 border-gray-300 rounded"/>
                                         <label htmlFor={`room-amenity-${key}`} className="ml-2 block text-sm text-gray-900">{label}</label>
                                     </div>
                                 ))}
@@ -136,7 +136,7 @@ const RoomEditorModal: React.FC<RoomEditorModalProps> = ({ room, onClose, onSave
                 </form>
                 <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2 flex-shrink-0">
                     <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" onClick={handleSubmit} form="room-editor-form" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Room</button>
+                    <button type="submit" onClick={handleSubmit} form="room-editor-form" className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Save Room</button>
                 </div>
             </div>
         </div>
@@ -146,7 +146,7 @@ const RoomEditorModal: React.FC<RoomEditorModalProps> = ({ room, onClose, onSave
 const ImageInput: React.FC<{ label: string, image?: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, image, onChange }) => (
     <div className="text-center">
         <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
-        <label className="cursor-pointer block w-full h-24 bg-gray-100 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-500">
+        <label className="cursor-pointer block w-full h-24 bg-gray-100 rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-orange-500">
             {image ? <img src={image} alt={label} className="h-full w-full object-cover rounded-md" /> : <span className="text-xs text-gray-500">Click to upload</span>}
             <input type="file" accept="image/*" className="hidden" onChange={onChange} />
         </label>

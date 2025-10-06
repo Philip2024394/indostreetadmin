@@ -128,8 +128,8 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
            <div className="space-y-4">
             <h3 className="text-xl font-semibold">Verification & Sizing</h3>
             <div>
-                <label className="block text-sm font-medium text-gray-700">Shirt Size</label>
-                <select name="shirtSize" value={formData.shirtSize} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                <label className="block text-sm font-medium text-gray-200">Shirt Size</label>
+                <select name="shirtSize" value={formData.shirtSize} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md p-2">
                     {['S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
             </div>
@@ -142,20 +142,20 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
         return (
             <div className="space-y-4">
                 <h3 className="text-xl font-semibold">Review Your Application</h3>
-                <div className="p-4 bg-gray-50 border rounded-lg space-y-2 max-h-64 overflow-y-auto">
+                <div className="p-4 bg-gray-700 border border-gray-600 rounded-lg space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(formData).map(([key, value]) => {
                         if (['password', 'confirmPassword', 'agreedToTerms'].includes(key)) return null;
-                        return <p key={key} className="text-sm"><strong className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</strong> {Array.isArray(value) ? value.join(', ') : String(value)}</p>
+                        return <p key={key} className="text-sm"><strong className="capitalize text-gray-400">{key.replace(/([A-Z])/g, ' $1')}:</strong> {Array.isArray(value) ? value.join(', ') : String(value)}</p>
                     })}
                 </div>
-                <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 text-sm">
-                    <p className="font-bold text-yellow-800">Warning!</p>
-                    <p className="text-yellow-700">If any information provided is found to be false, the police will be informed to investigate without prior notice.</p>
+                <div className="p-4 bg-yellow-900/50 border-l-4 border-yellow-500 text-sm">
+                    <p className="font-bold text-yellow-300">Warning!</p>
+                    <p className="text-yellow-400">If any information provided is found to be false, the police will be informed to investigate without prior notice.</p>
                 </div>
                  <div>
                     <label className="flex items-center">
-                        <input type="checkbox" name="agreedToTerms" checked={!!formData.agreedToTerms} onChange={handleChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
-                        <span className="ml-2 text-sm text-gray-600">I confirm that all information provided is true and I agree to the terms.</span>
+                        <input type="checkbox" name="agreedToTerms" checked={!!formData.agreedToTerms} onChange={handleChange} className="h-4 w-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"/>
+                        <span className="ml-2 text-sm text-gray-300">I confirm that all information provided is true and I agree to the terms.</span>
                     </label>
                 </div>
             </div>
@@ -165,8 +165,8 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
                 <div className="text-center py-8">
                     <CheckCircleIcon className="w-16 h-16 mx-auto text-green-500" />
                     <h3 className="text-2xl font-bold mt-4">Application Submitted!</h3>
-                    <p className="text-gray-600 mt-2">Thank you for your application. We will review your details and contact you via email and WhatsApp soon.</p>
-                    <button onClick={onBackToLogin} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Back to Login</button>
+                    <p className="text-gray-300 mt-2">Thank you for your application. We will review your details and contact you via email and WhatsApp soon.</p>
+                    <button onClick={onBackToLogin} className="mt-6 px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Back to Login</button>
                 </div>
             )
       default:
@@ -177,33 +177,36 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
   const totalSteps = 5;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="w-full max-w-2xl bg-white rounded-lg shadow-xl">
-        <div className="p-6 border-b">
-            <h2 className="text-2xl font-bold text-gray-800 text-center">Agent Registration</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-gray-200 p-4">
+      <div className="w-full max-w-2xl bg-gray-800 rounded-lg shadow-2xl">
+        <div className="p-6 border-b border-gray-700">
+            <h1 className="text-2xl font-bold text-center">
+                <span className="text-white">Indo</span><span className="text-orange-500">Street</span>
+            </h1>
+            <h2 className="text-xl font-semibold text-gray-300 text-center mt-1">Agent Registration</h2>
              {step <= totalSteps && (
                 <div className="mt-4">
-                    <div className="flex justify-between text-sm font-medium text-gray-500">
+                    <div className="flex justify-between text-sm font-medium text-gray-400">
                         <span>Step {step} of {totalSteps}</span>
                     </div>
-                    <div className="bg-gray-200 rounded-full h-2 mt-1">
-                        <div className="bg-blue-600 h-2 rounded-full" style={{width: `${(step / totalSteps) * 100}%`}}></div>
+                    <div className="bg-gray-700 rounded-full h-2 mt-1">
+                        <div className="bg-orange-500 h-2 rounded-full transition-all duration-500" style={{width: `${(step / totalSteps) * 100}%`}}></div>
                     </div>
                 </div>
             )}
         </div>
         <form onSubmit={handleSubmit} className="p-6">
             {renderStep()}
-            {error && <p className="text-sm text-red-600 text-center mt-4">{error}</p>}
+            {error && <p className="text-sm text-red-400 text-center mt-4">{error}</p>}
         </form>
          {step <= totalSteps && (
-            <div className="p-6 bg-gray-50 border-t flex justify-between items-center">
-                <button type="button" onClick={step === 1 ? onBackToLogin : handlePrev} className="flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+            <div className="p-6 bg-gray-900/50 border-t border-gray-700 flex justify-between items-center">
+                <button type="button" onClick={step === 1 ? onBackToLogin : handlePrev} className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500">
                      <ChevronLeftIcon className="w-4 h-4 mr-1" />
                     {step === 1 ? 'Back to Login' : 'Previous'}
                 </button>
-                {step < totalSteps && <button type="button" onClick={handleNext} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Next</button>}
-                {step === totalSteps && <button type="submit" formNoValidate onClick={handleSubmit} disabled={loading || !formData.agreedToTerms} className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300">{loading ? 'Submitting...' : 'Submit Application'}</button>}
+                {step < totalSteps && <button type="button" onClick={handleNext} className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">Next</button>}
+                {step === totalSteps && <button type="submit" formNoValidate onClick={handleSubmit} disabled={loading || !formData.agreedToTerms} className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed">{loading ? 'Submitting...' : 'Submit Application'}</button>}
             </div>
         )}
       </div>
@@ -214,56 +217,66 @@ const AgentSignupPage: React.FC<AgentSignupPageProps> = ({ onBackToLogin }) => {
 const InputField: React.FC<{ name: string; label: string; value?: string | number; onChange: (e: any) => void; type?: string; required?: boolean; }> = 
 ({ name, label, value, onChange, type = 'text', required = false }) => (
     <div>
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
-        <input type={type} id={name} name={name} value={value} onChange={onChange} required={required} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm"/>
+        <label htmlFor={name} className="block text-sm font-medium text-gray-300">{label}{required && ' *'}</label>
+        <input type={type} id={name} name={name} value={value} onChange={onChange} required={required} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-sm focus:ring-orange-500 focus:border-orange-500"/>
     </div>
 );
 
 const RadioGroup: React.FC<{ label: string; name: string; value?: string; onChange: (e: any) => void; options: {value: string; label: string}[] }> = 
 ({ label, name, value, onChange, options }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <label className="block text-sm font-medium text-gray-300">{label}</label>
         <div className="mt-2 flex space-x-4">
             {options.map(opt => (
                 <label key={opt.value} className="flex items-center">
-                    <input type="radio" name={name} value={opt.value} checked={value === opt.value} onChange={onChange} className="h-4 w-4 text-blue-600 border-gray-300"/>
-                    <span className="ml-2 text-sm">{opt.label}</span>
+                    <input type="radio" name={name} value={opt.value} checked={value === opt.value} onChange={onChange} className="h-4 w-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"/>
+                    <span className="ml-2 text-sm text-gray-300">{opt.label}</span>
                 </label>
             ))}
         </div>
     </div>
 );
 
-const CheckboxGroup: React.FC<{ label: string; name: string; values?: string[]; onChange: (e: any) => void; options: {value: string; label: string}[] }> = 
+const CheckboxGroup: React.FC<{ label: string; name: string; values?: ('laptop' | 'phone')[]; onChange: (e: any) => void; options: {value: string; label: string}[] }> =
 ({ label, name, values = [], onChange, options }) => (
-     <div>
-        <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div>
+        <label className="block text-sm font-medium text-gray-300">{label}</label>
         <div className="mt-2 flex space-x-4">
             {options.map(opt => (
                 <label key={opt.value} className="flex items-center">
-                    <input type="checkbox" name="equipment" value={opt.value} checked={values.includes(opt.value)} onChange={onChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded"/>
-                    <span className="ml-2 text-sm">{opt.label}</span>
+                    <input
+                        type="checkbox"
+                        name={name}
+                        value={opt.value}
+                        checked={values.includes(opt.value as 'laptop' | 'phone')}
+                        onChange={onChange}
+                        className="h-4 w-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-300">{opt.label}</span>
                 </label>
             ))}
         </div>
     </div>
 );
 
-const ImageUploadField: React.FC<{ label: string; name: string; preview: string; onChange: (e: any) => void; required?: boolean; }> = 
+const ImageUploadField: React.FC<{ label: string; name: string; preview: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; required?: boolean; }> =
 ({ label, name, preview, onChange, required = false }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-700">{label}{required && ' *'}</label>
+        <label className="block text-sm font-medium text-gray-300">{label}{required && ' *'}</label>
         <div className="mt-1 flex items-center space-x-4">
-            <div className="w-24 h-16 bg-gray-100 rounded-md flex items-center justify-center border">
-                {preview ? <img src={preview} alt="preview" className="w-full h-full object-cover rounded-md"/> : <span className="text-xs text-gray-500">Preview</span>}
+            <div className="w-24 h-24 bg-gray-700 rounded-md flex items-center justify-center border border-gray-600">
+                {preview ? (
+                    <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-md"/>
+                ) : (
+                    <span className="text-xs text-gray-400">Preview</span>
+                )}
             </div>
-            <label htmlFor={name} className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
-                Choose File
+             <label htmlFor={name} className="cursor-pointer text-sm font-medium text-orange-500 hover:text-orange-400">
+                Upload File
                 <input type="file" id={name} name={name} onChange={onChange} required={required} accept="image/*" className="sr-only"/>
             </label>
         </div>
     </div>
-)
-
+);
 
 export default AgentSignupPage;
