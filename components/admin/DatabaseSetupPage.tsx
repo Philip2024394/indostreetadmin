@@ -317,6 +317,19 @@ CREATE TABLE public.massage_types (
     "isEnabled" boolean NOT NULL DEFAULT true
 );
 ${rlsAndPolicyTemplate('massage_types')}`,
+        food_types: `
+-- Table for the food directory
+-- WARNING: This will drop the existing table and its data.
+DROP TABLE IF EXISTS public.food_types;
+CREATE TABLE public.food_types (
+    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text NOT NULL UNIQUE,
+    description text NOT NULL,
+    "imageUrl" text NOT NULL,
+    category text NOT NULL,
+    "isEnabled" boolean NOT NULL DEFAULT true
+);
+${rlsAndPolicyTemplate('food_types')}`,
         seed_massage_types: `
 -- This script pre-populates the 'massage_types' table with a standard list of common massages.
 -- It is safe to run multiple times as it checks for existing entries before inserting.

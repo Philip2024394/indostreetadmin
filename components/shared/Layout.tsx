@@ -6,7 +6,7 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, PaperAirplaneIcon } from './Icons';
 
 type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
@@ -99,61 +99,25 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
     if (user.role === Role.Admin) {
       return (
           <>
-              <button onClick={() => handleViewClick('applications')} className={`${navLinkClasses} ${currentView === 'applications' ? activeNavLinkClasses : ''}`}>
-                <DocumentTextIcon className="w-5 h-5 mr-3" />
-                Partner Applications
-              </button>
-              <button onClick={() => handleViewClick('agentApplications')} className={`${navLinkClasses} ${currentView === 'agentApplications' ? activeNavLinkClasses : ''}`}>
-                  <IdCardIcon className="w-5 h-5 mr-3" />
-                  Agent Applications
-              </button>
-               <button onClick={() => handleViewClick('partners')} className={`${navLinkClasses} ${currentView === 'partners' ? activeNavLinkClasses : ''}`}>
-                <UserGroupIcon className="w-5 h-5 mr-3" />
-                Partners
-              </button>
-              <button onClick={() => handleViewClick('agents')} className={`${navLinkClasses} ${currentView === 'agents' ? activeNavLinkClasses : ''}`}>
-                <BriefcaseIcon className="w-5 h-5 mr-3" />
-                Agents
-              </button>
-              <button onClick={() => handleViewClick('members')} className={`${navLinkClasses} ${currentView === 'members' ? activeNavLinkClasses : ''}`}>
-                <DevicePhoneMobileIcon className="w-5 h-5 mr-3" />
-                Members
-              </button>
-              <button onClick={() => handleViewClick('fleet')} className={`${navLinkClasses} ${currentView === 'fleet' ? activeNavLinkClasses : ''}`}>
-                <RealCarIcon className="w-5 h-5 mr-3" />
-                Fleet Management
-              </button>
               <button onClick={() => handleViewClick('foodDirectory')} className={`${navLinkClasses} ${currentView === 'foodDirectory' ? activeNavLinkClasses : ''}`}>
                 <FoodIcon className="w-5 h-5 mr-3" />
                 Food Directory
-              </button>
-              <button onClick={() => handleViewClick('massage')} className={`${navLinkClasses} ${currentView === 'massage' ? activeNavLinkClasses : ''}`}>
-                  <SparklesIcon className="w-5 h-5 mr-3" />
-                  Massage & Wellness
               </button>
               <button onClick={() => handleViewClick('massageDirectory')} className={`${navLinkClasses} ${currentView === 'massageDirectory' ? activeNavLinkClasses : ''}`}>
                   <BookOpenIcon className="w-5 h-5 mr-3" />
                   Massage Directory
               </button>
-              <button onClick={() => handleViewClick('renewals')} className={`${navLinkClasses} ${currentView === 'renewals' ? activeNavLinkClasses : ''}`}>
-                <BanknotesIcon className="w-5 h-5 mr-3" />
-                Renewals
-              </button>
-              <button onClick={() => handleViewClick('financials')} className={`${navLinkClasses} ${currentView === 'financials' ? activeNavLinkClasses : ''}`}>
-                <DollarSignIcon className="w-5 h-5 mr-3" />
-                Financials
-              </button>
-              <button onClick={() => handleViewClick('analytics')} className={`${navLinkClasses} ${currentView === 'analytics' ? activeNavLinkClasses : ''}`}>
-                <ChartBarIcon className="w-5 h-5 mr-3" />
-                Analytics
-              </button>
               <button onClick={() => handleViewClick('tours')} className={`${navLinkClasses} ${currentView === 'tours' ? activeNavLinkClasses : ''}`}>
                 <LandmarkIcon className="w-5 h-5 mr-3" />
-                Tours
+                Destinations
               </button>
               <button onClick={() => handleViewClick('siteContent')} className={`${navLinkClasses} ${currentView === 'siteContent' ? activeNavLinkClasses : ''}`}>
                 <ClipboardListIcon className="w-5 h-5 mr-3" />
                 Site Content
+              </button>
+               <button onClick={() => handleViewClick('communications')} className={`${navLinkClasses} ${currentView === 'communications' ? activeNavLinkClasses : ''}`}>
+                <PaperAirplaneIcon className="w-5 h-5 mr-3" />
+                Communications
               </button>
           </>
       );

@@ -30,6 +30,7 @@ import {
   MassageTypeCategory,
   Feedback,
   Payout,
+  FoodType,
 } from '../types';
 
 const supabaseUrl = "https://ovfhgfzdlwgjtzsfsgzf.supabase.co";
@@ -710,6 +711,74 @@ export const submitAgentApplication = async (applicationData: Omit<AgentApplicat
     return data;
 };
 
+// --- Food Directory API ---
+export const getFoodTypes = async (): Promise<FoodType[]> => {
+    const { data, error } = await supabase.from('food_types').select('*');
+    if (error) throw error;
+    return data || [];
+};
+
+export const createFoodType = async (data: Omit<FoodType, 'id'>): Promise<FoodType> => {
+    const { data: results, error } = await supabase.from('food_types').insert(data).select();
+    if (error) {
+        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` + (error.details ? `\nDetails: ${error.details}` : '') + (error.hint ? `\nHint: ${error.hint}` : '');
+        if (error.message.includes('violates row-level security policy')) {
+            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'food_types' table is preventing new data from being saved. Please check the 'Database Setup' page for the correct SQL script.`;
+        }
+        console.error("Supabase insert error:", userMessage);
+        throw new Error(userMessage);
+    }
+    if (!results || results.length === 0) {
+        throw new Error(`Create failed for new Food Type. This is likely a Row Level Security (RLS) issue. Please ensure your 'food_types' table has a SELECT policy enabled for authenticated users.`);
+    }
+    return results[0];
+};
+
+export const updateFoodType = async (id: string, data: Partial<Omit<FoodType, 'id'>>): Promise<FoodType> => {
+    const { data: results, error } = await supabase.from('food_types').update(data).eq('id', id).select();
+    if (error) {
+        let userMessage = `Database Error: Could not update food type.\nMessage: ${error.message || 'An unknown error occurred.'}` +
+                            (error.details ? `\nDetails: ${error.details}` : '') +
+                            (error.hint ? `\nHint: ${error.hint}` : '');
+        
+        if (error.message.includes("Could not find the column")) {
+            const columnNameMatch = error.message.match(/'(\w+)'/);
+            const columnName = columnNameMatch ? columnNameMatch[1] : 'a required column';
+            userMessage = `Database Schema Error: The column '${columnName}' is missing from the 'food_types' table.
+
+This happens when the application code is updated, but the database schema is not. The toggle switch you clicked requires this column to work.
+
+[SOLUTION]:
+1. Go to the "Database Setup" page in the admin panel.
+2. Find the SQL script for the "food_types" table.
+3. Copy the entire script and run it in your Supabase project's SQL Editor. This will recreate the table correctly.
+
+WARNING: This will DELETE the table and all its data. Please back up any custom food types you have added first.`;
+        }
+        else if (error.message.includes('violates row-level security policy')) {
+            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'food_types' table is preventing updates. Please check the 'Database Setup' page for the correct SQL script.`;
+        }
+        console.error("Supabase update error:", userMessage);
+        throw new Error(userMessage);
+    }
+    if (!results || results.length === 0) {
+        throw new Error(`Update failed for Food Type ID: ${id}. The item was not found or you do not have permission to modify it. Check Row Level Security (RLS) policies.`);
+    }
+    return results[0];
+};
+
+export const deleteFoodType = async (id: string): Promise<void> => {
+    const { error } = await supabase.from('food_types').delete().eq('id', id);
+    if (error) {
+        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` + (error.details ? `\nDetails: ${error.details}` : '') + (error.hint ? `\nHint: ${error.hint}` : '');
+        if (error.message.includes('violates row-level security policy')) {
+            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'food_types' table is preventing deletion. Please check the 'Database Setup' page for the correct SQL script.`;
+        }
+        console.error("Supabase delete error:", userMessage);
+        throw new Error(userMessage);
+    }
+};
+
 export const getMassageTypes = async (): Promise<MassageType[]> => {
     const { data, error } = await supabase.from('massage_types').select('*');
     if (error) throw error;
@@ -746,12 +815,25 @@ export const updateMassageType = async (id: string, data: Partial<Omit<MassageTy
         .select();
 
     if (error) {
-        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` +
+        let userMessage = `Database Error: Could not update massage type.\nMessage: ${error.message || 'An unknown error occurred.'}` +
                             (error.details ? `\nDetails: ${error.details}` : '') +
                             (error.hint ? `\nHint: ${error.hint}` : '');
 
-        // Add a specific hint for RLS issues on UPDATE.
-        if (error.message.includes('violates row-level security policy')) {
+        if (error.message.includes("Could not find the column")) {
+            const columnNameMatch = error.message.match(/'(\w+)'/);
+            const columnName = columnNameMatch ? columnNameMatch[1] : 'a required column';
+            userMessage = `Database Schema Error: The column '${columnName}' is missing from the 'massage_types' table.
+
+This happens when the application code is updated, but the database schema is not. The toggle switch you clicked requires this column to work.
+
+[SOLUTION]:
+1. Go to the "Database Setup" page in the admin panel.
+2. Find the SQL script for the "massage_types" table.
+3. Copy the entire script and run it in your Supabase project's SQL Editor. This will recreate the table correctly.
+
+WARNING: This will DELETE the table and all its data. Please back up any custom massage types you have added first.`;
+        }
+        else if (error.message.includes('violates row-level security policy')) {
             userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing data from being updated. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table. This will fix the security configuration.`;
         }
                             

@@ -423,6 +423,25 @@ export interface AgentApplication {
   submittedAt: string; // ISO Date string
 }
 
+// --- New types for Food Directory ---
+export enum FoodTypeCategory {
+  RiceDishes = 'Rice Dishes (Nasi)',
+  NoodleDishes = 'Noodle Dishes (Mie)',
+  SoupsAndStews = 'Soups & Stews (Soto, Sup, Gulai)',
+  SatayAndGrilled = 'Satay & Grilled (Sate & Bakar)',
+  SnacksAndSweets = 'Snacks & Sweets (Jajanan & Kue)',
+  Other = 'Other Dishes',
+}
+
+export interface FoodType {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  category: FoodTypeCategory;
+  isEnabled?: boolean;
+}
+
 // --- New types for Massage Directory ---
 export enum MassageTypeCategory {
   Western = 'Western Massages',
