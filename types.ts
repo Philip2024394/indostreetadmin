@@ -437,6 +437,7 @@ export interface MassageType {
   description: string;
   imageUrl: string;
   category: MassageTypeCategory;
+  isEnabled?: boolean;
 }
 
 // --- New types for Driver Dashboard ---

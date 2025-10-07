@@ -2,18 +2,18 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import * as api from '../../services/supabase';
 import { MassageType, MassageTypeCategory } from '../../types';
 import MassageTypeEditorModal from './MassageTypeEditorModal';
-import { PlusCircleIcon, PencilIcon, TrashIcon, BookOpenIcon, InformationCircleIcon } from '../shared/Icons';
+import { PlusCircleIcon, PencilIcon, BookOpenIcon, InformationCircleIcon, ExclamationCircleIcon } from '../shared/Icons';
 import SqlCopyBlock from '../shared/SqlCopyBlock';
 import { useContent } from '../../contexts/ContentContext';
+import ToggleSwitch from '../shared/ToggleSwitch';
 
 const MassageDirectoryManagementPage: React.FC = () => {
     const [massageTypes, setMassageTypes] = useState<MassageType[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingType, setEditingType] = useState<MassageType | null>(null);
-    const { content, updateText } = useContent();
-    const [title, setTitle] = useState(content.text['massage-directory-title'] || "IndoStreet Massage Directory");
-    const [subtitle, setSubtitle] = useState(content.text['massage-directory-subtitle'] || "A guide to help you choose the perfect massage for your needs, from international favorites to local healing traditions.");
+    const { content, updateText, updateNumber } = useContent();
+    const [error, setError] = useState<string | null>(null);
 
 
     const fullSeedCount = 15; // The total number of massages in the seed script.
@@ -85,11 +85,13 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
 
     const fetchData = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
             const data = await api.getMassageTypes();
             setMassageTypes(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch massage types:", error);
+            setError(`Failed to load data: ${error.message}. Please check your database connection and RLS policies for the 'massage_types' table.`);
         } finally {
             setLoading(false);
         }
@@ -98,11 +100,6 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
     useEffect(() => {
         fetchData();
     }, [fetchData]);
-
-    useEffect(() => {
-        setTitle(content.text['massage-directory-title'] || "IndoStreet Massage Directory");
-        setSubtitle(content.text['massage-directory-subtitle'] || "A guide to help you choose the perfect massage for your needs, from international favorites to local healing traditions.");
-    }, [content.text]);
 
     const handleOpenModal = (type: MassageType | null = null) => {
         setEditingType(type);
@@ -130,15 +127,17 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this massage type? This action is permanent.')) {
-            try {
-                await api.deleteMassageType(id);
-                fetchData();
-            } catch (error: any) {
-                console.error("Failed to delete massage type:", error);
-                alert(`Failed to delete massage type:\n\n${error.message}`);
-            }
+    const handleToggleEnabled = async (type: MassageType, isEnabled: boolean) => {
+        // Optimistic update
+        setMassageTypes(prev => prev.map(t => t.id === type.id ? { ...t, isEnabled } : t));
+
+        try {
+            await api.updateMassageType(type.id, { isEnabled });
+        } catch (error: any) {
+            console.error("Failed to update massage type status:", error);
+            alert(`Failed to update status: ${error.message}`);
+            // Revert on failure
+            fetchData();
         }
     };
 
@@ -157,8 +156,37 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
         return <div className="text-center p-10">Loading massage directory...</div>;
     }
 
+    if (error) {
+        return (
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                <div className="flex">
+                    <div className="py-1">
+                        <ExclamationCircleIcon className="h-6 w-6 text-red-500 mr-4"/>
+                    </div>
+                    <div>
+                        <p className="font-bold">Data Fetching Error</p>
+                        <p className="text-sm">{error}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
+            <div className="mb-6 bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Directory Visibility</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                    Turn the entire public massage directory page on or off. When off, users will not be able to access it.
+                </p>
+                <ToggleSwitch
+                    enabled={content.numbers['massage-directory-enabled'] === 1}
+                    onChange={(enabled) => updateNumber('massage-directory-enabled', enabled ? 1 : 0)}
+                    enabledText="Directory is LIVE"
+                    disabledText="Directory is HIDDEN"
+                />
+            </div>
+
             <div className="mb-6 bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Page Headers</h3>
                 <p className="text-sm text-gray-500 mb-4">Edit the title and subtitle that appear at the top of the public massage directory page.</p>
@@ -168,9 +196,8 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
                         <input
                             id="massage-directory-title"
                             type="text"
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
-                            onBlur={() => updateText('massage-directory-title', title)}
+                            value={content.text['massage-directory-title'] || "IndoStreet Massage Directory"}
+                            onChange={e => updateText('massage-directory-title', e.target.value)}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                         />
                     </div>
@@ -179,9 +206,8 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
                         <textarea
                             id="massage-directory-subtitle"
                             rows={2}
-                            value={subtitle}
-                            onChange={e => setSubtitle(e.target.value)}
-                            onBlur={() => updateText('massage-directory-subtitle', subtitle)}
+                            value={content.text['massage-directory-subtitle'] || "A guide to help you choose the perfect massage for your needs, from international favorites to local healing traditions."}
+                            onChange={e => updateText('massage-directory-subtitle', e.target.value)}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                         />
                     </div>
@@ -240,9 +266,12 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
                                                     <p className="text-xs text-gray-500 mt-1 max-w-xl truncate">{type.description}</p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center space-x-2 flex-shrink-0">
+                                            <div className="flex items-center space-x-4 flex-shrink-0">
+                                                <ToggleSwitch
+                                                    enabled={type.isEnabled ?? true}
+                                                    onChange={(enabled) => handleToggleEnabled(type, enabled)}
+                                                />
                                                 <button onClick={() => handleOpenModal(type)} className="p-2 text-gray-500 hover:text-orange-600 rounded-full hover:bg-gray-100"><PencilIcon className="w-5 h-5" /></button>
-                                                <button onClick={() => handleDelete(type.id)} className="p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100"><TrashIcon className="w-5 h-5" /></button>
                                             </div>
                                         </div>
                                     ))}

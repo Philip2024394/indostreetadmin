@@ -313,7 +313,8 @@ CREATE TABLE public.massage_types (
     name text NOT NULL UNIQUE,
     description text NOT NULL,
     "imageUrl" text NOT NULL,
-    category text NOT NULL
+    category text NOT NULL,
+    "isEnabled" boolean NOT NULL DEFAULT true
 );
 ${rlsAndPolicyTemplate('massage_types')}`,
         seed_massage_types: `
