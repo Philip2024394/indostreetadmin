@@ -121,9 +121,7 @@ WHERE NOT EXISTS (SELECT 1 FROM public.massage_types WHERE name = 'Prenatal Mass
             fetchData();
         } catch (error: any) {
             console.error("Failed to save massage type:", error);
-            alert(`Failed to save massage type: ${error.message}`);
-        } finally {
-            handleCloseModal();
+            throw error;
         }
     };
 

@@ -98,9 +98,8 @@ WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Kue Lapis');
             }
             fetchData();
         } catch (error: any) {
-            alert(`Failed to save food type: ${error.message}`);
-        } finally {
-            handleCloseModal();
+            console.error("Failed to save food type:", error);
+            throw error;
         }
     };
 

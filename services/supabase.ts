@@ -719,50 +719,80 @@ export const getFoodTypes = async (): Promise<FoodType[]> => {
 };
 
 export const createFoodType = async (data: Omit<FoodType, 'id'>): Promise<FoodType> => {
-    const { data: results, error } = await supabase.from('food_types').insert(data).select();
+    const cleanedName = data.name.replace(/\s+/g, ' ').trim();
+    const processedData = { ...data, name: cleanedName };
+    if (!processedData.name) {
+        throw new Error("Food type name cannot be empty.");
+    }
+    
+    const { data: existing, error: checkError } = await supabase
+        .from('food_types')
+        .select('id')
+        .ilike('name', processedData.name)
+        .limit(1);
+
+    if (checkError) {
+        console.error("Supabase check error:", checkError);
+        throw new Error(checkError.message);
+    }
+
+    if (existing && existing.length > 0) {
+        throw new Error(`A food type with the name "${processedData.name}" already exists. Please choose a different name.`);
+    }
+
+    const { data: results, error } = await supabase.from('food_types').insert(processedData).select();
+    
     if (error) {
-        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` + (error.details ? `\nDetails: ${error.details}` : '') + (error.hint ? `\nHint: ${error.hint}` : '');
-        if (error.message.includes('violates row-level security policy')) {
-            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'food_types' table is preventing new data from being saved. Please check the 'Database Setup' page for the correct SQL script.`;
+        console.error("Supabase insert error:", error);
+        // Handle unique constraint violation specifically for a better UX
+        if (error.code === '23505') {
+            throw new Error(`A food type with the name "${processedData.name}" already exists. Please choose a different name.`);
         }
-        console.error("Supabase insert error:", userMessage);
-        throw new Error(userMessage);
+        throw new Error(error.message);
     }
     if (!results || results.length === 0) {
-        throw new Error(`Create failed for new Food Type. This is likely a Row Level Security (RLS) issue. Please ensure your 'food_types' table has a SELECT policy enabled for authenticated users.`);
+        throw new Error(`Create failed for new Food Type. This is likely a Row Level Security (RLS) issue.`);
     }
     return results[0];
 };
 
 export const updateFoodType = async (id: string, data: Partial<Omit<FoodType, 'id'>>): Promise<FoodType> => {
-    const { data: results, error } = await supabase.from('food_types').update(data).eq('id', id).select();
-    if (error) {
-        let userMessage = `Database Error: Could not update food type.\nMessage: ${error.message || 'An unknown error occurred.'}` +
-                            (error.details ? `\nDetails: ${error.details}` : '') +
-                            (error.hint ? `\nHint: ${error.hint}` : '');
+    const processedData = { ...data };
+    if (data.name) {
+        const cleanedName = data.name.replace(/\s+/g, ' ').trim();
+        processedData.name = cleanedName;
+
+        if (!processedData.name) {
+            throw new Error("Food type name cannot be empty.");
+        }
         
-        if (error.message.includes("Could not find the column")) {
-            const columnNameMatch = error.message.match(/'(\w+)'/);
-            const columnName = columnNameMatch ? columnNameMatch[1] : 'a required column';
-            userMessage = `Database Schema Error: The column '${columnName}' is missing from the 'food_types' table.
+        const { data: existing, error: checkError } = await supabase
+            .from('food_types')
+            .select('id')
+            .ilike('name', processedData.name)
+            .not('id', 'eq', id)
+            .limit(1);
 
-This happens when the application code is updated, but the database schema is not. The toggle switch you clicked requires this column to work.
-
-[SOLUTION]:
-1. Go to the "Database Setup" page in the admin panel.
-2. Find the SQL script for the "food_types" table.
-3. Copy the entire script and run it in your Supabase project's SQL Editor. This will recreate the table correctly.
-
-WARNING: This will DELETE the table and all its data. Please back up any custom food types you have added first.`;
+        if (checkError) {
+            console.error("Supabase check error:", checkError);
+            throw new Error(checkError.message);
         }
-        else if (error.message.includes('violates row-level security policy')) {
-            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'food_types' table is preventing updates. Please check the 'Database Setup' page for the correct SQL script.`;
+
+        if (existing && existing.length > 0) {
+            throw new Error(`A food type with the name "${processedData.name}" already exists. Please choose a different name.`);
         }
-        console.error("Supabase update error:", userMessage);
-        throw new Error(userMessage);
+    }
+
+    const { data: results, error } = await supabase.from('food_types').update(processedData).eq('id', id).select();
+    if (error) {
+        console.error("Supabase update error:", error);
+         if (error.code === '23505') {
+            throw new Error(`A food type with the name "${processedData.name}" already exists. Please choose a different name.`);
+        }
+        throw new Error(error.message);
     }
     if (!results || results.length === 0) {
-        throw new Error(`Update failed for Food Type ID: ${id}. The item was not found or you do not have permission to modify it. Check Row Level Security (RLS) policies.`);
+        throw new Error(`Update failed for Food Type ID: ${id}. The item was not found or you do not have permission to modify it.`);
     }
     return results[0];
 };
@@ -770,12 +800,8 @@ WARNING: This will DELETE the table and all its data. Please back up any custom 
 export const deleteFoodType = async (id: string): Promise<void> => {
     const { error } = await supabase.from('food_types').delete().eq('id', id);
     if (error) {
-        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` + (error.details ? `\nDetails: ${error.details}` : '') + (error.hint ? `\nHint: ${error.hint}` : '');
-        if (error.message.includes('violates row-level security policy')) {
-            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'food_types' table is preventing deletion. Please check the 'Database Setup' page for the correct SQL script.`;
-        }
-        console.error("Supabase delete error:", userMessage);
-        throw new Error(userMessage);
+        console.error("Supabase delete error:", error);
+        throw new Error(error.message);
     }
 };
 
@@ -786,63 +812,83 @@ export const getMassageTypes = async (): Promise<MassageType[]> => {
 };
 
 export const createMassageType = async (data: Omit<MassageType, 'id'>): Promise<MassageType> => {
-    const { data: results, error } = await supabase.from('massage_types').insert(data).select();
+    const cleanedName = data.name.replace(/\s+/g, ' ').trim();
+    const processedData = { ...data, name: cleanedName };
+    if (!processedData.name) {
+        throw new Error("Massage type name cannot be empty.");
+    }
+    
+    const { data: existing, error: checkError } = await supabase
+        .from('massage_types')
+        .select('id')
+        .ilike('name', processedData.name)
+        .limit(1);
+
+    if (checkError) {
+        console.error("Supabase check error:", checkError);
+        throw new Error(checkError.message);
+    }
+
+    if (existing && existing.length > 0) {
+        throw new Error(`A massage type with the name "${processedData.name}" already exists. Please choose a different name.`);
+    }
+
+    const { data: results, error } = await supabase.from('massage_types').insert(processedData).select();
 
     if (error) {
-        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` +
-                            (error.details ? `\nDetails: ${error.details}` : '') +
-                            (error.hint ? `\nHint: ${error.hint}` : '');
-        
-        // Add a specific hint for the most common RLS issue on INSERT.
-        if (error.message.includes('violates row-level security policy')) {
-            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing new data from being saved. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table. This will fix the security configuration.`;
+        console.error("Supabase insert error:", error);
+         if (error.code === '23505') {
+            throw new Error(`A massage type with the name "${processedData.name}" already exists. Please choose a different name.`);
         }
-
-        console.error("Supabase insert error:", userMessage);
-        throw new Error(userMessage);
+        throw new Error(error.message);
     }
     if (!results || results.length === 0) {
-        throw new Error(`Create failed for new Massage Type. The item was not returned after creation. This is likely a Row Level Security (RLS) issue. Please ensure your 'massage_types' table has a SELECT policy enabled for authenticated users.`);
+        throw new Error(`Create failed for new Massage Type. This is likely a Row Level Security (RLS) issue.`);
     }
     return results[0];
 };
 
 export const updateMassageType = async (id: string, data: Partial<Omit<MassageType, 'id'>>): Promise<MassageType> => {
+    const processedData = { ...data };
+    if (data.name) {
+        const cleanedName = data.name.replace(/\s+/g, ' ').trim();
+        processedData.name = cleanedName;
+        if (!processedData.name) {
+            throw new Error("Massage type name cannot be empty.");
+        }
+        
+        const { data: existing, error: checkError } = await supabase
+            .from('massage_types')
+            .select('id')
+            .ilike('name', processedData.name)
+            .not('id', 'eq', id)
+            .limit(1);
+
+        if (checkError) {
+            console.error("Supabase check error:", checkError);
+            throw new Error(checkError.message);
+        }
+
+        if (existing && existing.length > 0) {
+            throw new Error(`A massage type with the name "${processedData.name}" already exists. Please choose a different name.`);
+        }
+    }
     const { data: results, error } = await supabase
         .from('massage_types')
-        .update(data)
+        .update(processedData)
         .eq('id', id)
         .select();
 
     if (error) {
-        let userMessage = `Database Error: Could not update massage type.\nMessage: ${error.message || 'An unknown error occurred.'}` +
-                            (error.details ? `\nDetails: ${error.details}` : '') +
-                            (error.hint ? `\nHint: ${error.hint}` : '');
-
-        if (error.message.includes("Could not find the column")) {
-            const columnNameMatch = error.message.match(/'(\w+)'/);
-            const columnName = columnNameMatch ? columnNameMatch[1] : 'a required column';
-            userMessage = `Database Schema Error: The column '${columnName}' is missing from the 'massage_types' table.
-
-This happens when the application code is updated, but the database schema is not. The toggle switch you clicked requires this column to work.
-
-[SOLUTION]:
-1. Go to the "Database Setup" page in the admin panel.
-2. Find the SQL script for the "massage_types" table.
-3. Copy the entire script and run it in your Supabase project's SQL Editor. This will recreate the table correctly.
-
-WARNING: This will DELETE the table and all its data. Please back up any custom massage types you have added first.`;
+        console.error("Supabase update error:", error);
+         if (error.code === '23505') {
+            throw new Error(`A massage type with the name "${processedData.name}" already exists. Please choose a different name.`);
         }
-        else if (error.message.includes('violates row-level security policy')) {
-            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing data from being updated. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table. This will fix the security configuration.`;
-        }
-                            
-        console.error("Supabase update error:", userMessage);
-        throw new Error(userMessage);
+        throw new Error(error.message);
     }
     
     if (!results || results.length === 0) {
-        throw new Error(`Update failed for Massage Type ID: ${id}. The item was not found or you don't have permission to modify it. Please check Row Level Security (RLS) policies on the 'massage_types' table.`);
+        throw new Error(`Update failed for Massage Type ID: ${id}. The item was not found or you don't have permission to modify it.`);
     }
 
     return results[0];
@@ -852,15 +898,7 @@ WARNING: This will DELETE the table and all its data. Please back up any custom 
 export const deleteMassageType = async (id: string): Promise<void> => {
     const { error } = await supabase.from('massage_types').delete().eq('id', id);
     if (error) {
-        let userMessage = `Database Error: ${error.message || 'An unknown error occurred.'}` +
-                            (error.details ? `\nDetails: ${error.details}` : '') +
-                            (error.hint ? `\nHint: ${error.hint}` : '');
-
-        if (error.message.includes('violates row-level security policy')) {
-            userMessage += `\n\n[PROBABLE CAUSE]: The security policy on the 'massage_types' table is preventing data from being deleted. This usually happens if the table was created manually without the correct policies.\n\n[SOLUTION]: Please go to the 'Database Setup' page in the admin dashboard and run the SQL script provided for the 'massage_types' table to fix the security configuration.`;
-        }
-                            
-        console.error("Supabase delete error:", userMessage);
-        throw new Error(userMessage);
+        console.error("Supabase delete error:", error);
+        throw new Error(error.message);
     }
 };
