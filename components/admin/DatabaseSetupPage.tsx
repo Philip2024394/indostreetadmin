@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import SqlCopyBlock from '../shared/SqlCopyBlock';
 
@@ -177,7 +179,9 @@ CREATE TABLE public.tour_destinations (
     name text NOT NULL,
     category text NOT NULL,
     description text NOT NULL,
-    "imageUrl" text NULL
+    "imageUrl" text NULL,
+    "touristInfo" jsonb NULL,
+    location jsonb NULL
 );
 ${rlsAndPolicyTemplate('tour_destinations')}`,
         content_overrides: `

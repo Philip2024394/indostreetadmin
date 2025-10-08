@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect, useRef } from 'react';
 import { TourDestination } from '../../types';
 import { XIcon } from '../shared/Icons';
 import { blobToBase64 } from '../shared/Editable';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 interface TourEditorModalProps {
   destination: TourDestination | null;
@@ -9,7 +17,6 @@ interface TourEditorModalProps {
   onSave: (data: Omit<TourDestination, 'id'>) => void;
 }
 
-// Fix: Use a const assertion to infer a literal union type instead of string[]
 const categories = [
     'Temples & Historical Sites',
     'Nature & Outdoors',
@@ -21,6 +28,19 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
     const [category, setCategory] = useState<TourDestination['category']>(categories[0]);
     const [description, setDescription] = useState('');
     const [imageUrl, setImageUrl] = useState('');
+    const [touristInfo, setTouristInfo] = useState({
+        food: '',
+        toilets: '',
+        childSafety: '',
+        guideNeeded: '',
+        insectRisk: '',
+        openingHours: '',
+    });
+    const [location, setLocation] = useState<TourDestination['location'] | undefined>(undefined);
+    const [addressString, setAddressString] = useState('');
+
+    const autocompleteInput = useRef<HTMLInputElement>(null);
+    const autocomplete = useRef<any>(null);
 
     useEffect(() => {
         if (destination) {
@@ -28,22 +48,66 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
             setCategory(destination.category);
             setDescription(destination.description);
             setImageUrl(destination.imageUrl || '');
+            setTouristInfo(destination.touristInfo || {
+                food: '', toilets: '', childSafety: '', guideNeeded: '', insectRisk: '', openingHours: '',
+            });
+            setLocation(destination.location);
+            setAddressString(destination.location?.address || '');
         } else {
             // Reset for new entry
             setName('');
             setCategory(categories[0]);
             setDescription('');
             setImageUrl('');
+            setTouristInfo({ food: '', toilets: '', childSafety: '', guideNeeded: '', insectRisk: '', openingHours: '' });
+            setLocation(undefined);
+            setAddressString('');
         }
     }, [destination]);
+    
+    useEffect(() => {
+        if (!window.google || !autocompleteInput.current) {
+            return;
+        }
+
+        autocomplete.current = new window.google.maps.places.Autocomplete(
+            autocompleteInput.current,
+            {
+                componentRestrictions: { country: "id" },
+                fields: ["formatted_address", "geometry", "name"],
+            }
+        );
+
+        autocomplete.current.addListener("place_changed", handlePlaceSelect);
+
+        return () => {
+            if (autocomplete.current) {
+                window.google.maps.event.clearInstanceListeners(autocomplete.current);
+            }
+        };
+    }, []);
+
+    const handlePlaceSelect = () => {
+        const place = autocomplete.current.getPlace();
+        if (place && place.geometry) {
+            const newLocation = {
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+                address: place.formatted_address,
+            };
+            setLocation(newLocation);
+            setAddressString(newLocation.address);
+        }
+    };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !description || !imageUrl) {
-            alert('Please fill out all fields, including the image.');
+            alert('Please fill out name, description, and image.');
             return;
         }
-        onSave({ name, category, description, imageUrl });
+        onSave({ name, category, description, imageUrl, touristInfo, location });
     };
     
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +116,11 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
             const dataUrl = `data:${file.type};base64,${await blobToBase64(file)}`;
             setImageUrl(dataUrl);
         }
+    };
+    
+    const handleTouristInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setTouristInfo(prev => ({ ...prev, [name]: value }));
     };
 
     return (
@@ -71,13 +140,24 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
                         </div>
                         <div>
                             <label htmlFor="dest-category" className="block text-sm font-medium text-gray-700">Category</label>
-                            {/* Fix: Explicitly type the event to ensure correct type inference for e.target.value */}
                             <select id="dest-category" value={category} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as TourDestination['category'])} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm">
                                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                         </div>
+                        <div>
+                            <label htmlFor="dest-location" className="block text-sm font-medium text-gray-700">Location</label>
+                            <input
+                                ref={autocompleteInput}
+                                type="text"
+                                id="dest-location"
+                                placeholder="Start typing an address..."
+                                value={addressString}
+                                onChange={(e) => setAddressString(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+                            />
+                        </div>
                          <div>
-                            <label htmlFor="dest-description" className="block text-sm font-medium text-gray-700">Description</label>
+                            <label htmlFor="dest-description" className="block text-sm font-medium text-gray-700">Bio / Description</label>
                             <textarea id="dest-description" value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" />
                         </div>
                         <div>
@@ -113,6 +193,18 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
                                 </label>
                             </div>
                         </div>
+                        
+                        <fieldset className="border p-4 rounded-md mt-4">
+                            <legend className="px-2 font-semibold text-gray-700 text-sm">Tourist Information</legend>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                <InputField label="Food Availability" name="food" value={touristInfo.food} onChange={handleTouristInfoChange} placeholder="e.g., Many restaurants nearby" />
+                                <InputField label="Toilets" name="toilets" value={touristInfo.toilets} onChange={handleTouristInfoChange} placeholder="e.g., Yes / Basic facilities" />
+                                <InputField label="Child Safety" name="childSafety" value={touristInfo.childSafety} onChange={handleTouristInfoChange} placeholder="e.g., Yes, but supervision needed" />
+                                <InputField label="Guide Needed?" name="guideNeeded" value={touristInfo.guideNeeded} onChange={handleTouristInfoChange} placeholder="e.g., Recommended" />
+                                <InputField label="Insect Risk" name="insectRisk" value={touristInfo.insectRisk} onChange={handleTouristInfoChange} placeholder="e.g., Moderate. Repellent advised." />
+                                <InputField label="Opening Hours" name="openingHours" value={touristInfo.openingHours} onChange={handleTouristInfoChange} placeholder="e.g., 7:30 AM - 5:00 PM" />
+                            </div>
+                        </fieldset>
                     </div>
                     <div className="p-4 border-t flex justify-end space-x-2">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
@@ -123,5 +215,21 @@ const TourEditorModal: React.FC<TourEditorModalProps> = ({ destination, onClose,
         </div>
     );
 };
+
+const InputField: React.FC<{ label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder?: string }> = 
+({ label, name, value, onChange, placeholder }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
+        <input 
+            type="text" 
+            id={name} 
+            name={name} 
+            value={value || ''} 
+            onChange={onChange}
+            placeholder={placeholder}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+        />
+    </div>
+);
 
 export default TourEditorModal;

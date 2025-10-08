@@ -1,4 +1,5 @@
 
+
 export enum Role {
   Admin = 'admin',
   Driver = 'driver',
@@ -293,6 +294,19 @@ export interface TourDestination {
   category: 'Temples & Historical Sites' | 'Nature & Outdoors' | 'Culture & Art';
   description: string;
   imageUrl?: string;
+  touristInfo?: {
+    food: string;
+    toilets: string;
+    childSafety: string;
+    guideNeeded: string;
+    insectRisk: string;
+    openingHours: string;
+  };
+  location?: {
+    lat: number;
+    lng: number;
+    address: string;
+  };
 }
 
 export interface ContentOverrides {

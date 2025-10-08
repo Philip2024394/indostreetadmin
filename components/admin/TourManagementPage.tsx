@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import * as api from '../../services/supabase';
 import { TourDestination } from '../../types';
 import TourEditorModal from './TourEditorModal';
-import { PlusCircleIcon, PencilIcon, TrashIcon, LandmarkIcon } from '../shared/Icons';
+import { PlusCircleIcon, PencilIcon, TrashIcon, LandmarkIcon, MapPinIcon } from '../shared/Icons';
 
 const TourManagementPage: React.FC = () => {
     const [destinations, setDestinations] = useState<TourDestination[]>([]);
@@ -98,7 +98,18 @@ const TourManagementPage: React.FC = () => {
                                 )}
                                 <div>
                                     <p className="font-semibold text-gray-800">{dest.name}</p>
-                                    <p className="text-sm text-gray-600">{dest.category}</p>
+                                    <p className="text-sm text-gray-600">
+                                        {dest.category}
+                                        {dest.touristInfo?.openingHours && (
+                                            <span className="ml-2 pl-2 border-l border-gray-300">{dest.touristInfo.openingHours}</span>
+                                        )}
+                                    </p>
+                                    {dest.location?.address && (
+                                        <p className="text-xs text-gray-500 mt-1 flex items-center">
+                                            <MapPinIcon className="w-3 h-3 mr-1 flex-shrink-0" />
+                                            {dest.location.address}
+                                        </p>
+                                    )}
                                     <p className="text-xs text-gray-500 mt-1 max-w-xl">{dest.description}</p>
                                 </div>
                             </div>
