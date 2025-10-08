@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const LogoutIcon: React.FC<{className?: string}> = ({ className }) => (

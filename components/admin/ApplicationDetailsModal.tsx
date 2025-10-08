@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { PartnerApplication } from '../../types';
 import { IdCardIcon, CarIcon } from '../shared/Icons';

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, Role, PartnerType } from './types';
 import LoginPage from './components/auth/LoginPage';

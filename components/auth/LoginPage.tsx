@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import * as api from '../../services/supabase';
 import { supabaseInitializationError } from '../../services/supabase';
