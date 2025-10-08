@@ -713,9 +713,11 @@ export const submitAgentApplication = async (applicationData: Omit<AgentApplicat
 
 // --- Food Directory API ---
 export const getFoodTypes = async (): Promise<FoodType[]> => {
-    const { data, error } = await supabase.from('food_types').select('*');
+    const { data, error } = await supabase
+        .from('food_types')
+        .select('id, name, description, "imageUrl", category, "isEnabled"');
     if (error) throw error;
-    return data || [];
+    return (data as FoodType[]) || [];
 };
 
 export const createFoodType = async (data: Omit<FoodType, 'id'>): Promise<FoodType> => {
