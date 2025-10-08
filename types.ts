@@ -425,12 +425,10 @@ export interface AgentApplication {
 
 // --- New types for Food Directory ---
 export enum FoodTypeCategory {
-  RiceDishes = 'Rice Dishes (Nasi)',
-  NoodleDishes = 'Noodle Dishes (Mie)',
-  SoupsAndStews = 'Soups & Stews (Soto, Sup, Gulai)',
-  SatayAndGrilled = 'Satay & Grilled (Sate & Bakar)',
-  SnacksAndSweets = 'Snacks & Sweets (Jajanan & Kue)',
-  Other = 'Other Dishes',
+  RiceAndNoodle = 'Rice and Noodle Dishes',
+  SavorySnacks = 'Savory Snacks & Fritters',
+  TraditionalRegional = 'Traditional & Regional Dishes',
+  DrinksDesserts = 'Drinks & Desserts',
 }
 
 export interface FoodType {

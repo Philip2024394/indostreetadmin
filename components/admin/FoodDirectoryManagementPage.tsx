@@ -22,43 +22,43 @@ const FoodDirectoryManagementPage: React.FC = () => {
 -- It is safe to run multiple times as it checks for existing entries before inserting.
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Nasi Goreng', 'Indonesian fried rice, seasoned with sweet soy sauce, shallots, and tamarind, often served with a fried egg.', 'https://placehold.co/300x200/f97316/ffffff?text=Nasi+Goreng', 'Rice Dishes (Nasi)'
+SELECT 'Nasi Goreng', 'Indonesian fried rice, seasoned with sweet soy sauce, shallots, and tamarind, often served with a fried egg.', 'https://placehold.co/300x200/f97316/ffffff?text=Nasi+Goreng', 'Rice and Noodle Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Nasi Goreng');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Mie Goreng', 'Spicy fried noodle dish, common in Indonesia, made with thin yellow noodles fried with garlic, onion, and various seasonings.', 'https://placehold.co/300x200/f97316/ffffff?text=Mie+Goreng', 'Noodle Dishes (Mie)'
+SELECT 'Mie Goreng', 'Spicy fried noodle dish, common in Indonesia, made with thin yellow noodles fried with garlic, onion, and various seasonings.', 'https://placehold.co/300x200/f97316/ffffff?text=Mie+Goreng', 'Rice and Noodle Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Mie Goreng');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Sate Ayam', 'Marinated chicken skewers, grilled over charcoal and served with a rich peanut sauce, shallots, and chili.', 'https://placehold.co/300x200/f97316/ffffff?text=Sate+Ayam', 'Satay & Grilled (Sate & Bakar)'
+SELECT 'Sate Ayam', 'Marinated chicken skewers, grilled over charcoal and served with a rich peanut sauce, shallots, and chili.', 'https://placehold.co/300x200/f97316/ffffff?text=Sate+Ayam', 'Traditional & Regional Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Sate Ayam');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Rendang', 'A rich and tender coconut beef stew which is explosively flavorful, originating from the Minangkabau people of Indonesia.', 'https://placehold.co/300x200/f97316/ffffff?text=Rendang', 'Soups & Stews (Soto, Sup, Gulai)'
+SELECT 'Rendang', 'A rich and tender coconut beef stew which is explosively flavorful, originating from the Minangkabau people of Indonesia.', 'https://placehold.co/300x200/f97316/ffffff?text=Rendang', 'Traditional & Regional Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Rendang');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Gado-gado', 'An Indonesian salad of slightly boiled or blanched vegetables and hard-boiled eggs, served with a peanut sauce dressing.', 'https://placehold.co/300x200/f97316/ffffff?text=Gado-gado', 'Other Dishes'
+SELECT 'Gado-gado', 'An Indonesian salad of slightly boiled or blanched vegetables and hard-boiled eggs, served with a peanut sauce dressing.', 'https://placehold.co/300x200/f97316/ffffff?text=Gado-gado', 'Traditional & Regional Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Gado-gado');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Soto Ayam', 'A traditional Indonesian chicken soup with a clear broth, vermicelli, and boiled egg, often served with rice.', 'https://placehold.co/300x200/f97316/ffffff?text=Soto+Ayam', 'Soups & Stews (Soto, Sup, Gulai)'
+SELECT 'Soto Ayam', 'A traditional Indonesian chicken soup with a clear broth, vermicelli, and boiled egg, often served with rice.', 'https://placehold.co/300x200/f97316/ffffff?text=Soto+Ayam', 'Traditional & Regional Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Soto Ayam');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Bakso', 'Indonesian meatball soup, typically made from beef, served in a bowl of beef broth with noodles, tofu, and egg.', 'https://placehold.co/300x200/f97316/ffffff?text=Bakso', 'Soups & Stews (Soto, Sup, Gulai)'
+SELECT 'Bakso', 'Indonesian meatball soup, typically made from beef, served in a bowl of beef broth with noodles, tofu, and egg.', 'https://placehold.co/300x200/f97316/ffffff?text=Bakso', 'Traditional & Regional Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Bakso');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Martabak', 'A stuffed pancake or pan-fried bread which is commonly found in Southeast Asia. Can be sweet or savory.', 'https://placehold.co/300x200/f97316/ffffff?text=Martabak', 'Snacks & Sweets (Jajanan & Kue)'
+SELECT 'Martabak', 'A stuffed pancake or pan-fried bread which is commonly found in Southeast Asia. Can be sweet or savory.', 'https://placehold.co/300x200/f97316/ffffff?text=Martabak', 'Savory Snacks & Fritters'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Martabak');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Nasi Padang', 'A miniature banquet of meats, fish, vegetables, and spicy sambals eaten with plain white rice.', 'https://placehold.co/300x200/f97316/ffffff?text=Nasi+Padang', 'Rice Dishes (Nasi)'
+SELECT 'Nasi Padang', 'A miniature banquet of meats, fish, vegetables, and spicy sambals eaten with plain white rice.', 'https://placehold.co/300x200/f97316/ffffff?text=Nasi+Padang', 'Rice and Noodle Dishes'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Nasi Padang');
 
 INSERT INTO public.food_types (name, description, "imageUrl", category)
-SELECT 'Kue Lapis', 'A traditional Indonesian layered cake, typically made of rice flour, coconut milk, and sugar.', 'https://placehold.co/300x200/f97316/ffffff?text=Kue+Lapis', 'Snacks & Sweets (Jajanan & Kue)'
+SELECT 'Kue Lapis', 'A traditional Indonesian layered cake, typically made of rice flour, coconut milk, and sugar.', 'https://placehold.co/300x200/f97316/ffffff?text=Kue+Lapis', 'Drinks & Desserts'
 WHERE NOT EXISTS (SELECT 1 FROM public.food_types WHERE name = 'Kue Lapis');
 `;
 
