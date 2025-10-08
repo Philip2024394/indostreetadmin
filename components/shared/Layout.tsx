@@ -7,7 +7,7 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, ClipboardListIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, PaperAirplaneIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon } from './Icons';
 
 type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
@@ -111,14 +111,6 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
               <button onClick={() => handleViewClick('tours')} className={`${navLinkClasses} ${currentView === 'tours' ? activeNavLinkClasses : ''}`}>
                 <LandmarkIcon className="w-5 h-5 mr-3" />
                 Destinations
-              </button>
-              <button onClick={() => handleViewClick('siteContent')} className={`${navLinkClasses} ${currentView === 'siteContent' ? activeNavLinkClasses : ''}`}>
-                <ClipboardListIcon className="w-5 h-5 mr-3" />
-                Site Content
-              </button>
-               <button onClick={() => handleViewClick('communications')} className={`${navLinkClasses} ${currentView === 'communications' ? activeNavLinkClasses : ''}`}>
-                <PaperAirplaneIcon className="w-5 h-5 mr-3" />
-                Communications
               </button>
           </>
       );
