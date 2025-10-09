@@ -1,17 +1,73 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import * as api from '../../services/supabase';
 import { DrawerConfig, DrawerCategory, DrawerItem } from '../../types';
 import { iconMap, iconNames } from '../shared/Icons';
 import { PlusCircleIcon, PencilIcon, TrashIcon, XIcon, CheckIcon, DocumentTextIcon } from '../shared/Icons';
 
+const InputField: React.FC<{ label: string, value: string, onChange: (val: string) => void }> = ({ label, value, onChange }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <input value={value} onChange={e => onChange(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2"/>
+    </div>
+);
+
+const NewCategoryForm: React.FC<{ onSave: (name: string) => void; onCancel: () => void; }> = ({ onSave, onCancel }) => {
+    const [name, setName] = useState('');
+    return (
+        <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-lg">
+            <h5 className="font-bold text-gray-700 mb-2">New Category</h5>
+            <InputField label="Category Name" value={name} onChange={setName} />
+            <div className="mt-4 flex justify-end space-x-2">
+                <button onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm">Cancel</button>
+                <button onClick={() => onSave(name)} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">Save Category</button>
+            </div>
+        </div>
+    );
+};
+
+const NewItemForm: React.FC<{ onSave: (item: Omit<DrawerItem, 'id'>) => void; onCancel: () => void; }> = ({ onSave, onCancel }) => {
+    const [newItem, setNewItem] = useState<Omit<DrawerItem, 'id'>>({
+        name: '',
+        link: '',
+        icon: 'DocumentTextIcon',
+    });
+
+    const handleSave = () => {
+        if (newItem.name.trim()) {
+            onSave(newItem);
+        }
+    };
+
+    return (
+        <div className="p-4 bg-orange-50 border-t">
+            <h5 className="font-bold text-gray-700 mb-2">New Item</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <InputField label="Name" value={newItem.name} onChange={val => setNewItem(p => ({...p, name: val}))} />
+                 <InputField label="Link/URL" value={newItem.link} onChange={val => setNewItem(p => ({...p, link: val}))} />
+                 <div>
+                    <label className="block text-sm font-medium text-gray-700">Icon</label>
+                    <select value={newItem.icon} onChange={e => setNewItem(p => ({...p, icon: e.target.value}))} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                        {iconNames.map(name => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                 </div>
+            </div>
+            <div className="mt-4 flex justify-end space-x-2">
+                <button onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm">Cancel</button>
+                <button onClick={handleSave} className="px-4 py-2 bg-green-500 text-white rounded-md text-sm">Save Item</button>
+            </div>
+        </div>
+    );
+};
+
+
 const DrawerConfigPage: React.FC = () => {
     const [config, setConfig] = useState<DrawerConfig>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
-    
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [addingItemToCategory, setAddingItemToCategory] = useState<string | null>(null);
+
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError('');
@@ -40,12 +96,12 @@ const DrawerConfigPage: React.FC = () => {
             setSaving(false);
         }
     };
-    
-    const addCategory = () => {
-        const name = prompt("Enter new category name:");
-        if (name) {
-            setConfig(prev => [...prev, { id: Date.now().toString(), name, items: [] }]);
+
+    const handleAddCategory = (name: string) => {
+        if (name.trim()) {
+            setConfig(prev => [...prev, { id: Date.now().toString(), name: name.trim(), items: [] }]);
         }
+        setIsAddingCategory(false);
     };
 
     const deleteCategory = (catId: string) => {
@@ -54,12 +110,10 @@ const DrawerConfigPage: React.FC = () => {
         }
     };
 
-    const addItem = (catId: string) => {
-        const name = prompt("Enter new item name:");
-        if (name) {
-            const newItem: DrawerItem = { id: Date.now().toString(), name, icon: 'DocumentTextIcon', link: '#' };
-            setConfig(prev => prev.map(c => c.id === catId ? { ...c, items: [...c.items, newItem] } : c));
-        }
+    const handleAddItem = (catId: string, itemData: Omit<DrawerItem, 'id'>) => {
+        const newItem: DrawerItem = { id: Date.now().toString(), ...itemData };
+        setConfig(prev => prev.map(c => c.id === catId ? { ...c, items: [...c.items, newItem] } : c));
+        setAddingItemToCategory(null);
     };
     
     const updateItem = (catId: string, itemId: string, updatedItem: DrawerItem) => {
@@ -94,17 +148,31 @@ const DrawerConfigPage: React.FC = () => {
                             <ItemRow key={item.id} item={item} onUpdate={(updated) => updateItem(category.id, item.id, updated)} onDelete={() => deleteItem(category.id, item.id)}/>
                         ))}
                     </div>
-                     <div className="p-4">
-                        <button onClick={() => addItem(category.id)} className="flex items-center text-sm text-orange-600 font-medium hover:text-orange-800">
-                            <PlusCircleIcon className="w-5 h-5 mr-1"/> Add Item to this Category
-                        </button>
-                    </div>
+                    {addingItemToCategory === category.id ? (
+                        <NewItemForm
+                            onSave={(itemData) => handleAddItem(category.id, itemData)}
+                            onCancel={() => setAddingItemToCategory(null)}
+                        />
+                    ) : (
+                         <div className="p-4">
+                            <button onClick={() => setAddingItemToCategory(category.id)} className="flex items-center text-sm text-orange-600 font-medium hover:text-orange-800">
+                                <PlusCircleIcon className="w-5 h-5 mr-1"/> Add Item to this Category
+                            </button>
+                        </div>
+                    )}
                 </div>
             ))}
-
-            <button onClick={addCategory} className="w-full p-4 bg-white rounded-lg shadow-md text-center text-orange-600 font-bold hover:bg-orange-50">
-                + Add New Category
-            </button>
+            
+            {isAddingCategory ? (
+                <NewCategoryForm 
+                    onSave={handleAddCategory}
+                    onCancel={() => setIsAddingCategory(false)}
+                />
+            ) : (
+                <button onClick={() => setIsAddingCategory(true)} className="w-full p-4 bg-white rounded-lg shadow-md text-center text-orange-600 font-bold hover:bg-orange-50">
+                    + Add New Category
+                </button>
+            )}
         </div>
     );
 };
@@ -152,19 +220,14 @@ const ItemRow: React.FC<ItemRowProps> = ({ item, onUpdate, onDelete }) => {
                  </div>
             </div>
             <div className="mt-4 flex justify-end space-x-2">
-                <button onClick={() => setIsEditing(false)} className="p-2 text-gray-500 hover:text-gray-800"><XIcon className="w-5 h-5"/></button>
+                <button onClick={() => { setIsEditing(false); setEditData(item); }} className="p-2 text-gray-500 hover:text-gray-800"><XIcon className="w-5 h-5"/></button>
                 <button onClick={() => { onUpdate(editData); setIsEditing(false); }} className="p-2 text-green-500 hover:text-green-700"><CheckIcon className="w-5 h-5"/></button>
             </div>
         </div>
     );
 };
 
-const InputField: React.FC<{ label: string, value: string, onChange: (val: string) => void }> = ({ label, value, onChange }) => (
-    <div>
-        <label className="block text-sm font-medium text-gray-700">{label}</label>
-        <input value={value} onChange={e => onChange(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2"/>
-    </div>
-);
+
 
 
 export default DrawerConfigPage;
