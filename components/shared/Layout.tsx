@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, Fragment } from 'react';
 import { User, Role, AdminMessage } from '../../types';
 import * as api from '../../services/supabase';
@@ -10,7 +8,7 @@ import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
 import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, CogIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup' | 'drawerConfig';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup' | 'drawerConfig';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {

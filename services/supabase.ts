@@ -1,5 +1,4 @@
 
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   User,
@@ -916,7 +915,7 @@ export const getDrawerConfig = async (): Promise<DrawerConfig> => {
 };
 
 export const updateDrawerConfig = async (newConfig: DrawerConfig): Promise<DrawerConfig> => {
-    const { data, error } = await supabase.from('drawer_config').upsert({ id: DRAWER_CONFIG_ID, name: 'default', config: newConfig }).select('config').single();
+    const { data, error } = await supabase.from('drawer_config').upsert({ id: DRAWER_CONFIG_ID, name: 'default', config: newConfig, is_public: true, section_order: 0 }).select('config').single();
     if (error) throw error;
     return (data as any).config;
 };

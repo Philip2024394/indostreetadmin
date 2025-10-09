@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import SqlCopyBlock from '../shared/SqlCopyBlock';
 
@@ -206,7 +205,7 @@ CREATE TABLE public.drawer_config (
   is_public boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  "order" integer NULL
+  "section_order" integer NULL
 );
 -- Create index for public configs
 CREATE INDEX IF NOT EXISTS drawer_config_is_public_idx ON public.drawer_config USING btree (is_public);
