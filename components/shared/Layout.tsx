@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, Fragment } from 'react';
 import { User, Role, AdminMessage } from '../../types';
 import * as api from '../../services/supabase';
@@ -7,9 +8,9 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, CogIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'siteContent' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup' | 'drawerConfig';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
@@ -111,6 +112,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
               <button onClick={() => handleViewClick('tours')} className={`${navLinkClasses} ${currentView === 'tours' ? activeNavLinkClasses : ''}`}>
                 <LandmarkIcon className="w-5 h-5 mr-3" />
                 Destinations
+              </button>
+              <button onClick={() => handleViewClick('drawerConfig')} className={`${navLinkClasses} ${currentView === 'drawerConfig' ? activeNavLinkClasses : ''}`}>
+                <CogIcon className="w-5 h-5 mr-3" />
+                Drawer Configuration
               </button>
           </>
       );

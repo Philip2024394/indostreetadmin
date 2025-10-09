@@ -488,3 +488,19 @@ export interface Payout {
   bankName: string;
   accountNumberLast4: string;
 }
+
+// --- New types for Drawer Configuration ---
+export interface DrawerItem {
+  id: string;
+  name: string;
+  icon: string; // Name of the icon component, e.g., 'UserGroupIcon'
+  link: string;
+}
+
+export interface DrawerCategory {
+  id: string;
+  name: string;
+  items: DrawerItem[];
+}
+
+export type DrawerConfig = DrawerCategory[];

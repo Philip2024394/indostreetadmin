@@ -195,6 +195,29 @@ CREATE TABLE public.content_overrides (
     assets jsonb
 );
 ${rlsAndPolicyTemplate('content_overrides')}`,
+        drawer_config: `
+-- Table for dynamic drawer configuration
+-- WARNING: This will drop the existing table and its data.
+DROP TABLE IF EXISTS public.drawer_config;
+CREATE TABLE public.drawer_config (
+  id uuid NOT NULL PRIMARY KEY,
+  name text NOT NULL,
+  config jsonb NOT NULL DEFAULT '[]'::jsonb,
+  is_public boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  "order" integer NULL
+);
+-- Create index for public configs
+CREATE INDEX IF NOT EXISTS drawer_config_is_public_idx ON public.drawer_config USING btree (is_public);
+
+${rlsAndPolicyTemplate('drawer_config')}
+
+-- Insert a default row for the single configuration used by the app
+INSERT INTO public.drawer_config (id, name, config)
+VALUES ('00000000-0000-0000-0000-000000000001', 'default', '[]'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+`,
         renewal_submissions: `
 -- Table for membership renewal submissions
 -- WARNING: This will drop the existing table and its data.

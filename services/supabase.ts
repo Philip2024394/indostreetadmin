@@ -31,6 +31,7 @@ import {
   Feedback,
   Payout,
   FoodType,
+  DrawerConfig,
 } from '../types';
 
 const supabaseUrl = "https://ovfhgfzdlwgjtzsfsgzf.supabase.co";
@@ -903,4 +904,19 @@ export const deleteMassageType = async (id: string): Promise<void> => {
         console.error("Supabase delete error:", error);
         throw new Error(error.message);
     }
+};
+
+// --- Drawer Config API ---
+const DRAWER_CONFIG_ID = '00000000-0000-0000-0000-000000000001';
+
+export const getDrawerConfig = async (): Promise<DrawerConfig> => {
+    const { data, error } = await supabase.from('drawer_config').select('config').eq('id', DRAWER_CONFIG_ID).maybeSingle();
+    if (error) throw error;
+    return (data as any)?.config || [];
+};
+
+export const updateDrawerConfig = async (newConfig: DrawerConfig): Promise<DrawerConfig> => {
+    const { data, error } = await supabase.from('drawer_config').upsert({ id: DRAWER_CONFIG_ID, name: 'default', config: newConfig }).select('config').single();
+    if (error) throw error;
+    return (data as any).config;
 };

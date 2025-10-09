@@ -1,17 +1,19 @@
 
+
 import React, { useState } from 'react';
 import { User } from '../../types';
 import Layout from '../shared/Layout';
 import TourManagementPage from './TourManagementPage';
 import MassageDirectoryManagementPage from './MassageDirectoryManagementPage';
 import FoodDirectoryManagementPage from './FoodDirectoryManagementPage';
+import DrawerConfigPage from './DrawerConfigPage';
 
 interface AdminDashboardProps {
   user: User;
   onLogout: () => void;
 }
 
-type AdminView = 'foodDirectory' | 'massageDirectory' | 'tours';
+type AdminView = 'foodDirectory' | 'massageDirectory' | 'tours' | 'drawerConfig';
 
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
@@ -26,6 +28,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         case 'foodDirectory': return 'Food Directory Management';
         case 'massageDirectory': return 'Massage Directory Management';
         case 'tours': return 'Destination Management';
+        case 'drawerConfig': return 'Side Drawer Configuration';
         default: return 'Admin Dashboard';
     }
   };
@@ -38,6 +41,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <MassageDirectoryManagementPage />;
         case 'tours':
             return <TourManagementPage />;
+        case 'drawerConfig':
+            return <DrawerConfigPage />;
         default:
             return (
                  <div className="bg-white p-6 rounded-lg shadow-md">
