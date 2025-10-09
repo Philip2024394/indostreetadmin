@@ -1,8 +1,49 @@
-
 import React from 'react';
 import SqlCopyBlock from '../shared/SqlCopyBlock';
 
 const DatabaseSetupPage: React.FC = () => {
+    const frontendPoliciesSql = `
+-- This script provides more secure, read-only policies for tables the public-facing frontend app needs to access.
+-- It allows anyone to READ data from these tables, but NOT write, update, or delete.
+--
+-- IMPORTANT: The individual table scripts on this page create a very permissive "allow all" policy for development.
+-- To use THESE more secure policies, you should ensure any "Allow all access to all users" policies are removed from these tables.
+-- You can do this from the Supabase Dashboard (Authentication -> Policies) or by running this script, which attempts to drop them first.
+
+-- This PL/pgSQL block iterates through all public-facing tables and applies the policies.
+-- You can run this entire block at once in your Supabase SQL Editor.
+
+DO $$
+DECLARE
+    t_name TEXT;
+    tables TEXT[] := ARRAY[
+        'partners', 'vehicles', 'rooms', 'vendor_items', 'food_types', 'massage_types', 
+        'tour_destinations', 'drawer_config', 'bikeimages', 'carimages', 'truckimages', 
+        'content_overrides'
+    ];
+BEGIN
+    FOREACH t_name IN ARRAY tables
+    LOOP
+        -- Enable RLS on the table if not already enabled.
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', t_name);
+        
+        -- Drop the old, insecure permissive policy if it exists.
+        EXECUTE format('DROP POLICY IF EXISTS "Allow all access to all users" ON public.%I;', t_name);
+
+        -- Drop the new policies if they already exist, to make this script re-runnable.
+        EXECUTE format('DROP POLICY IF EXISTS "Public read-only access" ON public.%I;', t_name);
+        EXECUTE format('DROP POLICY IF EXISTS "Allow portal users full access" ON public.%I;', t_name);
+
+        -- Create a new policy that only allows public read (SELECT) for anonymous users.
+        EXECUTE format('CREATE POLICY "Public read-only access" ON public.%I FOR SELECT USING (true);', t_name);
+
+        -- Also create a policy to ensure authenticated users of the PARTNER PORTAL can still do everything.
+        EXECUTE format('CREATE POLICY "Allow portal users full access" ON public.%I FOR ALL TO authenticated USING (true) WITH CHECK (true);', t_name);
+    END LOOP;
+END;
+$$;
+`;
+
     const rlsAndPolicyTemplate = (tableName: string) => `
 -- 1. Enable Row Level Security
 ALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;
@@ -186,7 +227,7 @@ ${rlsAndPolicyTemplate('tour_destinations')}`,
         content_overrides: `
 -- Table for CMS content overrides (used for Editable component)
 -- WARNING: This will drop the existing table and its data.
-DROP TABLE IF EXISTS public.content_overrides;
+DROP TABLE IF EXISTS public.content_overrides CASCADE;
 CREATE TABLE public.content_overrides (
     id integer NOT NULL PRIMARY KEY,
     text jsonb,
@@ -194,10 +235,55 @@ CREATE TABLE public.content_overrides (
     assets jsonb
 );
 ${rlsAndPolicyTemplate('content_overrides')}`,
+        bikeimages: `
+-- Table for bike driver status images
+-- WARNING: This will drop the existing table and its data.
+DROP TABLE IF EXISTS public.bikeimages;
+CREATE TABLE public.bikeimages (
+    id integer NOT NULL PRIMARY KEY,
+    searching text NULL,
+    on_the_way text NULL,
+    arrived text NULL,
+    completed text NULL
+);
+${rlsAndPolicyTemplate('bikeimages')}
+-- Insert the single row for configuration
+INSERT INTO public.bikeimages (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+`,
+        carimages: `
+-- Table for car driver status images
+-- WARNING: This will drop the existing table and its data.
+DROP TABLE IF EXISTS public.carimages;
+CREATE TABLE public.carimages (
+    id integer NOT NULL PRIMARY KEY,
+    searching text NULL,
+    on_the_way text NULL,
+    arrived text NULL,
+    completed text NULL
+);
+${rlsAndPolicyTemplate('carimages')}
+-- Insert the single row for configuration
+INSERT INTO public.carimages (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+`,
+        truckimages: `
+-- Table for truck driver status images
+-- WARNING: This will drop the existing table and its data.
+DROP TABLE IF EXISTS public.truckimages;
+CREATE TABLE public.truckimages (
+    id integer NOT NULL PRIMARY KEY,
+    searching text NULL,
+    on_the_way text NULL,
+    arrived text NULL,
+    completed text NULL
+);
+${rlsAndPolicyTemplate('truckimages')}
+-- Insert the single row for configuration
+INSERT INTO public.truckimages (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+`,
         drawer_config: `
 -- Table for dynamic drawer configuration
 -- WARNING: This will drop the existing table and its data.
-DROP TABLE IF EXISTS public.drawer_config;
+DROP TABLE IF EXISTS public.drawer_config CASCADE;
 CREATE TABLE public.drawer_config (
   id uuid NOT NULL PRIMARY KEY,
   name text NOT NULL,
@@ -266,6 +352,7 @@ CREATE TABLE public.vehicles (
     "operatingHours" text NULL,
     "listingType" text NULL DEFAULT 'rent'::text,
     "salePrice" numeric NULL,
+    image_set jsonb NULL,
     CONSTRAINT vehicles_partnerId_fkey FOREIGN KEY ("partnerId") REFERENCES public.partners(id) ON DELETE SET NULL
 );
 ${rlsAndPolicyTemplate('vehicles')}`,
@@ -332,6 +419,7 @@ CREATE TABLE public.agent_applications (
 ${rlsAndPolicyTemplate('agent_applications')}`,
         massage_types: `
 -- Table for the massage directory
+-- This script creates the table and sets up secure RLS policies for both admin (full access) and public (read-only) use.
 -- WARNING: This will drop the existing table and its data.
 DROP TABLE IF EXISTS public.massage_types;
 CREATE TABLE public.massage_types (
@@ -342,9 +430,26 @@ CREATE TABLE public.massage_types (
     category text NOT NULL,
     "isEnabled" boolean NOT NULL DEFAULT true
 );
-${rlsAndPolicyTemplate('massage_types')}`,
+
+-- 1. Enable Row Level Security (RLS)
+ALTER TABLE public.massage_types ENABLE ROW LEVEL SECURITY;
+
+-- 2. Policy for Admin Portal (full access for authenticated users)
+DROP POLICY IF EXISTS "Allow portal users full access" ON public.massage_types;
+CREATE POLICY "Allow portal users full access"
+ON public.massage_types
+FOR ALL TO authenticated
+USING (true) WITH CHECK (true);
+
+-- 3. Policy for Frontend App (read-only for everyone)
+DROP POLICY IF EXISTS "Public read-only access" ON public.massage_types;
+CREATE POLICY "Public read-only access"
+ON public.massage_types
+FOR SELECT USING (true);
+`,
         food_types: `
 -- Table for the food directory
+-- This script creates the table and sets up secure RLS policies for both admin (full access) and public (read-only) use.
 -- WARNING: This will drop the existing table and its data.
 DROP TABLE IF EXISTS public.food_types;
 CREATE TABLE public.food_types (
@@ -355,7 +460,23 @@ CREATE TABLE public.food_types (
     category text NOT NULL,
     "isEnabled" boolean NOT NULL DEFAULT true
 );
-${rlsAndPolicyTemplate('food_types')}`,
+
+-- 1. Enable Row Level Security (RLS)
+ALTER TABLE public.food_types ENABLE ROW LEVEL SECURITY;
+
+-- 2. Policy for Admin Portal (full access for authenticated users)
+DROP POLICY IF EXISTS "Allow portal users full access" ON public.food_types;
+CREATE POLICY "Allow portal users full access"
+ON public.food_types
+FOR ALL TO authenticated
+USING (true) WITH CHECK (true);
+
+-- 3. Policy for Frontend App (read-only for everyone)
+DROP POLICY IF EXISTS "Public read-only access" ON public.food_types;
+CREATE POLICY "Public read-only access"
+ON public.food_types
+FOR SELECT USING (true);
+`,
         seed_massage_types: `
 -- This script pre-populates the 'massage_types' table with a standard list of common massages.
 -- It is safe to run multiple times as it checks for existing entries before inserting.
@@ -466,6 +587,12 @@ ${rlsAndPolicyTemplate('payouts')}`
                     <strong>Warning:</strong> These scripts will delete any existing tables with the same name. Always back up your data first.
                 </p>
             </div>
+            
+            <SqlCopyBlock 
+                title="Frontend App Access Policies (Public Read-Only)" 
+                sql={frontendPoliciesSql}
+                sqlId="frontend-public-policies"
+            />
 
             {Object.entries(sqlScripts).map(([key, sql]) => {
                 const title = key.replace(/_/g, ' ').replace('seed ', 'Seed Data: ');

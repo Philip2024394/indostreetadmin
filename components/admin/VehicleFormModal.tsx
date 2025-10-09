@@ -8,6 +8,7 @@ interface VehicleFormModalProps {
   vehicle: Vehicle | null;
   onClose: () => void;
   onSave: (data: Omit<Vehicle, 'id'>, id?: string) => void;
+  defaultVehicleType?: VehicleType;
 }
 
 const defaultFormData: Omit<Vehicle, 'id'> = {
@@ -40,6 +41,7 @@ const defaultFormData: Omit<Vehicle, 'id'> = {
     operatingHours: '',
     image_set: {
         searching: '',
+        // FIX: Changed `onTheWay` to `on_the_way` to match the type definition.
         on_the_way: '',
         arrived: '',
         completed: ''
@@ -73,7 +75,7 @@ const ImageUrlInput: React.FC<{ name: string; label: string; value?: string; onC
 );
 
 
-const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, onSave }) => {
+const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, onSave, defaultVehicleType }) => {
     const [formData, setFormData] = useState<Omit<Vehicle, 'id'>>(defaultFormData);
     const [destinations, setDestinations] = useState<TourDestination[]>([]);
 
@@ -87,15 +89,21 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                 listingType: vehicle.listingType ?? 'rent',
                 image_set: {
                     searching: vehicle.image_set?.searching || '',
+                    // FIX: Changed `onTheWay` to `on_the_way` to match the type definition.
                     on_the_way: vehicle.image_set?.on_the_way || '',
                     arrived: vehicle.image_set?.arrived || '',
                     completed: vehicle.image_set?.completed || ''
                 }
             });
         } else {
-            setFormData(defaultFormData);
+            const initialType = defaultVehicleType || VehicleType.Bike;
+            setFormData({
+                ...defaultFormData,
+                type: initialType,
+                serviceType: initialType === VehicleType.Bike ? 'ride' : 'tour'
+            });
         }
-    }, [vehicle]);
+    }, [vehicle, defaultVehicleType]);
 
     useEffect(() => {
         if (formData.type === VehicleType.Jeep) {
@@ -168,7 +176,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Vehicle Type *</label>
-                        <select name="type" value={formData.type} onChange={handleChange} disabled={!!vehicle} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 disabled:bg-gray-100">
+                        <select name="type" value={formData.type} onChange={handleChange} disabled={!!vehicle || !!defaultVehicleType} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 disabled:bg-gray-100">
                             {Object.values(VehicleType).map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
@@ -210,9 +218,9 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                         </div>
                     </fieldset>
 
-                    {formData.type === VehicleType.Bike && (
+                    {(formData.type === VehicleType.Bike || formData.type === VehicleType.Car) && (
                         <fieldset className="border p-4 rounded-md">
-                            <legend className="px-2 font-semibold text-gray-700">Bike Pricing</legend>
+                            <legend className="px-2 font-semibold text-gray-700">{formData.type} Pricing</legend>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputField name="pricePerKm" label="Ride Price per Km (Rp)" value={formData.pricePerKm || ''} onChange={handleNumberChange} type="number" />
                                 <InputField name="pricePerKmParcel" label="Parcel Price per Km (Rp)" value={formData.pricePerKmParcel || ''} onChange={handleNumberChange} type="number" />
@@ -272,6 +280,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({ vehicle, onClose, o
                         <p className="text-sm text-gray-500 mb-4">Images shown to users during a ride. If blank, a default is used.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <ImageUrlInput name="searching" label="Searching Image URL" value={formData.image_set?.searching} onChange={handleImageSetChange} />
+                            {/* FIX: Changed `onTheWay` to `on_the_way` to match the type definition. */}
                             <ImageUrlInput name="on_the_way" label="On The Way Image URL" value={formData.image_set?.on_the_way} onChange={handleImageSetChange} />
                             <ImageUrlInput name="arrived" label="Arrived Image URL" value={formData.image_set?.arrived} onChange={handleImageSetChange} />
                             <ImageUrlInput name="completed" label="Completed Image URL" value={formData.image_set?.completed} onChange={handleImageSetChange} />

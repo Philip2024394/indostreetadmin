@@ -1,5 +1,3 @@
-
-
 export enum Role {
   Admin = 'admin',
   Driver = 'driver',
@@ -389,6 +387,9 @@ export interface Vehicle {
   // New fields for Sales
   listingType?: 'rent' | 'sale' | 'both';
   salePrice?: number;
+  
+  // New field for status-based images
+  image_set?: VehicleImageSet;
 }
 
 // --- New type for end-user management ---
@@ -504,3 +505,12 @@ export interface DrawerCategory {
 }
 
 export type DrawerConfig = DrawerCategory[];
+
+// --- New type for Driver Image Management ---
+export interface VehicleImageSet {
+  id?: number;
+  searching?: string;
+  on_the_way?: string;
+  arrived?: string;
+  completed?: string;
+}

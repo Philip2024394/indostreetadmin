@@ -6,9 +6,9 @@ import ToggleSwitch from './ToggleSwitch';
 import { useContent } from '../../contexts/ContentContext';
 import { Editable } from './Editable';
 // Fix: Add CheckCircleIcon to imports
-import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, CogIcon } from './Icons';
+import { LogoutIcon, ShieldCheckIcon, CarIcon, StoreIcon, UserGroupIcon, DocumentTextIcon, DollarSignIcon, ChartBarIcon, BellIcon, LandmarkIcon, BanknotesIcon, MotorcycleIcon, SparklesIcon, RealCarIcon, DevicePhoneMobileIcon, CalendarIcon, BriefcaseIcon, CheckCircleIcon, IdCardIcon, BookOpenIcon, FoodIcon, MenuIcon, XIcon, UserCircleIcon, InformationCircleIcon, LockClosedIcon, CogIcon, TruckIcon } from './Icons';
 
-type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'renewals' | 'fleet' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup' | 'drawerConfig';
+type AdminView = 'applications' | 'partners' | 'members' | 'financials' | 'analytics' | 'tours' | 'renewals' | 'massage' | 'massageDirectory' | 'agents' | 'agentApplications' | 'foodDirectory' | 'supabaseStatus' | 'databaseSetup' | 'drawerConfig' | 'driverImageManagement';
 type AgentView = 'prospects' | 'my-partners' | 'renewals' | 'pricing';
 
 interface LayoutProps {
@@ -114,6 +114,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout, children, title, navIte
               <button onClick={() => handleViewClick('drawerConfig')} className={`${navLinkClasses} ${currentView === 'drawerConfig' ? activeNavLinkClasses : ''}`}>
                 <CogIcon className="w-5 h-5 mr-3" />
                 Drawer Configuration
+              </button>
+              <button onClick={() => handleViewClick('driverImageManagement')} className={`${navLinkClasses} ${currentView === 'driverImageManagement' ? activeNavLinkClasses : ''}`}>
+                <RealCarIcon className="w-5 h-5 mr-3" />
+                Driver Images
               </button>
           </>
       );

@@ -3,7 +3,7 @@ import { User, Vehicle, Partner, VehicleType } from '../../types';
 import * as api from '../../services/supabase';
 import Layout from '../shared/Layout';
 import ProfileManagement from '../shared/ProfileManagement';
-import VehicleFormModal from '../admin/BikeDriverFormModal';
+import VehicleFormModal from '../admin/VehicleFormModal';
 import { RealCarIcon, PlusCircleIcon, PencilIcon } from '../shared/Icons';
 import ToggleSwitch from '../shared/ToggleSwitch';
 

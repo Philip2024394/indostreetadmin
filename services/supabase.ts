@@ -31,6 +31,7 @@ import {
   Payout,
   FoodType,
   DrawerConfig,
+  VehicleImageSet,
 } from '../types';
 
 const supabaseUrl = "https://ovfhgfzdlwgjtzsfsgzf.supabase.co";
@@ -580,9 +581,17 @@ export const deleteTourDestination = async (id: string): Promise<void> => {
 
 export const getContentOverrides = async (): Promise<ContentOverrides> => {
     // Assuming a single row with id=1 for site-wide content
-    const { data, error } = await supabase.from('content_overrides').select('*').eq('id', 1).maybeSingle();
+    const { data, error } = await supabase.from('content_overrides').select('text, numbers, assets').eq('id', 1).maybeSingle();
     if (error) throw error;
-    return data || { text: {}, numbers: {}, assets: {} };
+    
+    // Ensure nested objects are not null, which can happen if the DB row exists but a jsonb column is null.
+    // This prevents errors when spreading these properties later (e.g., ...null).
+    const result = data || {};
+    return {
+        text: result.text || {},
+        numbers: result.numbers || {},
+        assets: result.assets || {},
+    };
 };
 
 export const updateContentOverrides = async (newOverrides: ContentOverrides): Promise<ContentOverrides> => {
@@ -591,6 +600,30 @@ export const updateContentOverrides = async (newOverrides: ContentOverrides): Pr
     if (error) throw error;
     return data;
 };
+
+// --- Driver Image Management API ---
+
+const getVehicleImages = async (tableName: 'bikeimages' | 'carimages' | 'truckimages'): Promise<VehicleImageSet> => {
+    const { data, error } = await supabase.from(tableName).select('*').eq('id', 1).maybeSingle();
+    if (error) throw error;
+    return data || {};
+};
+
+const updateVehicleImages = async (tableName: 'bikeimages' | 'carimages' | 'truckimages', images: Omit<VehicleImageSet, 'id'>): Promise<VehicleImageSet> => {
+    const { data, error } = await supabase.from(tableName).upsert({ id: 1, ...images }).select().single();
+    if (error) throw error;
+    return data;
+};
+
+export const getBikeImages = () => getVehicleImages('bikeimages');
+export const updateBikeImages = (images: Omit<VehicleImageSet, 'id'>) => updateVehicleImages('bikeimages', images);
+
+export const getCarImages = () => getVehicleImages('carimages');
+export const updateCarImages = (images: Omit<VehicleImageSet, 'id'>) => updateVehicleImages('carimages', images);
+
+export const getTruckImages = () => getVehicleImages('truckimages');
+export const updateTruckImages = (images: Omit<VehicleImageSet, 'id'>) => updateVehicleImages('truckimages', images);
+
 
 export const getRenewalSubmissions = async (): Promise<RenewalSubmission[]> => {
     const { data, error } = await supabase.from('renewal_submissions').select('*');

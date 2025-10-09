@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { ContentOverrides } from '../types';
 import * as api from '../services/supabase';
 
@@ -32,8 +32,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const fetchContent = async () => {
         try {
             const data = await api.getContentOverrides();
-            // Ensure the content object always has the correct shape
-            setContent({ ...defaultContent, ...data });
+            // Use functional update to ensure we don't have stale state.
+            setContent(current => ({ ...current, ...data }));
         } catch (error) {
             console.error("Failed to fetch content overrides:", error);
         } finally {
@@ -43,32 +43,51 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     fetchContent();
   }, []);
 
-  const updateContent = useCallback(async (newContent: ContentState) => {
-    setContent(newContent); // Optimistic update
+  // Central function to update state and save to backend.
+  const updateAndSaveContent = useCallback(async (getNewContent: (currentContent: ContentState) => ContentState) => {
+    // We get the new content first for the API call
+    let newContent: ContentState | null = null;
+    
+    // Use functional update for React state to avoid race conditions from rapid updates.
+    setContent(currentContent => {
+        newContent = getNewContent(currentContent);
+        return newContent;
+    });
+
     try {
-      await api.updateContentOverrides(newContent);
+      if (newContent) { // Ensure newContent was set before calling API
+          await api.updateContentOverrides(newContent);
+      }
     } catch (error) {
       console.error("Failed to save content to API", error);
-      // Here you might want to add error handling, e.g., revert the state
+      // In a production app, you might want to revert the optimistic UI update here.
+      // For simplicity, we'll just log the error.
     }
   }, []);
 
-  const updateText = (id: string, value: string) => {
-    const newContent = { ...content, text: { ...content.text, [id]: value } };
-    updateContent(newContent);
-  };
+  const updateText = useCallback((id: string, value: string) => {
+    updateAndSaveContent(currentContent => ({
+        ...currentContent,
+        text: { ...(currentContent.text || {}), [id]: value }
+    }));
+  }, [updateAndSaveContent]);
   
-  const updateNumber = (id: string, value: number) => {
-    const newContent = { ...content, numbers: { ...content.numbers, [id]: value } };
-    updateContent(newContent);
-  };
+  const updateNumber = useCallback((id: string, value: number) => {
+    updateAndSaveContent(currentContent => ({
+        ...currentContent,
+        numbers: { ...(currentContent.numbers || {}), [id]: value }
+    }));
+  }, [updateAndSaveContent]);
   
-  const updateAsset = (id: string, value: string) => {
-    const newContent = { ...content, assets: { ...content.assets, [id]: value } };
-    updateContent(newContent);
-  };
+  const updateAsset = useCallback((id: string, value: string) => {
+    updateAndSaveContent(currentContent => ({
+        ...currentContent,
+        assets: { ...(currentContent.assets || {}), [id]: value }
+    }));
+  }, [updateAndSaveContent]);
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders of consumers.
+  const value = useMemo(() => ({
       isEditMode,
       setIsEditMode,
       content,
@@ -76,7 +95,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updateText,
       updateNumber,
       updateAsset
-  };
+  }), [isEditMode, content, loadingContent, updateText, updateNumber, updateAsset]);
 
   return (
     <ContentContext.Provider value={value}>

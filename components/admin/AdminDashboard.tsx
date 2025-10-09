@@ -5,13 +5,14 @@ import TourManagementPage from './TourManagementPage';
 import MassageDirectoryManagementPage from './MassageDirectoryManagementPage';
 import FoodDirectoryManagementPage from './FoodDirectoryManagementPage';
 import DrawerConfigPage from './DrawerConfigPage';
+import DriverImageManagementPage from './DriverImageManagementPage';
 
 interface AdminDashboardProps {
   user: User;
   onLogout: () => void;
 }
 
-type AdminView = 'foodDirectory' | 'massageDirectory' | 'tours' | 'drawerConfig';
+type AdminView = 'foodDirectory' | 'massageDirectory' | 'tours' | 'drawerConfig' | 'driverImageManagement';
 
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
@@ -27,6 +28,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
         case 'massageDirectory': return 'Massage Directory Management';
         case 'tours': return 'Destination Management';
         case 'drawerConfig': return 'Side Drawer Configuration';
+        case 'driverImageManagement': return 'Driver Image Management';
         default: return 'Admin Dashboard';
     }
   };
@@ -41,6 +43,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
             return <TourManagementPage />;
         case 'drawerConfig':
             return <DrawerConfigPage />;
+        case 'driverImageManagement':
+            return <DriverImageManagementPage />;
         default:
             return (
                  <div className="bg-white p-6 rounded-lg shadow-md">
